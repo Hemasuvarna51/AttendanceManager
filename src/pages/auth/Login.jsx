@@ -10,6 +10,7 @@ const Hero = styled.div `
   border: 1px solid #eee;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background-color: #fff;
 
   h2 {
   margin : 0 0 12px 0;}
@@ -59,6 +60,7 @@ export default function Login() {
   };
 
   return (
+    
     <Hero >
       <h2>Login</h2>
 

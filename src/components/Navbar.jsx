@@ -8,7 +8,9 @@ const Header = styled.header `
   align-items: center;
   padding: 12px 24px;
   border-bottom: 1px solid #eee;
-  background-color: #fafafa;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 0 0 12px 12px;
 `;
 
 const Title = styled.h1 `

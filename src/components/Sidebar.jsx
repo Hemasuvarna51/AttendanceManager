@@ -7,11 +7,11 @@ const NavBarLink = styled(NavLink)`
   padding: 10px 12px;
   text-decoration: none;
   border-radius: 8px;
-  background: ${props => props.isActive ? "#f2f2f2" : "transparent"};
+  background: ${props => props.isActive ? "#f4e1e1" : "transparent"};
   color: #111;
   margin-bottom: 8px;
   &:hover {
-    background: #f2f2f2;
+    background: #e2c077;
   }
 `;
 
@@ -19,10 +19,19 @@ const Aside = styled.aside `
   width: 220px;
   padding: 24px;
   border-right: 1px solid #ded5d5;
+  background-color: #f6f6f5;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+
 
   div {
     font-weight: bold;
     margin-bottom: 16px;
+    border : 1px solid #f1941b;
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    border-width: 2px;
         }
 `;
 

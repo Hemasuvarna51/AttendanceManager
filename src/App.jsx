@@ -4,7 +4,7 @@ import Sidebar from "./components/Sidebar";
 
 export default function App() {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" , backgroundColor: "#f2eee3b4" }}>
       <Navbar />
       <div style={{ display: "flex", flex: 1 }}>
         <Sidebar />
