@@ -46,17 +46,12 @@ export default function Sidebar() {
 
       {role === "admin" && (
         <>
-          <NavLink to="/admin/dashboard" style={linkStyle}>
-            Dashboard
-          </NavLink>
+          <NavBarLink to="/admin/dashboard" >Dashboard</NavBarLink>
 
-          <NavLink to="/admin/tasks" style={linkStyle}>
-            Tasks ✅
-          </NavLink>
+          <NavBarLink to="/admin/tasks" >Tasks ✅
+          </NavBarLink>
 
-          <NavLink to="/admin/reports" style={linkStyle}>
-            Reports
-          </NavLink>
+          <NavBarLink to="/admin/reports" >Reports</NavBarLink>
         </>
       )}
     </Aside>
