@@ -1,6 +1,45 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth.store";
+import styled from "styled-components";
+
+const Hero = styled.div `
+  max-width: 400px;
+  margin: 80px auto;  
+  padding: 24px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+  h2 {
+  margin : 0 0 12px 0;}
+
+  `
+  
+  const Label = styled.label `
+  display: block;
+  margin-top: 12px;
+  `;
+
+const SelectRole = styled.select `
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  `;
+
+const LoginBtn = styled.button `
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  &:hover {
+    background-color: #45a049;
+  }
+  `;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,18 +59,18 @@ export default function Login() {
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: "80px auto", padding: 16, border: "1px solid #eee", borderRadius: 12 }}>
+    <Hero >
       <h2>Login</h2>
 
-      <label style={{ display: "block", marginTop: 12 }}>Select Role (demo)</label>
-      <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: "100%", padding: 10, marginTop: 6 }}>
+      <Label>Select Role (demo)</Label>
+      <SelectRole value={role} onChange={(e) => setRole(e.target.value)}>
         <option value="employee">employee</option>
         <option value="admin">admin</option>
-      </select>
+      </SelectRole>
 
-      <button onClick={handleFakeLogin} style={{ width: "100%", marginTop: 14, padding: 10 }}>
+      <LoginBtn onClick={handleFakeLogin} style={{ width: "100%", marginTop: 14, padding: 10 }}>
         Login
-      </button>
-    </div>
+      </LoginBtn>
+    </Hero>
   );
 }
