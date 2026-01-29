@@ -3,7 +3,7 @@ export default function Dashboard() {
     <div style={{ padding: 24 }}>
       <h2>Admin: Dashboard</h2>
       <p>Next: Logs + Reports</p>
-      <p>Employee Attendance Management</p>
+      <p>Attendance Management</p>
     </div>
   );
 }
