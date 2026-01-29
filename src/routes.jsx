@@ -10,12 +10,15 @@ import Dashboard from "./pages/admin/Dashboard";
 import CheckIn from "./pages/employee/CheckIn";
 
 import AppShell from "./App";
+import MyTasks from "./pages/employee/MyTasks";
+import Tasks from "./pages/admin/Tasks";
+
 
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 
-  {
+  { 
     path: "/",
     element: (
       <ProtectedRoute>
@@ -23,6 +26,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
+      
       {
         path: "employee/checkin",
         element: (
@@ -32,10 +36,26 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "employee/tasks",
+        element: (
+          <RoleRoute allow={["employee"]}>
+            <MyTasks />
+          </RoleRoute>
+        ),
+      },
+      {
         path: "admin/dashboard",
         element: (
           <RoleRoute allow={["admin"]}>
             <Dashboard />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "admin/tasks",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <Tasks />
           </RoleRoute>
         ),
       },

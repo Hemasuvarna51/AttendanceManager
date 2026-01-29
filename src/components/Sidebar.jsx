@@ -19,18 +19,33 @@ export default function Sidebar() {
 
       {role === "employee" && (
         <>
-          <NavLink to="/employee/checkin" style={linkStyle}>Check In</NavLink>
-          <NavLink to="/employee/checkout" style={linkStyle}>Check Out</NavLink>
-          <NavLink to="/employee/enroll-face" style={linkStyle}>Enroll Face</NavLink>
-          <NavLink to="/employee/my-attendance" style={linkStyle}>My Attendance</NavLink>
+          <NavLink to="/employee/checkin" style={linkStyle}>
+            Check In
+          </NavLink>
+
+          <NavLink to="/employee/tasks" style={linkStyle}>
+            My Tasks ✅
+          </NavLink>
+
+          <NavLink to="/employee/my-attendance" style={linkStyle}>
+            My Attendance
+          </NavLink>
         </>
       )}
 
       {role === "admin" && (
         <>
-          <NavLink to="/admin/dashboard" style={linkStyle}>Dashboard</NavLink>
-          <NavLink to="/admin/logs" style={linkStyle}>Logs</NavLink>
-          <NavLink to="/admin/reports" style={linkStyle}>Reports</NavLink>
+          <NavLink to="/admin/dashboard" style={linkStyle}>
+            Dashboard
+          </NavLink>
+
+          <NavLink to="/admin/tasks" style={linkStyle}>
+            Tasks ✅
+          </NavLink>
+
+          <NavLink to="/admin/reports" style={linkStyle}>
+            Reports
+          </NavLink>
         </>
       )}
     </aside>
