@@ -1,7 +1,6 @@
-import http from './http';
+import http from "./http";
 
-export const loginApi = async (payload) => {
-    const res = await http.post('/auth/login', payload);
-    return res.data;
+export const loginApi = async ({ email, password }) => {
+  const res = await http.post("/auth/login", { email, password });
+  return res.data;
 };
-

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import UploadSelfie from "../../components/UploadSelfie";
 import LocationGate from "../../components/LocationGate";
-import { addRecord, canCheckIn } from "../../utils/attendanceLocalDb";
+import { addRecord, canCheckOut } from "../../utils/attendanceLocalDb";
 
 const toBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -11,7 +11,7 @@ const toBase64 = (file) =>
     reader.readAsDataURL(file);
   });
 
-export default function CheckIn() {
+export default function CheckOut() {
   const [selfie, setSelfie] = useState(null);
   const [loc, setLoc] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,8 +22,8 @@ export default function CheckIn() {
   const submit = async () => {
     setMsg("");
 
-    if (!canCheckIn()) {
-      setMsg("❌ You already checked in. Please check out first.");
+    if (!canCheckOut()) {
+      setMsg("❌ You must check in before checking out.");
       return;
     }
 
@@ -32,11 +32,12 @@ export default function CheckIn() {
 
     try {
       setLoading(true);
+
       const selfieBase64 = await toBase64(selfie);
 
       addRecord({
         id: crypto.randomUUID(),
-        type: "CHECK_IN",
+        type: "CHECK_OUT",
         time: new Date().toISOString(),
         lat: loc.lat,
         lng: loc.lng,
@@ -44,21 +45,24 @@ export default function CheckIn() {
         selfieBase64,
       });
 
-      setMsg("✅ Check-in saved locally (frontend-only).");
+      setMsg("✅ Check-out saved locally (frontend-only).");
       setSelfie(null);
     } catch {
-      setMsg("❌ Failed to save check-in.");
+      setMsg("❌ Failed to save check-out.");
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
     <div style={{ padding: 16, display: "grid", gap: 14, maxWidth: 900 }}>
-      <h2 style={{ margin: 0 }}>Employee: Check In</h2>
+      <h2 style={{ margin: 0 }}>Employee: Check Out</h2>
 
-      {msg && <div style={{ padding: 12, borderRadius: 10, border: "1px solid #eee" }}>{msg}</div>}
+      {msg && (
+        <div style={{ padding: 12, borderRadius: 10, border: "1px solid #eee" }}>
+          {msg}
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <UploadSelfie value={selfie} onChange={setSelfie} />
@@ -78,7 +82,7 @@ export default function CheckIn() {
           width: 220,
         }}
       >
-        {loading ? "Saving..." : "Submit Check-In"}
+        {loading ? "Saving..." : "Submit Check-Out"}
       </button>
     </div>
   );
