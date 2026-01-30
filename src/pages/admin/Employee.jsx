@@ -125,13 +125,37 @@ const Status = styled.span`
 `;
 
 const Action = styled.td`
-  font-size: 18px;
+  font-size: 15px;
+  font-style: normal;
   cursor: pointer;
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  text-decoration: none;
+`;
 
-  span {
-    margin-right: 10px;
+const Editbtn = styled.span`
+  color: White;
+  border-radius: 4px;
+  background-color: #1045f2ff;
+  padding: 4px 6px;
+  text-decoration: none;
+
+  &:hover {
+    background-color: #0b33c6ff;
   }
 `;
+
+const Deletebtn = styled.span`
+  color: White;
+  border-radius: 4px;
+  background-color: #dc2626;
+  padding: 4px 6px;
+  &:hover {
+    background-color: #b91c1c;
+  }
+`;
+
 
 /* ===================== COMPONENT ===================== */
 
@@ -326,8 +350,8 @@ export default function Employee() {
                 </Status>
               </Td>
               <Action>
-                <span onClick={() => handleEdit(emp)}>✏️</span>
-                <span onClick={() => handleDelete(emp.id)}>🗑️</span>
+                <Editbtn onClick={() => handleEdit(emp)}>Edit</Editbtn>
+                <Deletebtn onClick={() => handleDelete(emp.id)}>Delete</Deletebtn>
               </Action>
             </tr>
           ))}
