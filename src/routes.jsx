@@ -11,6 +11,8 @@ import { useAuthStore } from "./store/auth.store";
 
 // admin pages
 import Dashboard from "./pages/admin/Dashboard";
+import Employee from "./pages/admin/Employee";
+import Attendance from "./pages/admin/Attendance";
 import Tasks from "./pages/admin/Tasks";
 import Reports from "./pages/admin/Reports"; // create placeholder if not yet
 
@@ -20,6 +22,7 @@ import CheckOut from "./pages/employee/CheckOut"; // create if not yet
 import MyAttendance from "./pages/employee/MyAttendance"; // create if not yet
 import EnrollFace from "./pages/employee/EnrollFace"; // placeholder ok
 import MyTasks from "./pages/employee/MyTasks";
+
 
 function HomeRedirect() {
   const role = useAuthStore((s) => s.role);
@@ -101,6 +104,26 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+
+      {
+        path: "admin/employees",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <Employee />
+          </RoleRoute>
+        ),  
+      },
+
+      {
+       path: "admin/attendance",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <Attendance />
+          </RoleRoute>
+        ),  
+      },
+
+
       {
         path: "admin/reports",
         element: (
