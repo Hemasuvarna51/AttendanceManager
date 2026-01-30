@@ -1,39 +1,90 @@
-import { useState } from "react";
-import UploadSelfie from "../../components/UploadSelfie";
+import { useMemo, useState } from "react";
+import styled from "styled-components";
 import LocationGate from "../../components/LocationGate";
 import { addRecord, canCheckOut } from "../../utils/attendanceLocalDb";
 
-const toBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+const Page = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 18px;
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 28px;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+  }
+`;
+
+const Alert = styled.div`
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid ${({ $type }) => ($type === "error" ? "#ffd2d2" : "#c8f0d6")};
+  background: ${({ $type }) => ($type === "error" ? "#fff5f5" : "#f3fff7")};
+  color: ${({ $type }) => ($type === "error" ? "#b42318" : "#11643a")};
+`;
+
+const Card = styled.div`
+  margin-top: 18px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 16px;
+`;
+
+const FooterBar = styled.div`
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const PrimaryBtn = styled.button`
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 0;
+  font-weight: 600;
+  min-width: 220px;
+
+  background: ${({ disabled }) => (disabled ? "#9aa0a6" : "#111")};
+  color: #fff;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+`;
 
 export default function CheckOut() {
-  const [selfie, setSelfie] = useState(null);
   const [loc, setLoc] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState({ text: "", type: "success" });
 
-  const canSubmit = !!selfie && !!loc && !loading;
+  const canSubmit = !!loc && !loading;
+  const timestampLabel = useMemo(() => new Date().toLocaleString(), []);
 
   const submit = async () => {
-    setMsg("");
+    setMsg({ text: "", type: "success" });
 
     if (!canCheckOut()) {
-      setMsg("❌ You must check in before checking out.");
+      setMsg({ text: "❌ You must check in before checking out.", type: "error" });
       return;
     }
 
-    if (!selfie) return setMsg("Upload selfie first.");
-    if (!loc) return setMsg("Pass location check first.");
+    if (!loc) {
+      setMsg({ text: "Verify location first.", type: "error" });
+      return;
+    }
 
     try {
       setLoading(true);
-
-      const selfieBase64 = await toBase64(selfie);
 
       addRecord({
         id: crypto.randomUUID(),
@@ -42,48 +93,38 @@ export default function CheckOut() {
         lat: loc.lat,
         lng: loc.lng,
         distance: loc.distance,
-        selfieBase64,
       });
 
-      setMsg("✅ Check-out saved locally (frontend-only).");
-      setSelfie(null);
+      setMsg({ text: "✅ Check-out completed.", type: "success" });
+      setLoc(null);
     } catch {
-      setMsg("❌ Failed to save check-out.");
+      setMsg({ text: "❌ Failed to save check-out.", type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 16, display: "grid", gap: 14, maxWidth: 900 }}>
-      <h2 style={{ margin: 0 }}>Employee: Check Out</h2>
-
-      {msg && (
-        <div style={{ padding: 12, borderRadius: 10, border: "1px solid #eee" }}>
-          {msg}
+    <Page>
+      <TitleRow>
+        <div>
+          <h2>Employee: Check Out</h2>
+          <p>Verify location and submit to end your workday.</p>
         </div>
-      )}
+        <p>🕒 {timestampLabel}</p>
+      </TitleRow>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <UploadSelfie value={selfie} onChange={setSelfie} />
+      {!!msg.text && <Alert $type={msg.type}>{msg.text}</Alert>}
+
+      <Card>
         <LocationGate onPass={setLoc} />
-      </div>
+      </Card>
 
-      <button
-        onClick={submit}
-        disabled={!canSubmit}
-        style={{
-          padding: "12px 14px",
-          borderRadius: 10,
-          border: "none",
-          background: canSubmit ? "#111" : "#999",
-          color: "#fff",
-          cursor: canSubmit ? "pointer" : "not-allowed",
-          width: 220,
-        }}
-      >
-        {loading ? "Saving..." : "Submit Check-Out"}
-      </button>
-    </div>
+      <FooterBar>
+        <PrimaryBtn onClick={submit} disabled={!canSubmit}>
+          {loading ? "Saving..." : "🔓 Submit Check-Out"}
+        </PrimaryBtn>
+      </FooterBar>
+    </Page>
   );
 }
