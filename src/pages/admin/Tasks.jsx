@@ -1,4 +1,51 @@
 import React, { useState } from "react";
+import styled from "styled-components";
+
+const Hero = styled.div`
+
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    h2 {
+        margin-bottom: 20px;
+    }
+
+    input, select {
+        margin: 8px 0;
+        padding: 8px;
+        width: 200px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+    button {
+        padding: 10px 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+        &:hover {
+            background-color: #45a049;
+        }
+    }
+    
+`;
+
+const Table = styled.table`
+    border-collapse: collapse;
+    width: 100%;
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+`;
 
 const initialTasks = [
   {
@@ -61,7 +108,7 @@ export default function Tasks() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
+    <Hero>
       <h2>Admin – Task Manager</h2>
 
       {/* Create Task */}
@@ -105,7 +152,7 @@ export default function Tasks() {
       </div>
 
       {/* Task List */}
-      <table border="1" cellPadding="10" width="100%">
+      <Table border="1" cellPadding="10" width="100%">
         <thead>
           <tr>
             <th>Title</th>
@@ -131,7 +178,7 @@ export default function Tasks() {
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+      </Table>
+    </Hero>
   );
 }

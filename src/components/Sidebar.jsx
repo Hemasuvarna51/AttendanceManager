@@ -62,6 +62,7 @@ export default function Sidebar() {
           <NavBarLink to="/admin/attendance">Attendance</NavBarLink>
           <NavBarLink to="/admin/tasks">Tasks ✅</NavBarLink>
           <NavBarLink to="/admin/reports">Reports</NavBarLink>
+          
         </>
       )}
     </Aside>
