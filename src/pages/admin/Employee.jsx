@@ -161,21 +161,8 @@ const Deletebtn = styled.span`
 
 export default function Employee() {
   const [employees, setEmployees] = useState([
-    {
-      id: "E227",
-      name: "Aisha Nabi",
-      email: "aisha@gmail.com",
-      joined: "2023-05-06",
-      status: "Active",
-    },
-    {
-      id: "E226",
-      name: "Thomas Goodman",
-      email: "thomas@gmail.com",
-      joined: "2023-01-01",
-      status: "Inactive",
     
-    },
+    
   ]);
 
   const [showForm, setShowForm] = useState(false);
@@ -337,8 +324,7 @@ export default function Employee() {
             <tr key={emp.id}>
               <Td>
                 <NameCell>
-                  <Avatar src={emp.avatar} />
-                  {emp.name}
+                 {emp.name}
                 </NameCell>
               </Td>
               <Td>{emp.id}</Td>

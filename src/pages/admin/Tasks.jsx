@@ -48,24 +48,8 @@ const Table = styled.table`
 `;
 
 const initialTasks = [
-  {
-    id: 1,
-    title: "Design Login Page",
-    description: "Create UI for login",
-    assignedTo: "Ram",
-    priority: "High",
-    status: "Pending",
-    dueDate: "2026-02-05",
-  },
-  {
-    id: 2,
-    title: "API Integration",
-    description: "Integrate task APIs",
-    assignedTo: "Sita",
-    priority: "Medium",
-    status: "In Progress",
-    dueDate: "2026-02-10",
-  },
+  
+  
 ];
 
 export default function Tasks() {
