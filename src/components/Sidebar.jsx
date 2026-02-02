@@ -49,7 +49,7 @@ export default function Sidebar() {
         <>
           <NavBarLink to="/employee/checkin">Check In</NavBarLink>
           <NavBarLink to="/employee/checkout">Check Out</NavBarLink>
-          <NavBarLink to="/employee/enroll-face">Enroll Face</NavBarLink>
+          <NavBarLink to="/employee/leave">Leave Request</NavBarLink>
           <NavBarLink to="/employee/my-attendance">My Attendance</NavBarLink>
           <NavBarLink to="/employee/tasks">My Tasks ✅</NavBarLink>
         </>

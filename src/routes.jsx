@@ -20,7 +20,7 @@ import Reports from "./pages/admin/Reports"; // create placeholder if not yet
 import CheckIn from "./pages/employee/CheckIn";
 import CheckOut from "./pages/employee/CheckOut"; // create if not yet
 import MyAttendance from "./pages/employee/MyAttendance"; // create if not yet
-import EnrollFace from "./pages/employee/EnrollFace"; // placeholder ok
+import LeaveRequest from "./pages/employee/LeaveRequest"; // placeholder ok
 import MyTasks from "./pages/employee/MyTasks";
 
 
@@ -63,10 +63,10 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "employee/enroll-face",
+        path: "employee/leave",
         element: (
           <RoleRoute allow={["employee"]}>
-            <EnrollFace />
+            <LeaveRequest />
           </RoleRoute>
         ),
       },
