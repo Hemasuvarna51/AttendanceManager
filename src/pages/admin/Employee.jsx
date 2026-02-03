@@ -34,12 +34,41 @@ const AddButton = styled.button`
   }
 `;
 
-const Form = styled.div`
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 `;
+
+const Modal = styled.div`
+  background: #fff;
+  width: 560px;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+`;
+
+
+const Form = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-top: 14px;
+
+  h4 {
+    grid-column: 1 / -1;
+    margin: 0 0 6px 0;
+  }
+
+  input, select {
+    width: 100%;
+  }
+`;
+
 
 const Input = styled.input`
   padding: 8px;
@@ -161,8 +190,8 @@ const Deletebtn = styled.span`
 
 export default function Employee() {
   const [employees, setEmployees] = useState([
-    
-    
+
+
   ]);
 
   const [showForm, setShowForm] = useState(false);
@@ -208,7 +237,7 @@ export default function Employee() {
         ...prev,
         {
           ...formData,
-        
+
         },
       ]);
     }
@@ -240,7 +269,7 @@ export default function Employee() {
     });
   };
 
-  /* ===================== UI ===================== */
+
 
   return (
     <Card>
@@ -252,59 +281,58 @@ export default function Employee() {
       </Header>
 
       {showForm && (
-        <Form>
-          <h4>{editingEmp ? "Update Employee" : "Add Employee"}</h4>
+        <Overlay onClick={resetForm}>
+          <Modal onClick={(e) => e.stopPropagation()}>
+            <h4 >
+              (editingEm ? "Update Employee" : "Add Employee")
+            </h4>
+            <Form>
+              <Input
+                placeholder="Employee ID"
+                value={formData.id}
+                disabled={!!editingEmp}
+                onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+              />
 
-          <Input
-            placeholder="Employee ID"
-            value={formData.id}
-            disabled={!!editingEmp}
-            onChange={(e) =>
-              setFormData({ ...formData, id: e.target.value })
-            }
-          />
+              <Input
+                placeholder="Name *"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
 
-          <Input
-            placeholder="Name"
-            value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
-          />
+              <Input
+                placeholder="Email *"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
 
-          <Input
-            placeholder="Email"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-          />
+              <Input
+                type="date"
+                value={formData.joined}
+                onChange={(e) => setFormData({ ...formData, joined: e.target.value })}
+              />
 
-          <Input
-            type="date"
-            value={formData.joined}
-            onChange={(e) =>
-              setFormData({ ...formData, joined: e.target.value })
-            }
-          />
+              <Select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              >
+                <option>Active</option>
+                <option>Inactive</option>
+              </Select>
 
-          <Select
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
-          >
-            <option>Active</option>
-            <option>Inactive</option>
-          </Select>
+              {/* empty cell to keep grid balanced */}
+              <div />
 
-          <FormActions>
-            <SaveButton onClick={handleSubmit}>
-              {editingEmp ? "Update" : "Create"}
-            </SaveButton>
-            <CancelButton onClick={resetForm}>Cancel</CancelButton>
-          </FormActions>
-        </Form>
+              <FormActions>
+                <SaveButton onClick={handleSubmit}>
+                  {editingEmp ? "Update" : "Create"}
+                </SaveButton>
+                <CancelButton onClick={resetForm}>Cancel</CancelButton>
+              </FormActions>
+            </Form>
+          </Modal>
+
+        </Overlay>
       )}
 
       <Table>
@@ -324,7 +352,7 @@ export default function Employee() {
             <tr key={emp.id}>
               <Td>
                 <NameCell>
-                 {emp.name}
+                  {emp.name}
                 </NameCell>
               </Td>
               <Td>{emp.id}</Td>

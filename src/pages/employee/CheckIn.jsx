@@ -198,10 +198,10 @@ export default function CheckIn() {
         <Card>
           <CardHead>
             <div>
-              <h3>Step 1 — 📍 Location Verification</h3>
+              <h3>📍 Location Verification</h3>
               <span>Confirm you are inside office radius</span>
             </div>
-            <Chip $ok={locOk}>{locOk ? "✅ Verified" : "⏳ Pending"}</Chip>
+          
           </CardHead>
           <LocationGate onPass={setLoc} />
         </Card>
@@ -209,10 +209,10 @@ export default function CheckIn() {
         <Card>
           <CardHead>
             <div>
-              <h3>Step 2 — 📸 Selfie Verification</h3>
+              <h3>📸 Selfie Verification</h3>
               <span>Upload or capture a selfie</span>
             </div>
-            <Chip $ok={selfieOk}>{selfieOk ? "✅ Captured" : "⏳ Pending"}</Chip>
+           
           </CardHead>
           <UploadSelfie value={selfie} onChange={setSelfie} />
         </Card>

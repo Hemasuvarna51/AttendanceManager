@@ -1,70 +1,245 @@
 import { NavLink } from "react-router-dom";
 import { useAuthStore } from "../store/auth.store";
 import styled from "styled-components";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarCheck2,
+  ClipboardCheck,
+  LogOut,
+  FileText,
+  Plane,
+  ListTodo,
+  X,
+} from "lucide-react";
 
-const NavBarLink = styled(NavLink)`
-  display: block;
-  padding: 10px 12px;
-  text-decoration: none;
-  border-radius: 8px;
-  color: #111;
-  margin-bottom: 8px;
+const SIDEBAR_W = 260;
 
-  &:hover {
-    background: #e2c077;
-  }
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.45);
+  opacity: ${({ $open }) => ($open ? 1 : 0)};
+  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
+  transition: 0.2s ease;
+  z-index: 40;
 
-  &.active {
-    background: #f4e1e1;
-    font-weight: 700;
+  @media (min-width: 980px) {
+    display: none;
   }
 `;
 
 const Aside = styled.aside`
-  width: 220px;
-  padding: 24px;
-  border-right: 1px solid #ded5d5;
-  background-color: #f6f6f5;
-  border-radius: 0 12px 12px 0;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+  width: ${SIDEBAR_W}px;
+  background: linear-gradient(180deg, #1f1f1f 0%, #141414 100%);
+  color: #fff;
+  height: 100vh;
+  padding: 16px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 
-  div {
-    font-weight: bold;
-    margin-bottom: 16px;
-    border: 2px solid #f1941b;
-    padding: 8px;
-    border-radius: 8px;
-    text-align: center;
+  @media (max-width: 979px) {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
+    transition: 0.22s ease;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
   }
 `;
 
-export default function Sidebar() {
+const Brand = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+`;
+
+const Logo = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+`;
+
+const BrandText = styled.div`
+  line-height: 1.1;
+
+  div:first-child {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  div:last-child {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 3px;
+  }
+`;
+
+const CloseBtn = styled.button`
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.75);
+  display: none;
+  cursor: pointer;
+
+  @media (max-width: 979px) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+const SectionLabel = styled.div`
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  padding: 10px 10px 6px;
+`;
+
+const Nav = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 6px 10px;
+`;
+
+const Item = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration: none;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.9;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+`;
+
+// Optional footer (like “logout” area)
+const Footer = styled.div`
+  margin-top: auto;
+  padding: 10px 6px 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+`;
+
+const FooterBtn = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 0;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+export default function Sidebar({ open = false, onClose = () => {} }) {
   const role = useAuthStore((s) => s.role);
+  const logout = useAuthStore((s) => s.logout); // only if you have logout
 
   return (
-    <Aside>
-      <div>Menu</div>
+    <>
+      <Overlay $open={open} onClick={onClose} />
 
-      {role === "employee" && (
-        <>
-          <NavBarLink to="/employee/checkin">Check In</NavBarLink>
-          <NavBarLink to="/employee/checkout">Check Out</NavBarLink>
-          <NavBarLink to="/employee/leave">Leave Request</NavBarLink>
-          <NavBarLink to="/employee/my-attendance">My Attendance</NavBarLink>
-          <NavBarLink to="/employee/tasks">My Tasks ✅</NavBarLink>
-        </>
-      )}
+      <Aside $open={open}>
+        <Brand>
+          <Logo>AS</Logo>
+          <BrandText>
+            <div>Attendance System</div>
+            <div>My Company</div>
+          </BrandText>
 
-      {role === "admin" && (
-        <>
-          <NavBarLink to="/admin/dashboard">Dashboard</NavBarLink>
-          <NavBarLink to="/admin/employees">Employees</NavBarLink>
-          <NavBarLink to="/admin/attendance">Attendance</NavBarLink>
-          <NavBarLink to="/admin/tasks">Tasks ✅</NavBarLink>
-          <NavBarLink to="/admin/reports">Reports</NavBarLink>
-          
-        </>
-      )}
-    </Aside>
+          <CloseBtn onClick={onClose} aria-label="Close sidebar">
+            <X size={18} />
+          </CloseBtn>
+        </Brand>
+
+        {role === "employee" && (
+          <>
+            <SectionLabel>Employee</SectionLabel>
+            <Nav>
+              <Item to="/employee/checkin">
+                <ClipboardCheck /> Check In
+              </Item>
+              <Item to="/employee/checkout">
+                <CalendarCheck2 /> Check Out
+              </Item>
+              <Item to="/employee/leave">
+                <Plane /> Leave Request
+              </Item>
+              <Item to="/employee/my-attendance">
+                <FileText /> My Attendance
+              </Item>
+              <Item to="/employee/tasks">
+                <ListTodo /> My Tasks
+              </Item>
+            </Nav>
+          </>
+        )}
+
+        {role === "admin" && (
+          <>
+            <SectionLabel>Admin</SectionLabel>
+            <Nav>
+              <Item to="/admin/dashboard">
+                <LayoutDashboard /> Dashboard
+              </Item>
+              <Item to="/admin/employees">
+                <Users /> Employees
+              </Item>
+              <Item to="/admin/attendance">
+                <CalendarCheck2 /> Attendance
+              </Item>
+              <Item to="/admin/tasks">
+                <ListTodo /> Tasks
+              </Item>
+              <Item to="/admin/reports">
+                <FileText /> Reports
+              </Item>
+            </Nav>
+          </>
+        )}
+
+        <Footer>
+          <FooterBtn onClick={() => logout && logout()}>
+            <LogOut /> Logout
+          </FooterBtn>
+        </Footer>
+      </Aside>
+    </>
   );
 }
