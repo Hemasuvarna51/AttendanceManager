@@ -37,7 +37,7 @@ const AddButton = styled.button`
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -49,9 +49,7 @@ const Modal = styled.div`
   width: 560px;
   padding: 22px;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 `;
-
 
 const Form = styled.div`
   display: grid;
@@ -61,25 +59,17 @@ const Form = styled.div`
 
   h4 {
     grid-column: 1 / -1;
-    margin: 0 0 6px 0;
-  }
-
-  input, select {
-    width: 100%;
   }
 `;
 
-
 const Input = styled.input`
   padding: 8px;
-  width: 260px;
   border-radius: 6px;
   border: 1px solid #ccc;
 `;
 
 const Select = styled.select`
   padding: 8px;
-  width: 260px;
   border-radius: 6px;
   border: 1px solid #ccc;
 `;
@@ -87,6 +77,7 @@ const Select = styled.select`
 const FormActions = styled.div`
   display: flex;
   gap: 10px;
+  grid-column: 1 / -1;
 `;
 
 const SaveButton = styled.button`
@@ -124,24 +115,11 @@ const Th = styled.th`
   text-align: left;
   padding: 12px;
   background: #f3f4f6;
-  font-size: 14px;
 `;
 
 const Td = styled.td`
   padding: 12px;
   border-bottom: 1px solid #e5e7eb;
-`;
-
-const NameCell = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const Avatar = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
 `;
 
 const Status = styled.span`
@@ -153,45 +131,55 @@ const Status = styled.span`
   background: ${(props) => (props.active ? "#dcfce7" : "#fee2e2")};
 `;
 
-const Action = styled.td`
-  font-size: 15px;
-  font-style: normal;
-  cursor: pointer;
+const ActionBox = styled.div`
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  text-decoration: none;
+  gap: 10px;
 `;
 
-const Editbtn = styled.span`
-  color: White;
+const EditBtn = styled.button`
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 10px;
   border-radius: 4px;
-  background-color: #1045f2ff;
-  padding: 4px 6px;
-  text-decoration: none;
+  cursor: pointer;
 
   &:hover {
-    background-color: #0b33c6ff;
+    background: #1e40af;
   }
 `;
 
-const Deletebtn = styled.span`
-  color: White;
+const DeleteBtn = styled.button`
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 10px;
   border-radius: 4px;
-  background-color: #dc2626;
-  padding: 4px 6px;
+  cursor: pointer;
+
   &:hover {
-    background-color: #b91c1c;
+    background: #b91c1c;
   }
 `;
-
 
 /* ===================== COMPONENT ===================== */
 
 export default function Employee() {
   const [employees, setEmployees] = useState([
-
-
+    {
+      id: "EMP001",
+      name: "Ramya",
+      email: "ramya@gmail.com",
+      joined: "2024-01-10",
+      status: "Active",
+    },
+    {
+      id: "EMP002",
+      name: "Suresh",
+      email: "suresh@gmail.com",
+      joined: "2023-11-02",
+      status: "Inactive",
+    },
   ]);
 
   const [showForm, setShowForm] = useState(false);
@@ -213,33 +201,14 @@ export default function Employee() {
       return;
     }
 
-    const exists = employees.some(
-      (emp) => emp.id === formData.id && emp.id !== editingEmp?.id
-    );
-
-    if (exists) {
-      alert("Employee ID already exists");
-      return;
-    }
-
     if (editingEmp) {
-      // UPDATE
       setEmployees((prev) =>
         prev.map((emp) =>
-          emp.id === editingEmp.id
-            ? { ...formData, avatar: emp.avatar }
-            : emp
+          emp.id === editingEmp.id ? formData : emp
         )
       );
     } else {
-      // CREATE
-      setEmployees((prev) => [
-        ...prev,
-        {
-          ...formData,
-
-        },
-      ]);
+      setEmployees((prev) => [...prev, formData]);
     }
 
     resetForm();
@@ -252,7 +221,7 @@ export default function Employee() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this employee?")) {
+    if (window.confirm("Delete this employee?")) {
       setEmployees((prev) => prev.filter((emp) => emp.id !== id));
     }
   };
@@ -269,8 +238,6 @@ export default function Employee() {
     });
   };
 
-
-
   return (
     <Card>
       <Header>
@@ -283,45 +250,51 @@ export default function Employee() {
       {showForm && (
         <Overlay onClick={resetForm}>
           <Modal onClick={(e) => e.stopPropagation()}>
-            <h4 >
-              (editingEm ? "Update Employee" : "Add Employee")
-            </h4>
+            <h4>{editingEmp ? "Update Employee" : "Add Employee"}</h4>
+
             <Form>
               <Input
                 placeholder="Employee ID"
                 value={formData.id}
                 disabled={!!editingEmp}
-                onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, id: e.target.value })
+                }
               />
 
               <Input
-                placeholder="Name *"
+                placeholder="Name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
 
               <Input
-                placeholder="Email *"
+                placeholder="Email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
 
               <Input
                 type="date"
                 value={formData.joined}
-                onChange={(e) => setFormData({ ...formData, joined: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, joined: e.target.value })
+                }
               />
 
               <Select
                 value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, status: e.target.value })
+                }
               >
                 <option>Active</option>
                 <option>Inactive</option>
               </Select>
-
-              {/* empty cell to keep grid balanced */}
-              <div />
 
               <FormActions>
                 <SaveButton onClick={handleSubmit}>
@@ -331,7 +304,6 @@ export default function Employee() {
               </FormActions>
             </Form>
           </Modal>
-
         </Overlay>
       )}
 
@@ -350,11 +322,7 @@ export default function Employee() {
         <tbody>
           {employees.map((emp) => (
             <tr key={emp.id}>
-              <Td>
-                <NameCell>
-                  {emp.name}
-                </NameCell>
-              </Td>
+              <Td>{emp.name}</Td>
               <Td>{emp.id}</Td>
               <Td>{emp.email}</Td>
               <Td>{emp.joined}</Td>
@@ -363,10 +331,14 @@ export default function Employee() {
                   {emp.status}
                 </Status>
               </Td>
-              <Action>
-                <Editbtn onClick={() => handleEdit(emp)}>Edit</Editbtn>
-                <Deletebtn onClick={() => handleDelete(emp.id)}>Delete</Deletebtn>
-              </Action>
+              <Td>
+                <ActionBox>
+                  <EditBtn onClick={() => handleEdit(emp)}>Edit</EditBtn>
+                  <DeleteBtn onClick={() => handleDelete(emp.id)}>
+                    Delete
+                  </DeleteBtn>
+                </ActionBox>
+              </Td>
             </tr>
           ))}
         </tbody>

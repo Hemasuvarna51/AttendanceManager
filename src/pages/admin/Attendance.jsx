@@ -1,96 +1,185 @@
+import { useState } from "react";
 import styled from "styled-components";
+
+/* ===================== STYLES ===================== */
 
 const Container = styled.div`
   padding: 30px;
-  background: #f9f5ec;
   min-height: 100vh;
 `;
 
-const Title = styled.h2`
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
+`;
+
+const Title = styled.h2`
+  margin: 0;
+`;
+
+const TableWrapper = styled.div`
+  background: #fffdf5;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background: #fdfbf3;
 `;
 
 const Th = styled.th`
-  border: 1px solid #444;
-  padding: 12px;
+  padding: 14px;
+  background: #f3f4f6;
+  text-align: left;
+  font-size: 14px;
 `;
 
 const Td = styled.td`
-  border: 1px solid #444;
-  padding: 12px;
-  text-align: center;
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
 `;
 
 const Status = styled.span`
-  color: orange;
-  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${(props) =>
+    props.status === "Approved"
+      ? "#166534"
+      : props.status === "Rejected"
+      ? "#991b1b"
+      : "#92400e"};
+  background: ${(props) =>
+    props.status === "Approved"
+      ? "#dcfce7"
+      : props.status === "Rejected"
+      ? "#fee2e2"
+      : "#fef3c7"};
+`;
+
+const Actions = styled.div`
+  display: flex;
+  gap: 10px;
 `;
 
 const Button = styled.button`
-  padding: 5px 10px;
-  margin-right: 6px;
-  border: 1px solid #333;
-  background: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
   cursor: pointer;
+  font-size: 13px;
+
+  background: ${(props) =>
+    props.approve ? "#16a34a" : "#dc2626"};
+  color: white;
 
   &:hover {
-    background: ${(props) =>
-      props.type === "approve" ? "#d4edda" : "#f8d7da"};
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
+/* ===================== COMPONENT ===================== */
+
 export default function EmployeeLeaveRequests() {
+  const [leaves, setLeaves] = useState([
+    {
+      id: 1,
+      employee: "Ramya",
+      from: "2026-02-10",
+      to: "2026-02-12",
+      type: "Sick",
+      reason: "Fever",
+      status: "Pending",
+    },
+    {
+      id: 2,
+      employee: "Suresh",
+      from: "2026-02-05",
+      to: "2026-02-06",
+      type: "Casual",
+      reason: "Personal work",
+      status: "Pending",
+    },
+  ]);
+
+  const updateStatus = (id, status) => {
+    setLeaves((prev) =>
+      prev.map((leave) =>
+        leave.id === id ? { ...leave, status } : leave
+      )
+    );
+  };
+
   return (
     <Container>
-      <Title>Employee Leave Requests</Title>
+      <Header>
+        <Title>Employee Leave Requests</Title>
+      </Header>
 
-      <Table>
-        <thead>
-          <tr>
-            <Th>Employee</Th>
-            <Th>From</Th>
-            <Th>To</Th>
-            <Th>Type</Th>
-            <Th>Reason</Th>
-            <Th>Status</Th>
-            <Th>Action</Th>
-          </tr>
-        </thead>
+      <TableWrapper>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Employee</Th>
+              <Th>From</Th>
+              <Th>To</Th>
+              <Th>Type</Th>
+              <Th>Reason</Th>
+              <Th>Status</Th>
+              <Th>Action</Th>
+            </tr>
+          </thead>
 
-        <tbody>
-          <tr>
-            <Td>Ramya</Td>
-            <Td>2026-02-10</Td>
-            <Td>2026-02-12</Td>
-            <Td>Sick</Td>
-            <Td>Fever</Td>
-            <Td><Status>Pending</Status></Td>
-            <Td>
-              <Button type="approve">Approve</Button>
-              <Button>Reject</Button>
-            </Td>
-          </tr>
-
-          <tr>
-            <Td>Suresh</Td>
-            <Td>2026-02-05</Td>
-            <Td>2026-02-06</Td>
-            <Td>Casual</Td>
-            <Td>Personal work</Td>
-            <Td><Status>Pending</Status></Td>
-            <Td>
-              <Button type="approve">Approve</Button>
-              <Button>Reject</Button>
-            </Td>
-          </tr>
-        </tbody>
-      </Table>
+          <tbody>
+            {leaves.map((leave) => (
+              <tr key={leave.id}>
+                <Td>{leave.employee}</Td>
+                <Td>{leave.from}</Td>
+                <Td>{leave.to}</Td>
+                <Td>{leave.type}</Td>
+                <Td>{leave.reason}</Td>
+                <Td>
+                  <Status status={leave.status}>
+                    {leave.status}
+                  </Status>
+                </Td>
+                <Td>
+                  <Actions>
+                    <Button
+                      approve
+                      disabled={leave.status !== "Pending"}
+                      onClick={() =>
+                        updateStatus(leave.id, "Approved")
+                      }
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      disabled={leave.status !== "Pending"}
+                      onClick={() =>
+                        updateStatus(leave.id, "Rejected")
+                      }
+                    >
+                      Reject
+                    </Button>
+                  </Actions>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </TableWrapper>
     </Container>
   );
 }
