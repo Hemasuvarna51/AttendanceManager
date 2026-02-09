@@ -17,6 +17,7 @@ import Tasks from "./pages/admin/Tasks";
 import Reports from "./pages/admin/Reports"; // create placeholder if not yet
 
 // employee pages
+import DashBoard from "./pages/employee/DashBoard";
 import CheckIn from "./pages/employee/CheckIn";
 import CheckOut from "./pages/employee/CheckOut"; // create if not yet
 import MyAttendance from "./pages/employee/MyAttendance"; // create if not yet
@@ -27,7 +28,7 @@ import MyTasks from "./pages/employee/MyTasks";
 function HomeRedirect() {
   const role = useAuthStore((s) => s.role);
   if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
-  return <Navigate to="/employee/checkin" replace />;
+  return <Navigate to="/employee/dashboard" replace />;
 }
 
 export const router = createBrowserRouter([
@@ -44,6 +45,15 @@ export const router = createBrowserRouter([
     children: [
       // ✅ default landing after login
       { index: true, element: <HomeRedirect /> },
+
+      {
+        path: "employee/dashboard",
+        element: (
+          <RoleRoute allow={["employee"]}>
+            <DashBoard />
+          </RoleRoute>
+        ),
+      },
 
       // ✅ employee routes
       {

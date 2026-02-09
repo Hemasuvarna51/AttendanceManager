@@ -95,6 +95,8 @@ export default function CheckOut() {
         distance: loc.distance,
       });
 
+      window.dispatchEvent(new Event("attendance_updated"));
+
       setMsg({ text: "✅ Check-out completed.", type: "success" });
       setLoc(null);
     } catch {

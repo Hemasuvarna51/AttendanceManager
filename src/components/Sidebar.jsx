@@ -18,7 +18,7 @@ const SIDEBAR_W = 260;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 10, 0.45);
+  background: rgba(178, 173, 173, 0.45);
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition: 0.2s ease;
@@ -31,7 +31,7 @@ const Overlay = styled.div`
 
 const Aside = styled.aside`
   width: ${SIDEBAR_W}px;
-  background: linear-gradient(180deg, #1f1f1f 0%, #141414 100%);
+  background: linear-gradient(180deg, #77809f 0%, #141414 100%);
   color: #fff;
   height: 100vh;
   padding: 16px 14px;
@@ -177,9 +177,9 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
 
       <Aside $open={open}>
         <Brand>
-          <Logo>AS</Logo>
+          <Logo>GZ</Logo>
           <BrandText>
-            <div>Attendance System</div>
+            <div>Genzix</div>
             <div>My Company</div>
           </BrandText>
 
@@ -192,6 +192,9 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
           <>
             <SectionLabel>Employee</SectionLabel>
             <Nav>
+              <Item to="/employee/dashboard">
+                <LayoutDashboard /> DashBoard
+              </Item>
               <Item to="/employee/checkin">
                 <ClipboardCheck /> Check In
               </Item>

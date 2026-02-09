@@ -169,6 +169,8 @@ export default function CheckIn() {
         distance: loc.distance,
         selfieBase64,
       });
+      window.dispatchEvent(new Event("attendance_updated"));
+
 
       setMsg({ text: "✅ Check-in saved locally (frontend-only).", type: "success" });
 

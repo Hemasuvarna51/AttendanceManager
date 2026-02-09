@@ -36,3 +36,33 @@ export const canCheckOut = () => {
   // can check out only if last is CHECK_IN
   return !!last && last.type === "CHECK_IN";
 };
+
+export const getAttendanceState = () => {
+  const last = getLastRecord();
+
+  if (!last) {
+    return { checkedIn: false, status: "NOT_STARTED", last: null, checkInTime: null };
+  }
+
+  if (last.type === "CHECK_IN") {
+    return {
+      checkedIn: true,
+      status: "CHECKED_IN",
+      last,
+      checkInTime: last.time, // ✅ ISO string of check-in
+    };
+  }
+
+  if (last.type === "CHECK_OUT") {
+    return {
+      checkedIn: false,
+      status: "CHECKED_OUT",
+      last,
+      checkInTime: null,
+    };
+  }
+
+  return { checkedIn: false, status: "NOT_STARTED", last, checkInTime: null };
+};
+
+
