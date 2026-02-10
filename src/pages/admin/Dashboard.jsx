@@ -65,7 +65,7 @@ const IconWrapper = styled.div`
 `;
 
 const AddButton = styled.button`
-  background: #2c60cfff;
+  background:#77809f;
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 14px;
@@ -89,7 +89,7 @@ const CardGrid = styled.div`
 const Card = styled.div`
   padding: 20px;
   border-radius: 16px;
-  background: ${(props) => (props.highlight ? " #2c60cfff" : "#f9fafb")};
+  background: ${(props) => (props.highlight ? "#77809f" : "#f9fafb")};
   color: ${(props) => (props.highlight ? "#ffffff" : "#000000")};
 `;
 
@@ -132,7 +132,7 @@ const Chart = styled.div`
 
 const Bar = styled.div`
   width: 32px;
-  background:  #2c60cfff;
+  background:  #77809f;
   border-radius: 10px;
   height: ${(props) => props.height}%;
 `;
@@ -147,7 +147,7 @@ const ReminderText = styled.p`
 
 const FullButton = styled.button`
   width: 100%;
-  background:  #2c60cfff;
+  background:  #77809f;
   color: #ffffff;
   padding: 10px;
   border-radius: 14px;
@@ -185,7 +185,7 @@ const Status = styled.span`
 /* ================== TIME TRACKER ================== */
 
 const TimeBox = styled.div`
-  background: #2c60cfff;
+  background: #77809f;
   color: #ffffff;
   padding: 24px;
   border-radius: 16px;
