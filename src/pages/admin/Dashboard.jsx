@@ -262,6 +262,7 @@ export default function Dashboard() {
   const toggleTimer = () => {
     setIsRunning(!isRunning);
   };
+  
   return (
     <Page>
       

@@ -17,6 +17,7 @@ import Tasks from "./pages/admin/Tasks";
 import Reports from "./pages/admin/Reports"; 
 // create placeholder if not yet
 import Payroll from "./pages/admin/Payroll";
+import Meetings from "./pages/admin/Meetings";
 
 
 // employee pages
@@ -27,7 +28,7 @@ import MyAttendance from "./pages/employee/MyAttendance"; // create if not yet
 import LeaveRequest from "./pages/employee/LeaveRequest"; // placeholder ok
 import MyTasks from "./pages/employee/MyTasks";
 import MyProfile from "./pages/employee/MyProfile"; // create if not yet
-
+import MyMeetings from "./pages/employee/MyMeetings"; // create if not yet
 
 function HomeRedirect() {
   const role = useAuthStore((s) => s.role);
@@ -109,6 +110,14 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      {
+        path: "employee/my-meetings",
+        element: (
+          <RoleRoute allow={["employee"]}>
+            <MyMeetings />
+          </RoleRoute>
+        ),
+      },
 
       // ✅ admin routes
       {
@@ -152,6 +161,14 @@ export const router = createBrowserRouter([
             <Payroll />
           </RoleRoute>
         ),  
+      },
+      {
+        path: "admin/meetings",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <Meetings />
+          </RoleRoute>
+        ),
       },
 
 
