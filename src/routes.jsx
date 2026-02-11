@@ -23,6 +23,7 @@ import CheckOut from "./pages/employee/CheckOut"; // create if not yet
 import MyAttendance from "./pages/employee/MyAttendance"; // create if not yet
 import LeaveRequest from "./pages/employee/LeaveRequest"; // placeholder ok
 import MyTasks from "./pages/employee/MyTasks";
+import MyProfile from "./pages/employee/MyProfile"; // create if not yet
 
 
 function HomeRedirect() {
@@ -93,6 +94,15 @@ export const router = createBrowserRouter([
         element: (
           <RoleRoute allow={["employee"]}>
             <MyTasks />
+          </RoleRoute>
+        ),
+      },
+
+      {
+        path: "employee/my-profile",
+        element: (
+          <RoleRoute allow={["employee"]}>
+            <MyProfile/>
           </RoleRoute>
         ),
       },

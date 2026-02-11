@@ -195,11 +195,8 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/employee/dashboard">
                 <LayoutDashboard /> DashBoard
               </Item>
-              <Item to="/employee/checkin">
-                <ClipboardCheck /> Check In
-              </Item>
-              <Item to="/employee/checkout">
-                <CalendarCheck2 /> Check Out
+              <Item to="/employee/my-profile">
+                <ClipboardCheck /> My Profile
               </Item>
               <Item to="/employee/leave">
                 <Plane /> Leave Request
