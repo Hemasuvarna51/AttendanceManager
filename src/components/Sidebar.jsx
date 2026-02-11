@@ -7,6 +7,7 @@ import {
   CalendarCheck2,
   ClipboardCheck,
   LogOut,
+  Calendar,
   FileText,
   Plane,
   ListTodo,
@@ -207,6 +208,9 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/employee/tasks">
                 <ListTodo /> My Tasks
               </Item>
+              <Item to="/employee/my-meetings">
+                <Calendar /> My Meetings
+              </Item>
             </Nav>
           </>
         )}
@@ -229,6 +233,9 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               </Item>
               <Item to="/admin/payroll">
                 <FileText /> Payroll
+              </Item>
+              <Item to="/admin/meetings">
+                <Calendar /> Meetings
               </Item>
               <Item to="/admin/reports">
                 <FileText /> Reports
