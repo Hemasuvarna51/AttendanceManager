@@ -227,6 +227,9 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/admin/tasks">
                 <ListTodo /> Tasks
               </Item>
+              <Item to="/admin/payroll">
+                <FileText /> Payroll
+              </Item>
               <Item to="/admin/reports">
                 <FileText /> Reports
               </Item>

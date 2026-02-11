@@ -210,10 +210,10 @@ const PauseButton = styled.button`
 /* ================== COMPONENT ================== */
 
 export default function Dashboard() {
-  const [totalProjects, setTotalProjects] = useState(24);
-  const [endedProjects, setEndedProjects] = useState(10);
-  const [runningProjects, setRunningProjects] = useState(12);
-  const [pendingProjects, setPendingProjects] = useState(2);
+  const [totalProjects, setTotalProjects] = useState("0");
+  const [endedProjects, setEndedProjects] = useState("0");
+  const [runningProjects, setRunningProjects] = useState("0");
+  const [pendingProjects, setPendingProjects] = useState("0");
 
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -247,6 +247,13 @@ export default function Dashboard() {
   const handleMailClick = () => {
     alert("Opening messages...");
   };
+
+  const assignTask = (employeeName) => {
+   
+   
+    alert(`Task assigned to ${employeeName}`);
+  };
+
 
   const handleBellClick = () => {
     alert("No new notifications");
@@ -295,14 +302,7 @@ export default function Dashboard() {
         </CardGrid>
 
         <SectionGrid>
-          <Box>
-            <BoxTitle>Project Analytics</BoxTitle>
-            <Chart>
-              {[40, 70, 55, 80, 45, 60, 50].map((h, i) => (
-                <Bar key={i} height={h} />
-              ))}
-            </Chart>
-          </Box>
+         
 
           <Box>
             <BoxTitle>Reminders</BoxTitle>
@@ -316,12 +316,10 @@ export default function Dashboard() {
           <Box>
             <BoxTitle>Team Collaboration</BoxTitle>
             <TeamList>
-              {["Alexandra", "Edwin", "Ramya", "David"].map((name) => (
-                <TeamItem key={name}>
-                  <span>{name}</span>
-                  <Status>In Progress</Status>
-                </TeamItem>
-              ))}
+              
+
+               
+
             </TeamList>
           </Box>
 

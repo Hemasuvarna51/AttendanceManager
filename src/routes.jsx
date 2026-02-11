@@ -14,7 +14,10 @@ import Dashboard from "./pages/admin/Dashboard";
 import Employee from "./pages/admin/Employee";
 import Attendance from "./pages/admin/Attendance";
 import Tasks from "./pages/admin/Tasks";
-import Reports from "./pages/admin/Reports"; // create placeholder if not yet
+import Reports from "./pages/admin/Reports"; 
+// create placeholder if not yet
+import Payroll from "./pages/admin/Payroll";
+
 
 // employee pages
 import DashBoard from "./pages/employee/DashBoard";
@@ -139,6 +142,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleRoute allow={["admin"]}>
             <Attendance />
+          </RoleRoute>
+        ),  
+      },
+      {
+        path: "admin/payroll",
+        element: (
+          <RoleRoute allow={["admin"]}> 
+            <Payroll />
           </RoleRoute>
         ),  
       },
