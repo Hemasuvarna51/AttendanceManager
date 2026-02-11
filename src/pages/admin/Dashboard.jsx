@@ -1,6 +1,7 @@
-import React, {useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Bell, Mail, Plus, Pause, Play} from "lucide-react";
+import { Bell, Mail, Plus, Pause, Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 /* ================== LAYOUT ================== */
 
@@ -11,7 +12,6 @@ const Page = styled.div`
   padding: 16px;
 `;
 
-
 const Main = styled.main`
   flex: 1;
   margin-left: 24px;
@@ -19,24 +19,6 @@ const Main = styled.main`
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-`;
-
-/* ================== SIDEBAR ================== */
-
-const Logo = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-  color: #2c60cfff;
-  margin-bottom: 32px;
-`;
-
-
-
-const MenuItem = styled.li`
-  margin-bottom: 14px;
-  font-weight: ${(props) => (props.active ? "600" : "400")};
-  color: ${(props) => (props.active ? " #2c60cfff" : "#6b7280")};
-  cursor: pointer;
 `;
 
 /* ================== HEADER ================== */
@@ -65,7 +47,7 @@ const IconWrapper = styled.div`
 `;
 
 const AddButton = styled.button`
-  background:#77809f;
+  background: #77809f;
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 14px;
@@ -121,24 +103,6 @@ const BoxTitle = styled.h3`
   margin-bottom: 16px;
 `;
 
-/* ================== ANALYTICS ================== */
-
-const Chart = styled.div`
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  height: 130px;
-`;
-
-const Bar = styled.div`
-  width: 32px;
-  background:  #77809f;
-  border-radius: 10px;
-  height: ${(props) => props.height}%;
-`;
-
-/* ================== REMINDER ================== */
-
 const ReminderText = styled.p`
   font-size: 14px;
   color: #6b7280;
@@ -147,7 +111,7 @@ const ReminderText = styled.p`
 
 const FullButton = styled.button`
   width: 100%;
-  background:  #77809f;
+  background: #77809f;
   color: #ffffff;
   padding: 10px;
   border-radius: 14px;
@@ -169,19 +133,6 @@ const TeamList = styled.ul`
   padding: 0;
 `;
 
-const TeamItem = styled.li`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-`;
-
-const Status = styled.span`
-  font-size: 12px;
-  background: #fef3c7;
-  padding: 4px 8px;
-  border-radius: 8px;
-`;
-
 /* ================== TIME TRACKER ================== */
 
 const TimeBox = styled.div`
@@ -200,7 +151,7 @@ const Time = styled.p`
 const PauseButton = styled.button`
   margin-top: 16px;
   background: #ffffff;
-  color:blue; 
+  color: blue;
   padding: 10px 16px;
   border-radius: 14px;
   border: none;
@@ -210,21 +161,47 @@ const PauseButton = styled.button`
 /* ================== COMPONENT ================== */
 
 export default function Dashboard() {
-  const [totalProjects, setTotalProjects] = useState("0");
-  const [endedProjects, setEndedProjects] = useState("0");
-  const [runningProjects, setRunningProjects] = useState("0");
-  const [pendingProjects, setPendingProjects] = useState("0");
+  const [totalProjects, setTotalProjects] = useState(0);
+  const [endedProjects, setEndedProjects] = useState(0);
+  const [runningProjects, setRunningProjects] = useState(0);
+  const [pendingProjects, setPendingProjects] = useState(0);
 
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
+
+  const navigate = useNavigate();
+
+  /* ---------- Meetings State (Auto-refresh) ---------- */
+  const [meetings, setMeetings] = useState([]);
+
+  useEffect(() => {
+    const load = () => {
+      try {
+        const stored = localStorage.getItem("admin_meetings");
+        setMeetings(stored ? JSON.parse(stored) : []);
+      } catch {
+        setMeetings([]);
+      }
+    };
+
+    load();
+
+    // ✅ same-tab updates
+    window.addEventListener("meetings_updated", load);
+    // ✅ cross-tab updates
+    window.addEventListener("storage", load);
+
+    return () => {
+      window.removeEventListener("meetings_updated", load);
+      window.removeEventListener("storage", load);
+    };
+  }, []);
 
   /* ---------- TIMER LOGIC ---------- */
   useEffect(() => {
     let timer;
     if (isRunning) {
-      timer = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
+      timer = setInterval(() => setSeconds((prev) => prev + 1), 1000);
     }
     return () => clearInterval(timer);
   }, [isRunning]);
@@ -244,29 +221,12 @@ export default function Dashboard() {
     alert("New project added!");
   };
 
-  const handleMailClick = () => {
-    alert("Opening messages...");
-  };
+  const handleMailClick = () => alert("Opening messages...");
+  const handleBellClick = () => alert("No new notifications");
+  const toggleTimer = () => setIsRunning((v) => !v);
 
-  const assignTask = (employeeName) => {
-   
-   
-    alert(`Task assigned to ${employeeName}`);
-  };
-
-
-  const handleBellClick = () => {
-    alert("No new notifications");
-  };
-
-  const toggleTimer = () => {
-    setIsRunning(!isRunning);
-  };
-  
   return (
     <Page>
-      
-
       <Main>
         <Header>
           <Title>Dashboard</Title>
@@ -282,7 +242,7 @@ export default function Dashboard() {
             </AddButton>
           </HeaderActions>
         </Header>
-        
+
         <CardGrid>
           <Card highlight>
             <CardTitle>Total Projects</CardTitle>
@@ -303,25 +263,49 @@ export default function Dashboard() {
         </CardGrid>
 
         <SectionGrid>
-         
-
           <Box>
             <BoxTitle>Reminders</BoxTitle>
-           <p>Upcoming Meeting</p>
-            <ReminderText>02:00 pm – 04:00 pm</ReminderText>
-            <FullButton>Start Meeting</FullButton>
+
+            {meetings.length === 0 ? (
+              <>
+                <ReminderText>No meetings scheduled.</ReminderText>
+                <FullButton onClick={() => navigate("/admin/meetings")}>
+                  Schedule Meeting
+                </FullButton>
+              </>
+            ) : (
+              <>
+                {meetings.slice(0, 2).map((meeting, index) => (
+                  <div key={index} style={{ marginBottom: 12 }}>
+                    <p style={{ fontWeight: 600, margin: 0 }}>
+                      {meeting?.title || "Meeting"}
+                    </p>
+                    <ReminderText style={{ marginTop: 6 }}>
+                      {meeting?.time || "Time not set"}
+                    </ReminderText>
+                  </div>
+                ))}
+
+                <FullButton onClick={() => navigate("/admin/meetings")}>
+                  View All Meetings
+                </FullButton>
+              </>
+            )}
+          </Box>
+
+          <Box>
+            <BoxTitle>Quick Action</BoxTitle>
+            <ReminderText>Manage meetings and schedules.</ReminderText>
+            <FullButton onClick={() => navigate("/admin/meetings")}>
+              Go to Meetings
+            </FullButton>
           </Box>
         </SectionGrid>
 
         <BottomGrid>
           <Box>
             <BoxTitle>Team Collaboration</BoxTitle>
-            <TeamList>
-              
-
-               
-
-            </TeamList>
+            <TeamList />
           </Box>
 
           <TimeBox>
@@ -331,7 +315,6 @@ export default function Dashboard() {
               {isRunning ? <Pause size={16} /> : <Play size={16} />}
               {isRunning ? " Pause" : " Start"}
             </PauseButton>
-            
           </TimeBox>
         </BottomGrid>
       </Main>
