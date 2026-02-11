@@ -14,7 +14,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import Employee from "./pages/admin/Employee";
 import Attendance from "./pages/admin/Attendance";
 import Tasks from "./pages/admin/Tasks";
-import Reports from "./pages/admin/Reports"; 
+import Reports from "./pages/admin/Reports";
 // create placeholder if not yet
 import Payroll from "./pages/admin/Payroll";
 
@@ -35,6 +35,13 @@ function HomeRedirect() {
   return <Navigate to="/employee/dashboard" replace />;
 }
 
+function ProfileRedirect() {
+  const role = useAuthStore((s) => s.role);
+  if (role === "admin") return <Navigate to="/admin/profile" replace />;
+  return <Navigate to="/employee/my-profile" replace />;
+}
+
+
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   { path: "/unauthorized", element: <Unauthorized /> },
@@ -49,6 +56,14 @@ export const router = createBrowserRouter([
     children: [
       // ✅ default landing after login
       { index: true, element: <HomeRedirect /> },
+      {
+        path: "profile",
+        element: (
+          <RoleRoute allow={["employee", "admin"]}>
+            <ProfileRedirect />
+          </RoleRoute>
+        ),
+      },
 
       {
         path: "employee/dashboard",
@@ -105,10 +120,23 @@ export const router = createBrowserRouter([
         path: "employee/my-profile",
         element: (
           <RoleRoute allow={["employee"]}>
-            <MyProfile/>
+            <MyProfile />
           </RoleRoute>
         ),
       },
+
+      // optional admin profile page
+      // import AdminProfile from "./pages/admin/AdminProfile";
+
+      {
+        path: "admin/profile",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <MyProfile /> {/* or <AdminProfile /> */}
+          </RoleRoute>
+        ),
+      },
+
 
       // ✅ admin routes
       {
@@ -134,24 +162,24 @@ export const router = createBrowserRouter([
           <RoleRoute allow={["admin"]}>
             <Employee />
           </RoleRoute>
-        ),  
+        ),
       },
 
       {
-       path: "admin/attendance",
+        path: "admin/attendance",
         element: (
           <RoleRoute allow={["admin"]}>
             <Attendance />
           </RoleRoute>
-        ),  
+        ),
       },
       {
         path: "admin/payroll",
         element: (
-          <RoleRoute allow={["admin"]}> 
+          <RoleRoute allow={["admin"]}>
             <Payroll />
           </RoleRoute>
-        ),  
+        ),
       },
 
 

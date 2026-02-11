@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../store/auth.store";
-import { Bell, Globe, Menu, ChevronDown } from "lucide-react";
+import { Bell, Globe, Menu, ChevronDown, User, LogOut } from "lucide-react";
 import { getAttendanceState } from "../utils/attendanceLocalDb";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -105,7 +105,7 @@ const IconBtn = styled.button`
   border: 1px solid #eee;
   background: #fff;
   cursor: pointer;
-  position: relative; /* for badge */
+  position: relative;
 `;
 
 const Badge = styled.span`
@@ -119,12 +119,28 @@ const Badge = styled.span`
   border-radius: 999px;
 `;
 
-const Profile = styled.div`
+/* ===== Profile dropdown styles ===== */
+
+const ProfileWrap = styled.div`
+  position: relative;
+  padding-left: 16px;
+  border-left: 1px solid #eee;
+`;
+
+
+const ProfileBtn = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-left: 12px;
-  border-left: 1px solid #eee;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 12px;
+
+  &:hover {
+    background: #f6f6f6;
+  }
 `;
 
 const Avatar = styled.div`
@@ -152,23 +168,78 @@ const NameRole = styled.div`
   }
 `;
 
-const LogoutBtn = styled.button`
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid #eee;
+const Dropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
   background: #fff;
-  cursor: pointer;
-  font-weight: 600;
+  border-radius: 16px;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  z-index: 100;
 
-  @media (max-width: 560px) {
-    display: none;
+  transform-origin: top right;
+  animation: popIn 140ms ease-out forwards;
+
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  
+`;
+
+
+
+
+const DropItem = styled.button`
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: ${({ $danger }) => ($danger ? "#fff1f2" : "#ffffff")};
+  color: ${({ $danger }) => ($danger ? "#dc2626" : "#111827")};
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.15s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: ${({ $danger }) => ($danger ? 1 : 0.75)};
+  }
+
+  &:hover {
+    background: ${({ $danger }) => ($danger ? "#ffe4e6" : "#f3f4f6")};
   }
 `;
+
+
+
+const Divider = styled.div`
+  height: 1px;
+  background: #e9eef5;
+  margin: 8px 10px;
+  border-radius: 999px;
+`;
+
+
+
+
 
 /* ===================== COMPONENT ===================== */
 
 export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
-  const logout = useAuthStore((s) => s.logout);
+  const logoutAction = useAuthStore((s) => s.logout);
   const role = useAuthStore((s) => s.role);
   const user = useAuthStore((s) => s.user);
 
@@ -188,6 +259,10 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
 
   // live timer string
   const [timer, setTimer] = useState("00:00:00");
+
+  // profile dropdown state
+  const [openProfile, setOpenProfile] = useState(false);
+  const profileRef = useRef(null);
 
   // keep att updated (same tab + other tabs)
   useEffect(() => {
@@ -212,7 +287,6 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
     }
 
     const start = new Date(att.checkInTime).getTime();
-
     const tick = () => setTimer(formatHMS(Date.now() - start));
     tick();
 
@@ -223,6 +297,33 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
   const disabled =
     (att.checkedIn && location.pathname === CHECKOUT) ||
     (!att.checkedIn && location.pathname === CHECKIN);
+
+  const closeProfile = useCallback(() => setOpenProfile(false), []);
+
+  // click outside to close
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!profileRef.current) return;
+      if (!profileRef.current.contains(e.target)) closeProfile();
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [closeProfile]);
+
+  // Esc to close
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") closeProfile();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [closeProfile]);
+
+  const doLogout = () => {
+    closeProfile();
+    logoutAction();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <Header>
@@ -261,16 +362,45 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
           <Globe size={18} />
         </IconBtn>
 
-        <Profile>
-          <Avatar />
-          <NameRole>
-            <div className="name">{userName}</div>
-            <div className="role">{role}</div>
-          </NameRole>
-          <ChevronDown size={16} />
-        </Profile>
+        {/* ✅ Profile dropdown */}
+        <ProfileWrap ref={profileRef}>
+          <ProfileBtn
+            type="button"
+            onClick={() => setOpenProfile((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={openProfile}
+          >
+            <Avatar />
+            <NameRole>
+              <div className="name">{userName}</div>
+              <div className="role">{role}</div>
+            </NameRole>
+            <ChevronDown size={16} />
+          </ProfileBtn>
 
-        <LogoutBtn onClick={logout}>Logout</LogoutBtn>
+          {openProfile && (
+            <Dropdown role="menu">
+              <DropItem
+                role="menuitem"
+                onClick={() => {
+                  closeProfile();
+                  navigate("/profile");
+                }}
+              >
+                <User size={16} />
+                My Profile
+              </DropItem>
+
+              <Divider />
+
+              <DropItem role="menuitem" $danger onClick={doLogout}>
+                <LogOut size={16} />
+                Logout
+              </DropItem>
+            </Dropdown>
+          )}
+        </ProfileWrap>
+        
       </Right>
     </Header>
   );
