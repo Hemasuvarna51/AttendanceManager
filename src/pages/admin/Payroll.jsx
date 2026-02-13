@@ -1,277 +1,311 @@
-import { useState } from "react";
+import {useState} from "react";
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
-function Payroll() {
-    const [records, setRecords] = useState([]);
-    const [form, setForm] = useState({
-        employee: "",
-        basicSalary: "",
-        bonus: "",
-        deductions: "",
-    });
+/* ================= Styled Components ================= */
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+const Container = styled.div`
+  padding: 30px;
+  background: #f6f7fb;
+  min-height: 100vh;
+`;
 
-        if (!form.employee || !form.basicSalary) {
-            alert("Employee Name and Basic Salary are required");
-            return;
-        }
+const Title = styled.h2`
+  margin-bottom: 20px;
+  font-size: 26px;
+  font-weight: 600;
+`;
 
-        const netSalary =
-            Number(form.basicSalary) +
-            Number(form.bonus || 0) -
-            Number(form.deductions || 0);
+const TopSection = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 25px;
+`;
 
-        const newRecord = {
-            ...form,
-            netSalary,
-            id: Date.now(),
-        };
+const Filters = styled.div`
+  display: flex;
+  gap: 20px;
+`;
 
-        setRecords([...records, newRecord]);
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
 
-        setForm({
-            employee: "",
-            basicSalary: "",
-            bonus: "",
-            deductions: "",
-        });
-    };
+  label {
+    font-size: 13px;
+    margin-bottom: 5px;
+    color: #555;
+  }
 
-    const deleteRecord = (id) => {
-        setRecords(records.filter((rec) => rec.id !== id));
-    };
+  input {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+`;
 
-    const totalPayroll = records.reduce(
-        (sum, rec) => sum + rec.netSalary,
-        0
-    );
-    const totalEmployees = records.length;
 
-    const highestSalary =
-        records.length > 0
-            ? Math.max(...records.map((r) => r.netSalary))
-            : 0;
+const RunButton = styled.button`
+  background: #2f80ed;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
 
+  &:hover {
+    background: #1f6ed4;
+  }
+`;
+
+const SummaryCards = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+`;
+
+const Card = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+
+  p {
+    color: #777;
+    font-size: 14px;
+  }
+
+  h3 {
+    margin-top: 8px;
+  }
+`;
+
+const GreenText = styled.span`
+  color: #27ae60;
+`;
+
+const Status = styled.div`
+  margin-bottom: 20px;
+`;
+
+const Progress = styled.div`
+  height: 8px;
+  background: #ddd;
+  border-radius: 10px;
+  margin-top: 8px;
+  overflow: hidden;
+`;
+
+const ProgressBar = styled.div`
+  width: 40%;
+  height: 100%;
+  background: #2f80ed;
+`;
+
+const TableSection = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+`;
+
+const StyledTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+
+  th {
+    background: #f9fafc;
+    font-weight: 600;
+  }
+`;
+
+const TotalRow = styled.tr`
+  background: #f3f4f6;
+  font-weight: 600;
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+`;
+
+const CancelButton = styled.button`
+  background: #e5e7eb;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: #d1d5db;
+  }
+`;
+
+const ApproveButton = styled.button`
+  background: #2f80ed;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: #1f6ed4;
+  }
+`;
+
+/* ================= Component ================= */
+
+export default function Payroll() {
+    const navigate = useNavigate();
+    const [payFrom, setPayFrom] = useState("");
+    const [payTo, setPayTo] = useState("");
+    const [payDate, setPayDate] = useState("");
 
     return (
-        <div style={container}>
-            <h2 style={heading}>💰 Payroll Management</h2>
+        <Container>
+            <Title>Payroll Summary</Title>
 
-            {/* Summary Section */}
-            <div style={mainSummaryCard}>
-                <h3>Total Payroll This Month</h3>
-                <h1>₹ {totalPayroll.toLocaleString()}</h1>
-            </div>
-            <div style={summaryWrapper}>
-                <div style={smallCard}>
-                    <h4>Total Payroll</h4>
-                    <h2>₹ {totalPayroll.toLocaleString()}</h2>
-                </div>
+            <TopSection>
+                <Filters>
+                    <Field>
 
-                <div style={smallCard}>
-                    <h4>Total Employees Paid</h4>
-                    <h2>{totalEmployees}</h2>
-                </div>
-
-                <div style={smallCard}>
-                    <h4>Highest Salary</h4>
-                    <h2>₹ {highestSalary.toLocaleString()}</h2>
-                </div>
-            </div>
-
-
-
-            {/* Form Section */}
-            <div style={formCard}>
-                <h3>Add Payroll Record</h3>
-                <form onSubmit={handleSubmit} style={formGrid}>
+                    </Field>
+                    <label>Pay Period (From)</label>
                     <input
-                        placeholder="Employee Name"
-                        value={form.employee}
-                        onChange={(e) => setForm({ ...form, employee: e.target.value })}
-                        style={input}
+                        type="date"
+                        value={payFrom}
+                        onChange={(e) => setPayFrom(e.target.value)}
                     />
 
-                    <input
-                        type="number"
-                        placeholder="Basic Salary"
-                        value={form.basicSalary}
-                        onChange={(e) =>
-                            setForm({ ...form, basicSalary: e.target.value })
-                        }
-                        style={input}
-                    />
+                    <Field>
+                        <label>Pay Period (To)</label>
+                        <input
+                            type="date"
+                            value={payTo}
+                            onChange={(e) => setPayTo(e.target.value)}
+                        />
 
-                    <input
-                        type="number"
-                        placeholder="Bonus"
-                        value={form.bonus}
-                        onChange={(e) => setForm({ ...form, bonus: e.target.value })}
-                        style={input}
-                    />
+                    </Field>
+                    <Field>
+                        <label>Pay Date</label>
+                        <select>
+                            <option>Jan 15, 2022</option>
+                        </select>
+                    </Field>
+                </Filters>
 
-                    <input
-                        type="number"
-                        placeholder="Deductions"
-                        value={form.deductions}
-                        onChange={(e) =>
-                            setForm({ ...form, deductions: e.target.value })
-                        }
-                        style={input}
-                    />
+                <RunButton onClick={() => navigate("/admin/payroll/run")}>+ Run Payroll</RunButton>
+            </TopSection>
 
-                    <button type="submit" style={button}>
-                        Add Record
-                    </button>
-                </form>
-            </div>
+            <SummaryCards>
+                <Card>
+                    <p>Total Employees</p>
+                    <h3>25</h3>
+                </Card>
 
-            {/* Table Section */}
-            <div style={tableCard}>
-                <h3>Payroll Records</h3>
+                <Card>
+                    <p>Total Payroll Cost</p>
+                    <h3>$58,750.00</h3>
+                </Card>
 
-                {records.length === 0 ? (
-                    <p style={{ color: "#777" }}>No payroll records available.</p>
-                ) : (
-                    <table style={table}>
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Basic</th>
-                                <th>Bonus</th>
-                                <th>Deductions</th>
-                                <th>Net Salary</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {records.map((rec) => (
-                                <tr key={rec.id}>
-                                    <td>{rec.employee}</td>
-                                    <td>₹ {rec.basicSalary}</td>
-                                    <td>₹ {rec.bonus || 0}</td>
-                                    <td>₹ {rec.deductions || 0}</td>
-                                    <td style={{ fontWeight: "bold", color: "#16a34a" }}>
-                                        ₹ {rec.netSalary}
-                                    </td>
-                                    <td>
-                                        <button
-                                            onClick={() => deleteRecord(rec.id)}
-                                            style={deleteBtn}
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
-        </div>
+                <Card>
+                    <p>Taxes & Deductions</p>
+                    <h3>$12,450.00</h3>
+                </Card>
+
+                <Card>
+                    <p>Net Pay</p>
+                    <h3><GreenText>$46,300.00</GreenText></h3>
+                </Card>
+            </SummaryCards>
+
+            <Status>
+                <span>Payroll Status: <b>Processing</b></span>
+                <Progress>
+                    <ProgressBar />
+                </Progress>
+            </Status>
+
+            <TableSection>
+                <h3>Employee Payroll Overview</h3>
+
+                <StyledTable>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Hours</th>
+                            <th>Gross Pay</th>
+                            <th>Deductions</th>
+                            <th>Taxes</th>
+                            <th>Net Pay</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>John Smith</td>
+                            <td>80</td>
+                            <td>$3,500.00</td>
+                            <td>$500.00</td>
+                            <td>$850.00</td>
+                            <td><GreenText>$2,150.00</GreenText></td>
+                        </tr>
+
+                        <tr>
+                            <td>Lisa Johnson</td>
+                            <td>75</td>
+                            <td>$3,200.00</td>
+                            <td>$450.00</td>
+                            <td>$800.00</td>
+                            <td><GreenText>$1,950.00</GreenText></td>
+                        </tr>
+
+                        <tr>
+                            <td>Michael Brown</td>
+                            <td>40</td>
+                            <td>$1,600.00</td>
+                            <td>$200.00</td>
+                            <td>$300.00</td>
+                            <td><GreenText>$1,100.00</GreenText></td>
+                        </tr>
+
+                        <tr>
+                            <td>Emma Davis</td>
+                            <td>85</td>
+                            <td>$3,750.00</td>
+                            <td>$600.00</td>
+                            <td>$900.00</td>
+                            <td><GreenText>$2,250.00</GreenText></td>
+                        </tr>
+
+                        <TotalRow>
+                            <td>Totals</td>
+                            <td>—</td>
+                            <td>$12,050.00</td>
+                            <td>$1,750.00</td>
+                            <td>$2,850.00</td>
+                            <td><GreenText>$7,450.00</GreenText></td>
+                        </TotalRow>
+                    </tbody>
+                </StyledTable>
+            </TableSection>
+
+            <Actions>
+                <CancelButton>Cancel</CancelButton>
+                <ApproveButton onClick={() => navigate("/admin/payroll/approved")}>Approve Payroll</ApproveButton>
+            </Actions>
+        </Container>
     );
 }
-
-export default Payroll;
-
-/* ------------------ STYLES ------------------ */
-
-const container = {
-    padding: "20px",
-    background: "#f4f6fb",
-    minHeight: "100vh",
-    maxWidth: "1100px",
-    margin: "0 auto",
-};
-
-const heading = {
-    marginBottom: "15px",
-};
-
-const mainSummaryCard = {
-    background: "#4f46e5",
-    color: "#fff",
-    padding: "10px 18px",
-    borderRadius: "10px",
-    marginBottom: "20px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-    maxWidth: "300px",   // 👈 control width
-};
-
-
-const formCard = {
-    background: "#fff",
-    padding: "15px",
-    borderRadius: "10px",
-    marginBottom: "20px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-    maxWidth: "500px",
-};
-
-const formGrid = {
-    display: "grid",
-    gap: "8px",
-    marginTop: "8px",
-};
-
-const input = {
-    padding: "8px",
-    borderRadius: "5px",
-    border: "1px solid #ddd",
-    fontSize: "14px",
-};
-
-const button = {
-    padding: "8px",
-    background: "#16a34a",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "14px",
-};
-
-const tableCard = {
-    background: "#fff",
-    padding: "15px",
-    borderRadius: "10px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
-    maxWidth: "500px",
-};
-
-const table = {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: "14px",
-};
-
-const deleteBtn = {
-    background: "#dc2626",
-    color: "#fff",
-    border: "none",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontSize: "12px",
-};
-
-const summaryWrapper = {
-  display: "flex",
-  gap: "20px",
-  marginBottom: "30px",
-  flexWrap: "wrap",   // makes it responsive
-};
-
-const smallCard = {
-  background: "#4f46e5",
-  color: "#fff",
-  padding: "15px",
-  borderRadius: "10px",
-  width: "250px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-  maxWidth: "10%",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-};
