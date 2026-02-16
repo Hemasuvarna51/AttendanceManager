@@ -93,7 +93,7 @@ const Button = styled.button`
 
 /* ===================== COMPONENT ===================== */
 
-export default function EmployeeLeaveRequests() {
+export default function Attendance() {
   const { employees } = useEmployeeStore();
   const { leaves, updateLeaveStatus } = useLeaveStore();
   
