@@ -18,6 +18,7 @@ import Reports from "./pages/admin/Reports";
 // create placeholder if not yet
 import Payroll from "./pages/admin/Payroll";
 import Meetings from "./pages/admin/Meetings";
+import LeaveApproval from "./pages/admin/LeaveApproval";
 
 
 // employee pages
@@ -185,6 +186,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "admin/leave-approval",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <LeaveApproval />
+          </RoleRoute>
+        ),
+      },
+      {
         path: "admin/payroll",
         element: (
           <RoleRoute allow={["admin"]}>
@@ -210,6 +219,9 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+
+      
+      
 
       // ✅ fallback
       { path: "*", element: <Navigate to="/" replace /> },

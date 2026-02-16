@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../store/auth.store";
-import { Bell, Globe, Menu, ChevronDown, User, LogOut } from "lucide-react";
+import { Bell, Globe, Menu, ChevronDown, User, LogOut, Check, Trash2 } from "lucide-react";
 import { getAttendanceState } from "../utils/attendanceLocalDb";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -232,13 +232,168 @@ const Divider = styled.div`
   border-radius: 999px;
 `;
 
+/* ===== Notification Dropdown Styles ===== */
 
+const NotificationDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 360px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  max-height: 400px;
+  overflow-y: auto;
 
+  transform-origin: top right;
+  animation: popIn 140ms ease-out forwards;
 
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+`;
+
+const NotificationHeader = styled.div`
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ClearBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: #256aeb;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
+const NotificationItem = styled.div`
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  &:hover {
+    background: #f9f9f9;
+  }
+`;
+
+const NotifContent = styled.div`
+  flex: 1;
+`;
+
+const NotifTitle = styled.div`
+  font-weight: 600;
+  font-size: 13px;
+  color: #222;
+`;
+
+const NotifMessage = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+`;
+
+const NotifTime = styled.div`
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+`;
+
+const RemoveNotifBtn = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  padding: 0;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: #ef4444;
+  }
+`;
+
+const EmptyNotif = styled.div`
+  padding: 24px 16px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+`;
+
+/* ===== Language Dropdown Styles ===== */
+
+const LanguageDropdown = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #eef2f7;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  padding: 8px;
+
+  transform-origin: top right;
+  animation: popIn 140ms ease-out forwards;
+
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+`;
+
+const LanguageItem = styled.button`
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: ${({ $active }) => ($active ? "#eff6ff" : "#ffffff")};
+  color: ${({ $active }) => ($active ? "#256aeb" : "#111827")};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: ${({ $active }) => ($active ? 600 : 500)};
+  font-size: 14px;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: ${({ $active }) => ($active ? "#eff6ff" : "#f3f4f6")};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const LanguageBadge = styled.span`
+  margin-left: auto;
+  font-size: 12px;
+  background: #256aeb;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
 
 /* ===================== COMPONENT ===================== */
 
-export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
+export default function Navbar({ onMenu = () => {} }) {
   const logoutAction = useAuthStore((s) => s.logout);
   const role = useAuthStore((s) => s.role);
   const user = useAuthStore((s) => s.user);
@@ -263,6 +418,32 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
   // profile dropdown state
   const [openProfile, setOpenProfile] = useState(false);
   const profileRef = useRef(null);
+
+  // notifications state
+  const [openNotifications, setOpenNotifications] = useState(false);
+  const notificationsRef = useRef(null);
+  const [notifications, setNotifications] = useState(() => {
+    const stored = localStorage.getItem("notifications");
+    return stored ? JSON.parse(stored) : [
+      { id: 1, title: "Task Assigned", message: "You have been assigned a new task", time: "2 hours ago" },
+      { id: 2, title: "Meeting Scheduled", message: "Team meeting scheduled for tomorrow at 10 AM", time: "1 day ago" },
+      { id: 3, title: "Attendance Approved", message: "Your attendance has been approved", time: "3 days ago" },
+    ];
+  });
+
+  // language state
+  const [openLanguage, setOpenLanguage] = useState(false);
+  const languageRef = useRef(null);
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem("language") || "en";
+  });
+
+  const languages = [
+    { code: "en", name: "English" },
+    { code: "hi", name: "Hindi" },
+    { code: "es", name: "Spanish" },
+    { code: "fr", name: "French" },
+  ];
 
   // keep att updated (same tab + other tabs)
   useEffect(() => {
@@ -300,24 +481,48 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
 
   const closeProfile = useCallback(() => setOpenProfile(false), []);
 
-  // click outside to close
+  // click outside to close dropdowns
   useEffect(() => {
     const onDocClick = (e) => {
-      if (!profileRef.current) return;
-      if (!profileRef.current.contains(e.target)) closeProfile();
+      if (profileRef.current && !profileRef.current.contains(e.target)) closeProfile();
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) setOpenNotifications(false);
+      if (languageRef.current && !languageRef.current.contains(e.target)) setOpenLanguage(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [closeProfile]);
 
-  // Esc to close
+  // Esc to close dropdowns
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") closeProfile();
+      if (e.key === "Escape") {
+        closeProfile();
+        setOpenNotifications(false);
+        setOpenLanguage(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [closeProfile]);
+
+  // Save notifications to localStorage
+  useEffect(() => {
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+  }, [notifications]);
+
+  // Save language preference
+  useEffect(() => {
+    localStorage.setItem("language", language);
+    console.log(`🌍 Language changed to: ${language}`);
+  }, [language]);
+
+  const removeNotification = (id) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
 
   const doLogout = () => {
     closeProfile();
@@ -351,16 +556,80 @@ export default function Navbar({ onMenu = () => {}, notificationCount = 4 }) {
 
         {/* ✅ Admin notifications */}
         {isAdmin && (
-          <IconBtn aria-label="Notifications">
-            <Bell size={18} />
-            {notificationCount > 0 && <Badge>{notificationCount}</Badge>}
-          </IconBtn>
+          <div ref={notificationsRef} style={{ position: "relative" }}>
+            <IconBtn
+              aria-label="Notifications"
+              onClick={() => setOpenNotifications((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={openNotifications}
+            >
+              <Bell size={18} />
+              {notifications.length > 0 && <Badge>{notifications.length}</Badge>}
+            </IconBtn>
+
+            {openNotifications && (
+              <NotificationDropdown role="menu">
+                <NotificationHeader>
+                  Notifications
+                  {notifications.length > 0 && (
+                    <ClearBtn onClick={clearAllNotifications}>Clear All</ClearBtn>
+                  )}
+                </NotificationHeader>
+
+                {notifications.length === 0 ? (
+                  <EmptyNotif>No notifications</EmptyNotif>
+                ) : (
+                  notifications.map((notif) => (
+                    <NotificationItem key={notif.id} role="menuitem">
+                      <NotifContent>
+                        <NotifTitle>{notif.title}</NotifTitle>
+                        <NotifMessage>{notif.message}</NotifMessage>
+                        <NotifTime>{notif.time}</NotifTime>
+                      </NotifContent>
+                      <RemoveNotifBtn
+                        onClick={() => removeNotification(notif.id)}
+                        aria-label="Remove notification"
+                      >
+                        <Trash2 size={14} />
+                      </RemoveNotifBtn>
+                    </NotificationItem>
+                  ))
+                )}
+              </NotificationDropdown>
+            )}
+          </div>
         )}
 
-        {/* ✅ common language icon */}
-        <IconBtn aria-label="Language">
-          <Globe size={18} />
-        </IconBtn>
+        {/* ✅ Language selector */}
+        <div ref={languageRef} style={{ position: "relative" }}>
+          <IconBtn
+            aria-label="Language"
+            onClick={() => setOpenLanguage((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={openLanguage}
+          >
+            <Globe size={18} />
+          </IconBtn>
+
+          {openLanguage && (
+            <LanguageDropdown role="menu">
+              {languages.map((lang) => (
+                <LanguageItem
+                  key={lang.code}
+                  $active={language === lang.code}
+                  role="menuitem"
+                  onClick={() => {
+                    setLanguage(lang.code);
+                    setOpenLanguage(false);
+                  }}
+                >
+                  {lang.name}
+                  {language === lang.code && <Check size={14} />}
+                </LanguageItem>
+              ))}
+            </LanguageDropdown>
+          )}
+        </div>
 
         {/* ✅ Profile dropdown */}
         <ProfileWrap ref={profileRef}>

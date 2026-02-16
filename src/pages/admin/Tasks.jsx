@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import styled from "styled-components";
+import { useAuthStore } from "../../store/auth.store";
 
 const STATUS = ["Pending", "In Progress", "Completed"];
 
@@ -146,9 +147,28 @@ const Table = styled.table`
 const initialTasks = [];
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState(initialTasks);
+  // Get current admin user info
+  const adminUser = useAuthStore((s) => s.user);
+  
+  // Sample employee list - matches what employees will have in their auth store
+  const employees = [
+    "John Doe",
+    "Jane Smith",
+    "Mike Johnson",
+    "Sarah Williams",
+    "Alex Brown"
+  ];
+
+  const [tasks, setTasks] = useState(() => {
+    const stored = localStorage.getItem("tasks");
+    return stored ? JSON.parse(stored) : initialTasks;
+  });
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const [form, setForm] = useState({
     title: "",
@@ -192,6 +212,14 @@ export default function Tasks() {
 
   const saveTask = () => {
     if (!form.title || !form.assignedTo) return alert("Fill required fields");
+
+    console.log("💾 Saving task:", {
+      title: form.title,
+      assignedTo: form.assignedTo,
+      priority: form.priority,
+      status: "Pending",
+      dueDate: form.dueDate
+    });
 
     if (editingId) {
       // ✅ UPDATE existing task
@@ -247,13 +275,15 @@ export default function Tasks() {
               </Field>
 
               <Field>
-                <label>Assigned To *</label>
+                <label>Assigned To * (Select or Type)</label>
                 <input
                   name="assignedTo"
-                  placeholder="Employee name"
+                  list="employeeList"
+                  placeholder="Select or type employee name"
                   value={form.assignedTo}
                   onChange={handleChange}
                 />
+                
               </Field>
 
               <Field>
