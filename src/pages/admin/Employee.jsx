@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { useEmployeeStore } from "../../store/employee.store";
 
 /* ===================== STYLED COMPONENTS ===================== */
 
@@ -165,22 +166,7 @@ const DeleteBtn = styled.button`
 /* ===================== COMPONENT ===================== */
 
 export default function Employee() {
-  const [employees, setEmployees] = useState([
-    {
-      id: "EMP001",
-      name: "Ramya",
-      email: "ramya@gmail.com",
-      joined: "2024-01-10",
-      status: "Active",
-    },
-    {
-      id: "EMP002",
-      name: "Suresh",
-      email: "suresh@gmail.com",
-      joined: "2023-11-02",
-      status: "Inactive",
-    },
-  ]);
+  const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployeeStore();
 
   const [showForm, setShowForm] = useState(false);
   const [editingEmp, setEditingEmp] = useState(null);
@@ -202,13 +188,9 @@ export default function Employee() {
     }
 
     if (editingEmp) {
-      setEmployees((prev) =>
-        prev.map((emp) =>
-          emp.id === editingEmp.id ? formData : emp
-        )
-      );
+      updateEmployee(editingEmp.id, formData);
     } else {
-      setEmployees((prev) => [...prev, formData]);
+      addEmployee(formData);
     }
 
     resetForm();
@@ -222,7 +204,7 @@ export default function Employee() {
 
   const handleDelete = (id) => {
     if (window.confirm("Delete this employee?")) {
-      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+      deleteEmployee(id);
     }
   };
 

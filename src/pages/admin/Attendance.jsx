@@ -1,5 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { useEmployeeStore } from "../../store/employee.store";
+import { useLeaveStore } from "../../store/leave.store";
 
 /* ===================== STYLES ===================== */
 
@@ -92,33 +94,11 @@ const Button = styled.button`
 /* ===================== COMPONENT ===================== */
 
 export default function EmployeeLeaveRequests() {
-  const [leaves, setLeaves] = useState([
-    {
-      id: 1,
-      employee: "Ramya",
-      from: "2026-02-10",
-      to: "2026-02-12",
-      type: "Sick",
-      reason: "Fever",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      employee: "Suresh",
-      from: "2026-02-05",
-      to: "2026-02-06",
-      type: "Casual",
-      reason: "Personal work",
-      status: "Pending",
-    },
-  ]);
-
+  const { employees } = useEmployeeStore();
+  const { leaves, updateLeaveStatus } = useLeaveStore();
+  
   const updateStatus = (id, status) => {
-    setLeaves((prev) =>
-      prev.map((leave) =>
-        leave.id === id ? { ...leave, status } : leave
-      )
-    );
+    updateLeaveStatus(id, status);
   };
 
   return (
@@ -142,41 +122,47 @@ export default function EmployeeLeaveRequests() {
           </thead>
 
           <tbody>
-            {leaves.map((leave) => (
-              <tr key={leave.id}>
-                <Td>{leave.employee}</Td>
-                <Td>{leave.from}</Td>
-                <Td>{leave.to}</Td>
-                <Td>{leave.type}</Td>
-                <Td>{leave.reason}</Td>
-                <Td>
-                  <Status status={leave.status}>
-                    {leave.status}
-                  </Status>
-                </Td>
-                <Td>
-                  <Actions>
-                    <Button
-                      approve
-                      disabled={leave.status !== "Pending"}
-                      onClick={() =>
-                        updateStatus(leave.id, "Approved")
-                      }
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      disabled={leave.status !== "Pending"}
-                      onClick={() =>
-                        updateStatus(leave.id, "Rejected")
-                      }
-                    >
-                      Reject
-                    </Button>
-                  </Actions>
-                </Td>
+            {leaves.length > 0 ? (
+              leaves.map((leave) => (
+                <tr key={leave.id}>
+                  <Td>{leave.employee}</Td>
+                  <Td>{leave.from}</Td>
+                  <Td>{leave.to}</Td>
+                  <Td>{leave.type}</Td>
+                  <Td>{leave.reason}</Td>
+                  <Td>
+                    <Status status={leave.status}>
+                      {leave.status}
+                    </Status>
+                  </Td>
+                  <Td>
+                    <Actions>
+                      <Button
+                        approve
+                        disabled={leave.status !== "Pending"}
+                        onClick={() =>
+                          updateStatus(leave.id, "Approved")
+                        }
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        disabled={leave.status !== "Pending"}
+                        onClick={() =>
+                          updateStatus(leave.id, "Rejected")
+                        }
+                      >
+                        Reject
+                      </Button>
+                    </Actions>
+                  </Td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <Td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>No leave requests</Td>
               </tr>
-            ))}
+            )}
           </tbody>
         </Table>
       </TableWrapper>
