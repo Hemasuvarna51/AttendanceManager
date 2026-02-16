@@ -1,6 +1,6 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 /* ================= Styled Components ================= */
 
@@ -169,9 +169,25 @@ const ApproveButton = styled.button`
 
 export default function Payroll() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [payFrom, setPayFrom] = useState("");
     const [payTo, setPayTo] = useState("");
     const [payDate, setPayDate] = useState("");
+    const [employees, setEmployees] = useState([]);
+
+    useEffect(() => {
+        if (location.state?.payrollData) {
+            setEmployees(location.state.payrollData);
+            setPayFrom(location.state.payFrom || "");
+            setPayTo(location.state.payTo || "");
+        }
+    }, [location.state]);
+
+    const totalHours = employees.reduce((sum, emp) => sum + emp.hours, 0);
+    const totalGross = employees.reduce((sum, emp) => sum + emp.grossPay, 0);
+    const totalDeductions = employees.reduce((sum, emp) => sum + emp.deductions, 0);
+    const totalTaxes = employees.reduce((sum, emp) => sum + emp.taxes, 0);
+    const totalNet = employees.reduce((sum, emp) => sum + emp.netPay, 0);
 
     return (
         <Container>
@@ -212,22 +228,22 @@ export default function Payroll() {
             <SummaryCards>
                 <Card>
                     <p>Total Employees</p>
-                    <h3>25</h3>
+                    <h3>{employees.length}</h3>
                 </Card>
 
                 <Card>
                     <p>Total Payroll Cost</p>
-                    <h3>$58,750.00</h3>
+                    <h3>${totalGross.toFixed(2)}</h3>
                 </Card>
 
                 <Card>
                     <p>Taxes & Deductions</p>
-                    <h3>$12,450.00</h3>
+                    <h3>${(totalDeductions + totalTaxes).toFixed(2)}</h3>
                 </Card>
 
                 <Card>
                     <p>Net Pay</p>
-                    <h3><GreenText>$46,300.00</GreenText></h3>
+                    <h3><GreenText>${totalNet.toFixed(2)}</GreenText></h3>
                 </Card>
             </SummaryCards>
 
@@ -254,50 +270,32 @@ export default function Payroll() {
                     </thead>
 
                     <tbody>
-                        <tr>
-                            <td>John Smith</td>
-                            <td>80</td>
-                            <td>$3,500.00</td>
-                            <td>$500.00</td>
-                            <td>$850.00</td>
-                            <td><GreenText>$2,150.00</GreenText></td>
-                        </tr>
-
-                        <tr>
-                            <td>Lisa Johnson</td>
-                            <td>75</td>
-                            <td>$3,200.00</td>
-                            <td>$450.00</td>
-                            <td>$800.00</td>
-                            <td><GreenText>$1,950.00</GreenText></td>
-                        </tr>
-
-                        <tr>
-                            <td>Michael Brown</td>
-                            <td>40</td>
-                            <td>$1,600.00</td>
-                            <td>$200.00</td>
-                            <td>$300.00</td>
-                            <td><GreenText>$1,100.00</GreenText></td>
-                        </tr>
-
-                        <tr>
-                            <td>Emma Davis</td>
-                            <td>85</td>
-                            <td>$3,750.00</td>
-                            <td>$600.00</td>
-                            <td>$900.00</td>
-                            <td><GreenText>$2,250.00</GreenText></td>
-                        </tr>
-
-                        <TotalRow>
-                            <td>Totals</td>
-                            <td>—</td>
-                            <td>$12,050.00</td>
-                            <td>$1,750.00</td>
-                            <td>$2,850.00</td>
-                            <td><GreenText>$7,450.00</GreenText></td>
-                        </TotalRow>
+                        {employees.length > 0 ? (
+                            <>
+                                {employees.map((emp) => (
+                                    <tr key={emp.id}>
+                                        <td>{emp.name}</td>
+                                        <td>{emp.hours}</td>
+                                        <td>${emp.grossPay.toFixed(2)}</td>
+                                        <td>${emp.deductions.toFixed(2)}</td>
+                                        <td>${emp.taxes.toFixed(2)}</td>
+                                        <td><GreenText>${emp.netPay.toFixed(2)}</GreenText></td>
+                                    </tr>
+                                ))}
+                                <TotalRow>
+                                    <td>Totals</td>
+                                    <td>{totalHours}</td>
+                                    <td>${totalGross.toFixed(2)}</td>
+                                    <td>${totalDeductions.toFixed(2)}</td>
+                                    <td>${totalTaxes.toFixed(2)}</td>
+                                    <td><GreenText>${totalNet.toFixed(2)}</GreenText></td>
+                                </TotalRow>
+                            </>
+                        ) : (
+                            <tr>
+                                <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No payroll data. Click "Run Payroll" to process.</td>
+                            </tr>
+                        )}
                     </tbody>
                 </StyledTable>
             </TableSection>

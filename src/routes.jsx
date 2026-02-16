@@ -17,6 +17,7 @@ import Tasks from "./pages/admin/Tasks";
 import Reports from "./pages/admin/Reports";
 // create placeholder if not yet
 import Payroll from "./pages/admin/Payroll";
+import RunPayroll from "./pages/admin/payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
 
 
@@ -189,6 +190,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleRoute allow={["admin"]}>
             <Payroll />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "admin/payroll/run",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <RunPayroll />
           </RoleRoute>
         ),
       },

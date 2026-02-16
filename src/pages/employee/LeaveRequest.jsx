@@ -1,10 +1,11 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { useLeaveStore } from "../../store/leave.store";
 
 /* ===== styled components ===== */
 
 const Container = styled.div`
-  max-width: 600px;
+  max-width: 900px;
   margin: 30px auto;
   padding: 25px;
   background: #ffffff;
@@ -59,31 +60,76 @@ const ButtonGroup = styled.div`
   margin-top: 15px;
 `;
 
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+`;
+
+const Th = styled.th`
+  padding: 12px;
+  background: #f3f4f6;
+  text-align: left;
+  font-size: 14px;
+  border-bottom: 2px solid #e5e7eb;
+`;
+
+const Td = styled.td`
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+`;
+
 const Button = styled.button`
-  padding: 8px 18px;
+  padding: 10px 16px;
+  background: ${(props) => (props.cancel ? "#6c757d" : "#0d6efd")}; 
+  color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  background-color: ${(props) =>
-    props.cancel ? "#6c757d" : "#0d6efd"};
-  color: #fff;
+  margin-bottom: 20px;
 
   &:hover {
-    opacity: 0.9;
+    background: ${(props) => (props.cancel ? "#5a6268" : "#0b5ed7")};
   }
+`;
+
+const Status = styled.span`
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${(props) =>
+    props.status === "Approved"
+      ? "#166534"
+      : props.status === "Rejected"
+        ? "#991b1b"
+        : "#92400e"};
+  background: ${(props) =>
+    props.status === "Approved"
+      ? "#dcfce7"
+      : props.status === "Rejected"
+        ? "#fee2e2"
+        : "#fef3c7"};
 `;
 
 /* ===== component ===== */
 
 export default function RequestLeave() {
-  const [formData, setFormData] = useState({
+  const { addLeave, leaves } = useLeaveStore();
+
+  const [showForm, setShowForm] = useState(false);
+
+  const initialFormData = {
     empId: "",
     empName: "",
     fromDate: "",
     toDate: "",
     reason: "",
     leaveType: "Casual Leave",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData );
 
   const handleChange = (e) => {
     setFormData({
@@ -92,19 +138,25 @@ export default function RequestLeave() {
     });
   };
 
+  const handleCancel = () => {
+    setShowForm(false);
+    setFormData(initialFormData);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Leave Request Submitted:", formData);
-    alert("Leave request submitted successfully!");
 
-    setFormData({
-      empId: "",
-      empName: "",
-      fromDate: "",
-      toDate: "",
-      reason: "",
-      leaveType: "Casual Leave",
+    addLeave({
+      employee: formData.empName,
+      from: formData.fromDate,
+      to: formData.toDate,
+      type: formData.leaveType,
+      reason: formData.reason,
     });
+
+    alert("Leave request submitted successfully!");
+    setShowForm(false);
+    setFormData(initialFormData);
   };
 
   return (
@@ -113,8 +165,10 @@ export default function RequestLeave() {
       <Divider />
 
       <SubTitle>Request A Leave</SubTitle>
+      <Button type = "button" onClick = {() => setShowForm(s => !s)}>{showForm ? "Close Form" : "New Leave Request"}</Button>
 
-      <Form onSubmit={handleSubmit}>
+      {showForm && (
+        <Form onSubmit={handleSubmit}>
         <Label>Emp ID:</Label>
         <Input
           type="text"
@@ -171,13 +225,49 @@ export default function RequestLeave() {
           <option>Earned Leave</option>
         </Select>
 
+      
+
         <ButtonGroup>
           <Button type="submit">Submit</Button>
-          <Button type="reset" cancel>
+          <Button type="button" cancel onClick={handleCancel}>
             Cancel
           </Button>
         </ButtonGroup>
       </Form>
+
+      )}
+
+      <SubTitle>My Leave Requests</SubTitle>
+      <Divider />
+
+      {leaves.length > 0 ? (
+        <Table>
+          <thead>
+            <tr>
+              <Th>From</Th>
+              <Th>To</Th>
+              <Th>Type</Th>
+              <Th>Reason</Th>
+              <Th>Status</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {leaves.map((leave) => (
+              <tr key={leave.id}>
+                <Td>{leave.from}</Td>
+                <Td>{leave.to}</Td>
+                <Td>{leave.type}</Td>
+                <Td>{leave.reason}</Td>
+                <Td>
+                  <Status status={leave.status}>{leave.status}</Status>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      ) : (
+        <p style={{ textAlign: 'center', color: '#666', marginTop: '20px' }}>No leave requests yet</p>
+      )}
     </Container>
   );
 }
