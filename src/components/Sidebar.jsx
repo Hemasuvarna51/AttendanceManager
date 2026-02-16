@@ -228,9 +228,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/admin/attendance">
                 <CalendarCheck2 /> Attendance
               </Item>
-              <Item to="/admin/leave-approval">
-                <Plane /> Leave Approval
-              </Item>
+              
               <Item to="/admin/tasks">
                 <ListTodo /> Tasks
               </Item>
