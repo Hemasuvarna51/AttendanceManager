@@ -19,6 +19,7 @@ import Reports from "./pages/admin/Reports";
 import Payroll from "./pages/admin/Payroll";
 import RunPayroll from "./pages/admin/payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
+import LeaveApproval from "./pages/admin/LeaveApproval";
 
 
 // employee pages
@@ -186,6 +187,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "admin/leave-approval",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <LeaveApproval />
+          </RoleRoute>
+        ),
+      },
+      {
         path: "admin/payroll",
         element: (
           <RoleRoute allow={["admin"]}>
@@ -219,6 +228,9 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+
+      
+      
 
       // ✅ fallback
       { path: "*", element: <Navigate to="/" replace /> },

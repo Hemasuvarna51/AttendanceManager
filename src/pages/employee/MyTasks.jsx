@@ -1,83 +1,143 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
-const Taskcard = styled.div`
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+import { useAuthStore } from "../../store/auth.store";
+
+const Container = styled.div`
+  padding: 30px;
 `;
 
-const Task = styled.div`
-  background: #fff;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
 
-  h3 {
-    margin: 0 0 10px 0;
+  th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
   }
 
-  select {
-    margin-top: 10px;
-    padding: 5px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+  th {
+    background: #f3f4f6;
   }
-
-
 `;
-const myTasksData = [
-  {
-    id: 1,
-    title: "Design Login Page",
-    description: "Create UI for login",
-    status: "Pending",
-    dueDate: "2026-02-05",
-  },
-  {
-    id: 2,
-    title: "API Integration",
-    description: "Integrate APIs",
-    status: "In Progress",
-    dueDate: "2026-02-10",
-  },
-];
 
-export default function MyTasks() {
-  const [tasks, setTasks] = useState(myTasksData);
+const PriorityBadge = styled.span`
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: white;
+  background: ${({ priority }) =>
+    priority === "High"
+      ? "#ef4444"
+      : priority === "Medium"
+      ? "#f59e0b"
+      : "#10b981"};
+`;
 
-  const updateStatus = (id, status) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, status } : task
-      )
+export default function EmployeeTasks() {
+
+  // Get logged-in employee info from auth store
+  const loggedInEmployee = useAuthStore((s) => s.user?.name);
+
+  const [tasks, setTasks] = useState([]);
+  const [debugInfo, setDebugInfo] = useState({});
+
+  useEffect(() => {
+    console.log("🔍 MyTasks useEffect running with employee:", loggedInEmployee);
+    
+    if (!loggedInEmployee) {
+      console.warn("⚠️ No logged-in employee found!");
+      setTasks([]);
+      return;
+    }
+
+    const stored = JSON.parse(localStorage.getItem("tasks")) || [];
+    console.log("📦 All tasks in storage:", stored);
+
+    // Filter tasks assigned to the current employee (case-insensitive comparison)
+    const myTasks = stored.filter((task) => {
+      const matches = task.assignedTo && task.assignedTo.toLowerCase() === loggedInEmployee.toLowerCase();
+      console.log(`  Task "${task.title}" assigned to "${task.assignedTo}" - Matches: ${matches}`);
+      return matches;
+    });
+
+    console.log("✅ Filtered tasks for employee:", myTasks);
+    
+    setDebugInfo({
+      loggedInEmployee,
+      totalTasks: stored.length,
+      myTasksCount: myTasks.length
+    });
+
+    setTasks(myTasks);
+  }, [loggedInEmployee]);
+
+  const updateStatus = (id, newStatus) => {
+    const stored = JSON.parse(localStorage.getItem("tasks")) || [];
+
+    const updated = stored.map(task =>
+      task.id === id ? { ...task, status: newStatus } : task
     );
+
+    localStorage.setItem("tasks", JSON.stringify(updated));
+
+    // Use case-insensitive comparison for filtering
+    const myUpdated = updated.filter(
+      task => task.assignedTo && task.assignedTo.toLowerCase() === loggedInEmployee?.toLowerCase()
+    );
+
+    setTasks(myUpdated);
   };
 
   return (
-    <Taskcard>
+    <Container>
       <h2>My Tasks</h2>
 
-      {tasks.map((task) => (
-        <Task
-          key={task.id}>
-          <h3>{task.title}</h3>
-          <p>{task.description}</p>
-          <p>
-            <strong>Due:</strong> {task.dueDate}
-          </p>
+      <Table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
 
-          <select
-            value={task.status}
-            onChange={(e) => updateStatus(task.id, e.target.value)}
-          >
-            <option >Pending</option>
-            <option>In Progress</option>
-            <option>Completed</option>
-          </select>
-        </Task>
-      ))}
-    </Taskcard>
+        <tbody>
+          {tasks.map(task => (
+            <tr key={task.id}>
+              <td>{task.title}</td>
+
+              <td>
+                <PriorityBadge priority={task.priority}>
+                  {task.priority}
+                </PriorityBadge>
+              </td>
+
+              <td>
+                <select
+                  value={task.status}
+                  onChange={(e) =>
+                    updateStatus(task.id, e.target.value)
+                  }
+                >
+                  <option>Pending</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                </select>
+              </td>
+
+              <td>{task.dueDate}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* Debug Info */}
+      <div style={{ marginTop: "20px", padding: "10px", backgroundColor: "#f0f0f0", borderRadius: "4px", fontSize: "12px" }}>
+        <strong>Debug Info:</strong>
+        <p>👤 Logged-in Employee: <code>{debugInfo.loggedInEmployee || "Not logged in"}</code></p>
+        <p>📊 Total tasks: {debugInfo.totalTasks} | Your tasks: {debugInfo.myTasksCount}</p>
+      </div>
+    </Container>
   );
 }
