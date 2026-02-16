@@ -230,7 +230,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
                 <Plane /> Leave Approval
               </Item>
               <Item to="/admin/tasks">
-                <ListTodo /> Tasks
+                <ListTodo /> All Tasks
               </Item>
               <Item to="/admin/payroll">
                 <FileText /> Payroll
