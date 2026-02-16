@@ -12,14 +12,14 @@ import { useAuthStore } from "./store/auth.store";
 // admin pages
 import Dashboard from "./pages/admin/Dashboard";
 import Employee from "./pages/admin/Employee";
-import Attendance from "./pages/admin/Attendance";
+import LeaveApproval from "./pages/admin/LeaveApproval";
 import Tasks from "./pages/admin/Tasks";
 import Reports from "./pages/admin/Reports";
 // create placeholder if not yet
 import Payroll from "./pages/admin/Payroll";
 import RunPayroll from "./pages/admin/payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
-import LeaveApproval from "./pages/admin/LeaveApproval";
+
 
 
 // employee pages
@@ -178,14 +178,6 @@ export const router = createBrowserRouter([
         ),
       },
 
-      {
-        path: "admin/attendance",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Attendance />
-          </RoleRoute>
-        ),
-      },
       {
         path: "admin/leave-approval",
         element: (
