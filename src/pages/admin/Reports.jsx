@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useLeaveStore } from "../../store/leave.store";
+import { getRecords } from "../../utils/attendanceLocalDb";
 
 
 /* ================= LAYOUT ================= */
@@ -57,7 +59,52 @@ const BoxTitle = styled.h3`
   margin-bottom: 16px;
 `;
 
+const LeaveItem = styled.li`
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const StatusBadge = styled.span`
+  font-weight: 600;
+  color: ${(props) => 
+    props.status === "Approved" ? "#166534" : 
+    props.status === "Rejected" ? "#991b1b" : 
+    "#92400e"};
+`;
+
 export default function AdminDashboard() {
+  const { leaves } = useLeaveStore();
+  const [totalEmployeesCheckedIn, setTotalEmployeesCheckedIn] = useState(0);
+
+  // Calculate leave statistics
+  const approvedLeaves = leaves.filter(l => l.status === "Approved").length;
+  const rejectedLeaves = leaves.filter(l => l.status === "Rejected").length;
+  const totalLeaves = leaves.length;
+
+  // Get unique employees who checked in
+  useEffect(() => {
+    const updateEmployeeCount = () => {
+      const records = getRecords();
+      const checkInRecords = records.filter(r => r.type === "CHECK_IN");
+      const uniqueEmployees = new Set(checkInRecords.map(r => r.id));
+      setTotalEmployeesCheckedIn(uniqueEmployees.size);
+    };
+
+    // Initial count
+    updateEmployeeCount();
+
+    // Listen for attendance updates
+    window.addEventListener("attendance_updated", updateEmployeeCount);
+
+    return () => {
+      window.removeEventListener("attendance_updated", updateEmployeeCount);
+    };
+  }, []);
+
   return (
     <Page>
       
@@ -69,22 +116,22 @@ export default function AdminDashboard() {
         <CardGrid>
           <Card primary>
             <CardTitle>Total Employee</CardTitle>
-            <CardValue>26</CardValue>
+            <CardValue>{totalEmployeesCheckedIn} </CardValue>
           </Card>
 
           <Card>
-            <CardTitle>Total Presents</CardTitle>
-            <CardValue>4</CardValue>
+            <CardTitle>Total Rejected</CardTitle>
+            <CardValue>{rejectedLeaves}</CardValue>
           </Card>
 
           <Card>
-            <CardTitle>Total Absents</CardTitle>
-            <CardValue>11</CardValue>
+            <CardTitle>Total Approved</CardTitle>
+            <CardValue>{approvedLeaves}</CardValue>
           </Card>
 
           <Card>
             <CardTitle>Total Leave</CardTitle>
-            <CardValue>11</CardValue>
+            <CardValue>{totalLeaves}</CardValue>
           </Card>
         </CardGrid>
 
@@ -98,11 +145,17 @@ export default function AdminDashboard() {
 
           <Box>
             <BoxTitle>Leave Application</BoxTitle>
-            <ul>
-              <li>Maisha Lucy – Approved</li>
-              <li>Zamora Peck – Rejected</li>
-              <li>Amy Aphrodite – Approved</li>
-            </ul>
+            {leaves.length > 0 ? (
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {leaves.map((leave) => (
+                  <LeaveItem key={leave.id}>
+                    {leave.employee} – <StatusBadge status={leave.status}>{leave.status}</StatusBadge>
+                  </LeaveItem>
+                ))}
+              </ul>
+            ) : (
+              <p>No leave requests</p>
+            )}
           </Box>
         </SectionGrid>
 

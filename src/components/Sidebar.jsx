@@ -202,7 +202,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/employee/leave">
                 <Plane /> Leave Request
               </Item>
-              <Item to="/employee/attendance">
+              <Item to="/employee/my-attendance">
                 <FileText /> My Attendance
               </Item>
               <Item to="/employee/tasks">
