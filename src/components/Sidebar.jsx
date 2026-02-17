@@ -202,8 +202,8 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/employee/leave">
                 <Plane /> Leave Request
               </Item>
-              <Item to="/employee/my-attendance">
-                <FileText /> My Attendance
+              <Item to="/employee/leave-approval">
+                <FileText /> Leave Approval
               </Item>
               <Item to="/employee/tasks">
                 <ListTodo /> My Tasks
