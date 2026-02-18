@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { Plus, Pause, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
