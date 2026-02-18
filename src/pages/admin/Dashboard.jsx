@@ -1,7 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import { Bell, Mail, Plus, Pause, Play } from "lucide-react";
+import { Plus, Pause, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+/* ================== HELPERS ================== */
+
+const safeParse = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const saveJSON = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
 
 /* ================== LAYOUT ================== */
 
@@ -41,11 +56,6 @@ const HeaderActions = styled.div`
   gap: 16px;
 `;
 
-const IconWrapper = styled.div`
-  color: #6b7280;
-  cursor: pointer;
-`;
-
 const AddButton = styled.button`
   background: #77809f;
   color: #ffffff;
@@ -63,16 +73,31 @@ const AddButton = styled.button`
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 `;
 
-const Card = styled.div`
+const Card = styled.button`
   padding: 20px;
   border-radius: 16px;
   background: ${(props) => (props.highlight ? "#77809f" : "#f9fafb")};
   color: ${(props) => (props.highlight ? "#ffffff" : "#000000")};
+  cursor: ${(props) => (props.clickable ? "pointer" : "default")};
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+
+  &:hover {
+    ${(props) =>
+      props.clickable &&
+      `
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    `}
+  }
 `;
 
 const CardTitle = styled.p`
@@ -161,34 +186,57 @@ const PauseButton = styled.button`
 /* ================== COMPONENT ================== */
 
 export default function Dashboard() {
-  const [totalProjects, setTotalProjects] = useState(0);
-  const [endedProjects, setEndedProjects] = useState(0);
-  const [runningProjects, setRunningProjects] = useState(0);
-  const [pendingProjects, setPendingProjects] = useState(0);
+  // ✅ employees + attendance
+  const [totalEmployees, setTotalEmployees] = useState(0);
+  const [presentToday, setPresentToday] = useState(0);
 
+  // ✅ meetings
+  const [meetings, setMeetings] = useState([]);
+
+  // ✅ projects: store array in localStorage
+  const [projects, setProjects] = useState(() => safeParse("projects", []));
+
+  // timer
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
   const navigate = useNavigate();
 
-  /* ---------- Meetings State (Auto-refresh) ---------- */
-  const [meetings, setMeetings] = useState([]);
+  /* ---------- Projects: auto-refresh ---------- */
+  useEffect(() => {
+    const loadProjects = () => {
+      setProjects(safeParse("projects", []));
+    };
 
+    loadProjects();
+    window.addEventListener("projects_updated", loadProjects);
+    window.addEventListener("storage", loadProjects);
+
+    return () => {
+      window.removeEventListener("projects_updated", loadProjects);
+      window.removeEventListener("storage", loadProjects);
+    };
+  }, []);
+
+  const projectStats = useMemo(() => {
+    const total = projects.length;
+
+    const ended = projects.filter((p) => p.status === "Ended").length;
+    const running = projects.filter((p) => p.status === "Running").length;
+    const pending = projects.filter((p) => p.status === "Pending").length;
+
+    return { total, ended, running, pending };
+  }, [projects]);
+
+  /* ---------- Meetings: auto-refresh ---------- */
   useEffect(() => {
     const load = () => {
-      try {
-        const stored = localStorage.getItem("admin_meetings");
-        setMeetings(stored ? JSON.parse(stored) : []);
-      } catch {
-        setMeetings([]);
-      }
+      const stored = safeParse("admin_meetings", []);
+      setMeetings(Array.isArray(stored) ? stored : []);
     };
 
     load();
-
-    // ✅ same-tab updates
     window.addEventListener("meetings_updated", load);
-    // ✅ cross-tab updates
     window.addEventListener("storage", load);
 
     return () => {
@@ -197,12 +245,50 @@ export default function Dashboard() {
     };
   }, []);
 
-  /* ---------- TIMER LOGIC ---------- */
+  /* ---------- Employees & Attendance ---------- */
+  useEffect(() => {
+    const loadEmployees = () => {
+      try {
+        // ✅ read employees from zustand persist key
+        const persisted = safeParse("employee-storage", null);
+        const employees = persisted?.state?.employees || [];
+        setTotalEmployees(employees.length);
+
+        const today = new Date().toDateString();
+        const attendance = safeParse("attendance", []);
+        const todayPresent = attendance.filter(
+          (a) =>
+            new Date(a.date).toDateString() === today && a.status === "Present"
+        ).length;
+
+        setPresentToday(todayPresent);
+      } catch {
+        setTotalEmployees(0);
+        setPresentToday(0);
+      }
+    };
+
+    loadEmployees();
+
+    // ✅ cross-tab updates
+    window.addEventListener("storage", loadEmployees);
+
+    // ✅ same-tab updates (optional, only if you dispatch it somewhere)
+    window.addEventListener("employees_updated", loadEmployees);
+    window.addEventListener("attendance_updated", loadEmployees);
+
+    return () => {
+      window.removeEventListener("storage", loadEmployees);
+      window.removeEventListener("employees_updated", loadEmployees);
+      window.removeEventListener("attendance_updated", loadEmployees);
+    };
+  }, []);
+
+
+  /* ---------- TIMER ---------- */
   useEffect(() => {
     let timer;
-    if (isRunning) {
-      timer = setInterval(() => setSeconds((prev) => prev + 1), 1000);
-    }
+    if (isRunning) timer = setInterval(() => setSeconds((p) => p + 1), 1000);
     return () => clearInterval(timer);
   }, [isRunning]);
 
@@ -216,14 +302,22 @@ export default function Dashboard() {
   /* ---------- HANDLERS ---------- */
 
   const handleAddProject = () => {
-    setTotalProjects((p) => p + 1);
-    setRunningProjects((p) => p + 1);
+    navigate("/admin/projects");
+    
+    saveJSON("projects", next);
+    window.dispatchEvent(new Event("projects_updated")); // ✅ same-tab update
     alert("New project added!");
   };
 
-  const handleMailClick = () => alert("Opening messages...");
-  const handleBellClick = () => alert("No new notifications");
   const toggleTimer = () => setIsRunning((v) => !v);
+
+  const handleProjectClick = (status = null) => {
+    if (status) {
+      navigate(`/admin/projects?filter=${status}`);
+    } else {
+      navigate("/admin/projects");
+    }
+  };
 
   return (
     <Page>
@@ -238,21 +332,29 @@ export default function Dashboard() {
         </Header>
 
         <CardGrid>
-          <Card highlight>
+          <Card highlight clickable onClick={() => handleProjectClick()}>
             <CardTitle>Total Projects</CardTitle>
-            <CardValue>{totalProjects}</CardValue>
+            <CardValue>{projectStats.total}</CardValue>
           </Card>
-          <Card>
+
+          <Card clickable onClick={() => handleProjectClick("Ended")}>
             <CardTitle>Ended Projects</CardTitle>
-            <CardValue>{endedProjects}</CardValue>
+            <CardValue>{projectStats.ended}</CardValue>
           </Card>
-          <Card>
+
+          <Card clickable onClick={() => handleProjectClick("Running")}>
             <CardTitle>Running Projects</CardTitle>
-            <CardValue>{runningProjects}</CardValue>
+            <CardValue>{projectStats.running}</CardValue>
           </Card>
-          <Card>
+
+          <Card clickable onClick={() => handleProjectClick("Pending")}>
             <CardTitle>Pending Projects</CardTitle>
-            <CardValue>{pendingProjects}</CardValue>
+            <CardValue>{projectStats.pending}</CardValue>
+          </Card>
+
+          <Card highlight>
+            <CardTitle>Total Employees</CardTitle>
+            <CardValue>{totalEmployees}</CardValue>
           </Card>
         </CardGrid>
 
@@ -288,10 +390,12 @@ export default function Dashboard() {
           </Box>
 
           <Box>
-            <BoxTitle>Quick Action</BoxTitle>
-            <ReminderText>Manage meetings and schedules.</ReminderText>
-            <FullButton onClick={() => navigate("/admin/meetings")}>
-              Go to Meetings
+            <BoxTitle>Today's Attendance</BoxTitle>
+            <ReminderText>
+              Present: {presentToday} / {totalEmployees}
+            </ReminderText>
+            <FullButton onClick={() => navigate("/admin/attendance")}>
+              View Attendance
             </FullButton>
           </Box>
         </SectionGrid>
