@@ -3,6 +3,7 @@ import UploadSelfie from "../../components/UploadSelfie";
 import LocationGate from "../../components/LocationGate";
 import { addRecord, canCheckIn } from "../../utils/attendanceLocalDb";
 import styled from "styled-components";
+import { useAuthStore } from "../../store/auth.store";
 
 const Page = styled.div`
   max-width: 1100px;
@@ -160,6 +161,8 @@ export default function CheckIn() {
 
       const selfieBase64 = await toBase64(selfie);
 
+      const user = useAuthStore.getState().user;
+
       addRecord({
         id: crypto.randomUUID(),
         type: "CHECK_IN",
@@ -168,6 +171,9 @@ export default function CheckIn() {
         lng: loc.lng,
         distance: loc.distance,
         selfieBase64,
+        // include currently logged in user info for reports
+        userName: user?.name || "Unknown",
+        userEmail: user?.email || null,
       });
       window.dispatchEvent(new Event("attendance_updated"));
 

@@ -79,6 +79,7 @@ const StatusBadge = styled.span`
 export default function AdminDashboard() {
   const { leaves } = useLeaveStore();
   const [totalEmployeesCheckedIn, setTotalEmployeesCheckedIn] = useState(0);
+  const [checkedInEmployees, setCheckedInEmployees] = useState([]);
 
   // Calculate leave statistics
   const approvedLeaves = leaves.filter(l => l.status === "Approved").length;
@@ -90,8 +91,20 @@ export default function AdminDashboard() {
     const updateEmployeeCount = () => {
       const records = getRecords();
       const checkInRecords = records.filter(r => r.type === "CHECK_IN");
-      const uniqueEmployees = new Set(checkInRecords.map(r => r.id));
-      setTotalEmployeesCheckedIn(uniqueEmployees.size);
+      // group by user identifier (prefer userName/user.email if present)
+      const byUser = new Map();
+
+      checkInRecords.forEach((r) => {
+        const key = r.userName || (r.user && r.user.name) || r.userEmail || r.employeeName || "Unknown";
+        const existing = byUser.get(key);
+        // keep the latest check-in per user
+        if (!existing || new Date(r.time) > new Date(existing.time)) {
+          byUser.set(key, { key, time: r.time, distance: r.distance, lat: r.lat, lng: r.lng });
+        }
+      });
+
+      setTotalEmployeesCheckedIn(byUser.size);
+      setCheckedInEmployees(Array.from(byUser.values()).sort((a,b) => new Date(b.time) - new Date(a.time)));
     };
 
     // Initial count
@@ -166,18 +179,26 @@ export default function AdminDashboard() {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>ID</th>
-                <th>Email</th>
-                <th>Status</th>
+                <th>Last Check-In</th>
+                <th>Distance (m)</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Abra Nelle Barron</td>
-                <td>0027</td>
-                <td>wocyn@gmail.com</td>
-                <td style={{ color: "green" }}>Active</td>
-              </tr>
+              {checkedInEmployees.length > 0 ? (
+                checkedInEmployees.map((e) => (
+                  <tr key={e.key}>
+                    <td>{e.key}</td>
+                    <td>{new Date(e.time).toLocaleString()}</td>
+                    <td>{e.distance ? Math.round(e.distance) : "—"}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: "center", padding: 16 }}>
+                    No employees checked in
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </Box>
