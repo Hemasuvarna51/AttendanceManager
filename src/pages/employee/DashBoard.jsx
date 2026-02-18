@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Clock, Sparkles, CalendarDays, ListTodo } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { getAttendanceState, getRecords } from "../../utils/attendanceLocalDb";
+import { useNavigate } from "react-router-dom";
 
 // ✅ Recharts
 import {
@@ -150,19 +151,27 @@ const Grid = styled.div`
   }
 `;
 
-const Card = styled.div`
+const Card = styled.button.attrs({ type: "button" })`
   position: relative;
-  background: rgba(255, 255, 255, 0.92);
+  background: ${({ $highlight }) => ($highlight ? "rgba(119,128,159,0.12)" : "rgba(255,255,255,0.92)")};
   border: 1px solid #eef2f7;
   border-radius: 18px;
   padding: 18px;
   box-shadow: 0 18px 40px rgba(2, 6, 23, 0.06);
   backdrop-filter: blur(6px);
   transition: transform 0.18s ease, box-shadow 0.18s ease;
+  text-align: left;
+  cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
+  font-family: inherit;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 22px 50px rgba(2, 6, 23, 0.08);
+    ${({ $clickable }) =>
+      $clickable
+        ? `
+      transform: translateY(-2px);
+      box-shadow: 0 22px 50px rgba(2, 6, 23, 0.08);
+    `
+        : ""}
   }
 `;
 
@@ -203,11 +212,13 @@ const StatGrid = styled.div`
   }
 `;
 
-const Stat = styled.div`
+const Stat = styled.button.attrs({ type: "button" })`
   border: 1px solid #eef2f7;
   background: #f8fafc;
   border-radius: 14px;
   padding: 12px;
+  text-align: left;
+  cursor: pointer;
 
   .label {
     font-size: 12px;
@@ -344,6 +355,8 @@ const TaskItem = styled.div`
 /* ===================== COMPONENT ===================== */
 
 export default function DashBoard() {
+  const navigate = useNavigate(); // ✅ hook inside component
+
   const user = useAuthStore((s) => s.user);
   const userName = user?.name || "Employee";
   const loggedInEmployee = user?.name;
@@ -356,7 +369,6 @@ export default function DashBoard() {
   const [reminders, setReminders] = useState([]);
   const [schedule, setSchedule] = useState([]);
 
-  // ✅ Attendance score (you were using it but not defining it)
   const attendanceScore = useMemo(() => {
     if (!records.length) return 0;
 
@@ -374,7 +386,6 @@ export default function DashBoard() {
     return Math.min(100, Math.round((checkIns / days) * 100));
   }, [records]);
 
-  // ✅ Load Attendance + Records + Reminders + Schedule
   useEffect(() => {
     const load = () => {
       setAtt(getAttendanceState());
@@ -398,7 +409,6 @@ export default function DashBoard() {
     };
   }, []);
 
-  // ✅ Load tasks (REAL source: "tasks") + filter by employee
   useEffect(() => {
     const loadTasks = () => {
       if (!loggedInEmployee) {
@@ -439,7 +449,6 @@ export default function DashBoard() {
     };
   }, [loggedInEmployee]);
 
-  // ✅ Live timer tick
   useEffect(() => {
     if (!att.checkedIn) return;
     const id = setInterval(() => setTick((t) => t + 1), 1000);
@@ -455,7 +464,6 @@ export default function DashBoard() {
 
   const pendingTasks = tasks.filter((t) => Number(t.pct || 0) < 100).length;
 
-  // ✅ Chart data
   const chartData = useMemo(() => {
     const now = new Date();
 
@@ -559,11 +567,11 @@ export default function DashBoard() {
           )}
 
           <StatGrid>
-            <Stat>
+            <Stat onClick={() => navigate("/employee/checkin")}>
               <div className="label">Check-in</div>
               <div className="value">{todayTimes.clockIn}</div>
             </Stat>
-            <Stat>
+            <Stat onClick={() => navigate("/employee/checkout")}>
               <div className="label">Check-out</div>
               <div className="value">{todayTimes.clockOut}</div>
             </Stat>
@@ -614,20 +622,13 @@ export default function DashBoard() {
             </ResponsiveContainer>
           </ChartWrap>
 
-          <div
-            style={{
-              fontSize: 12,
-              marginTop: 10,
-              color: "#64748b",
-              fontWeight: 800,
-            }}
-          >
+          <div style={{ fontSize: 12, marginTop: 10, color: "#64748b", fontWeight: 800 }}>
             Productivity = 60% attendance + 40% task progress
           </div>
         </Card>
 
         {/* Tasks */}
-        <Card>
+        <Card $highlight $clickable onClick={() => navigate("/employee/tasks")}>
           <CardHead>
             <CardTitle>Today's Tasks</CardTitle>
             <Hint>{tasks.length} items</Hint>
@@ -652,7 +653,7 @@ export default function DashBoard() {
         </Card>
 
         {/* Reminders */}
-        <Card>
+        <Card $highlight $clickable onClick={() => navigate("/employee/my-meetings")}>
           <CardHead>
             <CardTitle>Reminders</CardTitle>
             <Hint>{reminders.length}</Hint>
@@ -671,7 +672,7 @@ export default function DashBoard() {
         </Card>
 
         {/* Schedule */}
-        <Card>
+        <Card $highlight $clickable onClick={() => navigate("/employee/schedule")}>
           <CardHead>
             <CardTitle>Schedule</CardTitle>
             <Hint>{schedule.length}</Hint>

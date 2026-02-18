@@ -301,14 +301,6 @@ export default function Dashboard() {
 
   /* ---------- HANDLERS ---------- */
 
-  const handleAddProject = () => {
-    navigate("/admin/projects");
-    
-    saveJSON("projects", next);
-    window.dispatchEvent(new Event("projects_updated")); // ✅ same-tab update
-    alert("New project added!");
-  };
-
   const toggleTimer = () => setIsRunning((v) => !v);
 
   const handleProjectClick = (status = null) => {
@@ -325,7 +317,7 @@ export default function Dashboard() {
         <Header>
           <Title>Dashboard</Title>
           <HeaderActions>
-            <AddButton onClick={handleAddProject}>
+            <AddButton onClick={() => handleProjectClick()}>
               <Plus size={16} /> Add Project
             </AddButton>
           </HeaderActions>
@@ -352,7 +344,7 @@ export default function Dashboard() {
             <CardValue>{projectStats.pending}</CardValue>
           </Card>
 
-          <Card highlight>
+          <Card highlight clickable onClick={() => navigate("/admin/employees")}>
             <CardTitle>Total Employees</CardTitle>
             <CardValue>{totalEmployees}</CardValue>
           </Card>
