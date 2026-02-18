@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { Plus, Pause, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -352,8 +353,8 @@ export default function Dashboard() {
             <CardValue>{projectStats.pending}</CardValue>
           </Card>
 
-          <Card clickable onClick={() => navigate("/admin/employees")}>
-            <CardTitle >Total Employees</CardTitle>
+          <Card highlight>
+            <CardTitle>Total Employees</CardTitle>
             <CardValue>{totalEmployees}</CardValue>
           </Card>
         </CardGrid>

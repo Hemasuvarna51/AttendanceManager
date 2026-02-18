@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
+import { useEmployeeStore } from "../../store/employee.store";
 
 /* ===================== STORAGE HELPERS ===================== */
 
@@ -250,14 +251,12 @@ const Empty = styled.div`
 /* ===================== COMPONENT ===================== */
 
 export default function Meetings() {
-  // ✅ Replace this employee list with your actual employee list from backend/store
-  // For now it's just sample names (must match employee user.name in auth store)
-  const EMPLOYEES = ["Hema", "Employee", "Ravi", "Sowjanya"];
+  const { employees } = useEmployeeStore();
 
   const [meetings, setMeetings] = useState(() => safeRead(MEETINGS_KEY, []));
 
   // form state
-  const [employee, setEmployee] = useState(EMPLOYEES[0] || "");
+  const [employee, setEmployee] = useState(employees.length > 0 ? employees[0].name : "");
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(""); // yyyy-mm-dd
   const [time, setTime] = useState(""); // hh:mm
@@ -352,9 +351,9 @@ export default function Meetings() {
               <Field>
                 <label>Assign To Employee</label>
                 <select value={employee} onChange={(e) => setEmployee(e.target.value)}>
-                  {EMPLOYEES.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
+                  {employees.map((emp) => (
+                    <option key={emp.id || emp.name} value={emp.name}>
+                      {emp.name}
                     </option>
                   ))}
                 </select>
