@@ -174,72 +174,6 @@ const GroupHeader = styled.div`
   }
 `;
 
-const Grid = styled.div`
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-
-  @media (max-width: 980px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 620px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Card = styled.div`
-  border: 1px solid #ededed;
-  border-radius: 18px;
-  padding: 14px;
-  background: #fff;
-  box-shadow: 0 10px 22px rgba(0,0,0,0.05);
-  transition: transform 0.12s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 30px rgba(0,0,0,0.08);
-    border-color: #e2e2e2;
-  }
-`;
-
-const CardTop = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-`;
-
-const TypeChip = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-
-  border: 1px solid ${({ $type }) => ($type === "CHECK_IN" ? "#b7ebc6" : "#cfe2ff")};
-  background: ${({ $type }) => ($type === "CHECK_IN" ? "#f0fff4" : "#f3f8ff")};
-  color: ${({ $type }) => ($type === "CHECK_IN" ? "#11643a" : "#1e4ea8")};
-`;
-
-const Meta = styled.div`
-  margin-top: 10px;
-  display: grid;
-  gap: 6px;
-`;
-
-const Small = styled.div`
-  font-size: 13px;
-  color: #6b7280;
-
-  b {
-    color: #111;
-  }
-`;
-
 const DistancePill = styled.div`
   display: inline-flex;
   align-items: center;
@@ -254,19 +188,70 @@ const DistancePill = styled.div`
   color: #111;
 `;
 
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+
+  th, td {
+    padding: 12px 14px;
+    border: 1px solid #e7e7e7;
+    text-align: left;
+  }
+
+  th {
+    background: #f3f4f6;
+    font-weight: 700;
+    color: #111;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+  }
+
+  td {
+    font-size: 14px;
+    color: #111;
+  }
+
+  tbody tr {
+    transition: background-color 0.12s ease;
+
+    &:hover {
+      background-color: #fafafa;
+    }
+  }
+
+  tbody tr:nth-child(even) {
+    background: #f9f9f9;
+  }
+`;
+
+const TypeBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  border: 1px solid ${({ $type }) => ($type === "CHECK_IN" ? "#b7ebc6" : "#cfe2ff")};
+  background: ${({ $type }) => ($type === "CHECK_IN" ? "#f0fff4" : "#f3f8ff")};
+  color: ${({ $type }) => ($type === "CHECK_IN" ? "#11643a" : "#1e4ea8")};
+`;
+
 const Selfie = styled.img`
-  margin-top: 2px;
-  width: 72px;
-  height: 72px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid #e7e7e7;
   cursor: zoom-in;
   transition: transform 0.12s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: scale(1.02);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   }
 `;
 
@@ -422,7 +407,25 @@ export default function MyAttendance() {
     return base.slice().sort((a, b) => new Date(b.time) - new Date(a.time));
   }, [records, filter]);
 
-  const grouped = useMemo(() => groupByDay(visibleRecords), [visibleRecords]);
+  // Group records by day with check-in and check-out pairs
+  const dailyRecords = useMemo(() => {
+    const grouped = {};
+    
+    visibleRecords.forEach((r) => {
+      const d = new Date(r.time);
+      const key = startOfDay(d).toISOString();
+      if (!grouped[key]) {
+        grouped[key] = { date: startOfDay(d), checkIn: null, checkOut: null };
+      }
+      if (r.type === "CHECK_IN") {
+        grouped[key].checkIn = r;
+      } else {
+        grouped[key].checkOut = r;
+      }
+    });
+
+    return Object.values(grouped).sort((a, b) => b.date - a.date);
+  }, [visibleRecords]);
 
   return (
     <Page>
@@ -501,45 +504,69 @@ export default function MyAttendance() {
         {visibleRecords.length === 0 ? (
           <Empty>No local attendance records yet for this filter.</Empty>
         ) : (
-          <>
-            {grouped.map((g) => (
-              <Group key={g.date.toISOString()}>
-                <GroupHeader>
-                  <h3>{labelForDay(g.date)}</h3>
-                  <span>{g.items.length} record(s)</span>
-                </GroupHeader>
+          <Table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+                <th>Selfie</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dailyRecords.map((day, idx) => (
+                <tr key={idx}>
+                  <td>
+                    {day.date.toLocaleDateString(undefined, {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </td>
 
-                <Grid>
-                  {g.items.map((r) => (
-                    <Card key={r.id}>
-                      <CardTop>
-                        <div>
-                          <TypeChip $type={r.type}>{r.type}</TypeChip>
+                  <td>
+                    {day.checkIn ? (
+                      <div>
+                        <TypeBadge $type="CHECK_IN">
+                          ✅ {new Date(day.checkIn.time).toLocaleTimeString()}
+                        </TypeBadge>
+                        
+                      </div>
+                    ) : (
+                      <span style={{ color: "#9ca3af" }}>—</span>
+                    )}
+                  </td>
 
-                          <Meta>
-                            <Small>{new Date(r.time).toLocaleString()}</Small>
+                  <td>
+                    {day.checkOut ? (
+                      <div>
+                        <TypeBadge $type="CHECK_OUT">
+                          🏁 {new Date(day.checkOut.time).toLocaleTimeString()}
+                        </TypeBadge>
+                       
+                      </div>
+                    ) : (
+                      <span style={{ color: "#9ca3af" }}>—</span>
+                    )}
+                  </td>
 
-                            <DistancePill>
-                              📍 {Math.round(r.distance)}m
-                            </DistancePill>
-                          </Meta>
-                        </div>
-
-                        {r.selfieBase64 && (
-                          <Selfie
-                            src={r.selfieBase64}
-                            alt="selfie"
-                            onClick={() => setZoomSrc(r.selfieBase64)}
-                            title="Click to enlarge"
-                          />
-                        )}
-                      </CardTop>
-                    </Card>
-                  ))}
-                </Grid>
-              </Group>
-            ))}
-          </>
+                  <td>
+                    {day.checkIn?.selfieBase64 ? (
+                      <Selfie
+                        src={day.checkIn.selfieBase64}
+                        alt="check-in selfie"
+                        onClick={() => setZoomSrc(day.checkIn.selfieBase64)}
+                        title="Check-In Selfie - Click to enlarge"
+                      />
+                    ) : (
+                      <span style={{ color: "#9ca3af" }}>—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
         )}
 
         {zoomSrc && (

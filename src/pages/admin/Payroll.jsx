@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -39,6 +39,12 @@ const Field = styled.div`
   }
 
   input {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  select {
     padding: 8px 10px;
     border-radius: 6px;
     border: 1px solid #ccc;
@@ -168,142 +174,143 @@ const ApproveButton = styled.button`
 /* ================= Component ================= */
 
 export default function Payroll() {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [payFrom, setPayFrom] = useState("");
-    const [payTo, setPayTo] = useState("");
-    const [payDate, setPayDate] = useState("");
-    const [employees, setEmployees] = useState([]);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [payFrom, setPayFrom] = useState("");
+  const [payTo, setPayTo] = useState("");
+  const [payDate, setPayDate] = useState("");
+  const [employees, setEmployees] = useState([]);
 
-    useEffect(() => {
-        if (location.state?.payrollData) {
-            setEmployees(location.state.payrollData);
-            setPayFrom(location.state.payFrom || "");
-            setPayTo(location.state.payTo || "");
-        }
-    }, [location.state]);
+  useEffect(() => {
+    if (location.state?.payrollData) {
+      setEmployees(location.state.payrollData);
+      setPayFrom(location.state.payFrom || "");
+      setPayTo(location.state.payTo || "");
+    }
+  }, [location.state]);
 
-    const totalHours = employees.reduce((sum, emp) => sum + emp.hours, 0);
-    const totalGross = employees.reduce((sum, emp) => sum + emp.grossPay, 0);
-    const totalDeductions = employees.reduce((sum, emp) => sum + emp.deductions, 0);
-    const totalTaxes = employees.reduce((sum, emp) => sum + emp.taxes, 0);
-    const totalNet = employees.reduce((sum, emp) => sum + emp.netPay, 0);
+  const totalHours = employees.reduce((sum, emp) => sum + emp.hours, 0);
+  const totalGross = employees.reduce((sum, emp) => sum + emp.grossPay, 0);
+  const totalDeductions = employees.reduce((sum, emp) => sum + emp.deductions, 0);
+  const totalTaxes = employees.reduce((sum, emp) => sum + emp.taxes, 0);
+  const totalNet = employees.reduce((sum, emp) => sum + emp.netPay, 0);
 
-    return (
-        <Container>
-            <Title>Payroll Summary</Title>
+  return (
+    <Container>
+      <Title>Payroll Summary</Title>
 
-            <TopSection>
-                <Filters>
-                    <Field>
+      <TopSection>
+        <Filters>
+          <Field>
+            <label>Pay Period (From)</label>
+            <input
+              type="date"
+              value={payFrom}
+              onChange={(e) => setPayFrom(e.target.value)}
+            />
 
-                    </Field>
-                    <label>Pay Period (From)</label>
-                    <input
-                        type="date"
-                        value={payFrom}
-                        onChange={(e) => setPayFrom(e.target.value)}
-                    />
+          </Field>
 
-                    <Field>
-                        <label>Pay Period (To)</label>
-                        <input
-                            type="date"
-                            value={payTo}
-                            onChange={(e) => setPayTo(e.target.value)}
-                        />
 
-                    </Field>
-                    <Field>
-                        <label>Pay Date</label>
-                        <select>
-                            <option>Jan 15, 2022</option>
-                        </select>
-                    </Field>
-                </Filters>
+          <Field>
+            <label>Pay Period (To)</label>
+            <input
+              type="date"
+              value={payTo}
+              onChange={(e) => setPayTo(e.target.value)}
+            />
 
-                <RunButton onClick={() => navigate("/admin/payroll/run")}>+ Run Payroll</RunButton>
-            </TopSection>
+          </Field>
+          <Field>
+            <label>Pay Date</label>
+            <select>
+              <option>Jan 15, 2022</option>
+            </select>
+          </Field>
+        </Filters>
 
-            <SummaryCards>
-                <Card>
-                    <p>Total Employees</p>
-                    <h3>{employees.length}</h3>
-                </Card>
+        <RunButton onClick={() => navigate("/admin/payroll/run")}>+ Run Payroll</RunButton>
+      </TopSection>
 
-                <Card>
-                    <p>Total Payroll Cost</p>
-                    <h3>${totalGross.toFixed(2)}</h3>
-                </Card>
+      <SummaryCards>
+        <Card>
+          <p>Total Employees</p>
+          <h3>{employees.length}</h3>
+        </Card>
 
-                <Card>
-                    <p>Taxes & Deductions</p>
-                    <h3>${(totalDeductions + totalTaxes).toFixed(2)}</h3>
-                </Card>
+        <Card>
+          <p>Total Payroll Cost</p>
+          <h3>${totalGross.toFixed(2)}</h3>
+        </Card>
 
-                <Card>
-                    <p>Net Pay</p>
-                    <h3><GreenText>${totalNet.toFixed(2)}</GreenText></h3>
-                </Card>
-            </SummaryCards>
+        <Card>
+          <p>Taxes & Deductions</p>
+          <h3>${(totalDeductions + totalTaxes).toFixed(2)}</h3>
+        </Card>
 
-            <Status>
-                <span>Payroll Status: <b>Processing</b></span>
-                <Progress>
-                    <ProgressBar />
-                </Progress>
-            </Status>
+        <Card>
+          <p>Net Pay</p>
+          <h3><GreenText>${totalNet.toFixed(2)}</GreenText></h3>
+        </Card>
+      </SummaryCards>
 
-            <TableSection>
-                <h3>Employee Payroll Overview</h3>
+      <Status>
+        <span>Payroll Status: <b>Processing</b></span>
+        <Progress>
+          <ProgressBar />
+        </Progress>
+      </Status>
 
-                <StyledTable>
-                    <thead>
-                        <tr>
-                            <th>Employee</th>
-                            <th>Hours</th>
-                            <th>Gross Pay</th>
-                            <th>Deductions</th>
-                            <th>Taxes</th>
-                            <th>Net Pay</th>
-                        </tr>
-                    </thead>
+      <TableSection>
+        <h3>Employee Payroll Overview</h3>
 
-                    <tbody>
-                        {employees.length > 0 ? (
-                            <>
-                                {employees.map((emp) => (
-                                    <tr key={emp.id}>
-                                        <td>{emp.name}</td>
-                                        <td>{emp.hours}</td>
-                                        <td>${emp.grossPay.toFixed(2)}</td>
-                                        <td>${emp.deductions.toFixed(2)}</td>
-                                        <td>${emp.taxes.toFixed(2)}</td>
-                                        <td><GreenText>${emp.netPay.toFixed(2)}</GreenText></td>
-                                    </tr>
-                                ))}
-                                <TotalRow>
-                                    <td>Totals</td>
-                                    <td>{totalHours}</td>
-                                    <td>${totalGross.toFixed(2)}</td>
-                                    <td>${totalDeductions.toFixed(2)}</td>
-                                    <td>${totalTaxes.toFixed(2)}</td>
-                                    <td><GreenText>${totalNet.toFixed(2)}</GreenText></td>
-                                </TotalRow>
-                            </>
-                        ) : (
-                            <tr>
-                                <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No payroll data. Click "Run Payroll" to process.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </StyledTable>
-            </TableSection>
+        <StyledTable>
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Hours</th>
+              <th>Gross Pay</th>
+              <th>Deductions</th>
+              <th>Taxes</th>
+              <th>Net Pay</th>
+            </tr>
+          </thead>
 
-            <Actions>
-                <CancelButton>Cancel</CancelButton>
-                <ApproveButton onClick={() => navigate("/admin/payroll/approved")}>Approve Payroll</ApproveButton>
-            </Actions>
-        </Container>
-    );
+          <tbody>
+            {employees.length > 0 ? (
+              <>
+                {employees.map((emp) => (
+                  <tr key={emp.id}>
+                    <td>{emp.name}</td>
+                    <td>{emp.hours}</td>
+                    <td>${emp.grossPay.toFixed(2)}</td>
+                    <td>${emp.deductions.toFixed(2)}</td>
+                    <td>${emp.taxes.toFixed(2)}</td>
+                    <td><GreenText>${emp.netPay.toFixed(2)}</GreenText></td>
+                  </tr>
+                ))}
+                <TotalRow>
+                  <td>Totals</td>
+                  <td>{totalHours}</td>
+                  <td>${totalGross.toFixed(2)}</td>
+                  <td>${totalDeductions.toFixed(2)}</td>
+                  <td>${totalTaxes.toFixed(2)}</td>
+                  <td><GreenText>${totalNet.toFixed(2)}</GreenText></td>
+                </TotalRow>
+              </>
+            ) : (
+              <tr>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>No payroll data. Click "Run Payroll" to process.</td>
+              </tr>
+            )}
+          </tbody>
+        </StyledTable>
+      </TableSection>
+
+      <Actions>
+        <CancelButton>Cancel</CancelButton>
+        <ApproveButton onClick={() => navigate("/admin/payroll/approved")}>Approve Payroll</ApproveButton>
+      </Actions>
+    </Container>
+  );
 }

@@ -8,21 +8,24 @@ import { Mail, Phone, Building2, IdCard, Pencil, Save, X } from "lucide-react";
 const Page = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 22px 18px;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Shell = styled.div`
   display: grid;
-  gap: 16px;
+  gap: 20px;
 `;
 
 const ProfileCard = styled.div`
-  background: ${({ $editing }) => ($editing ? "#f8fafc" : "#fff")};
-  border: 1px solid #eef2f7;
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-  transition: 0.2s ease;
+  background: ${({ $editing }) => ($editing ? "#f0f4f9" : "#ffffff")};
+  border: 1px solid #d1d8e0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(2px);
 `;
 
 const TopRow = styled.div`
@@ -38,30 +41,38 @@ const TopRow = styled.div`
 
 const IconAction = styled.button`
   height: 40px;
-  padding: 0 12px;
-  border-radius: 12px;
-  border: 1px solid #eef2f7;
-  background: #fff;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid ${({ $danger }) => ($danger ? "#ef4444" : "#2563eb")};
+  background: #ffffff;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  color: ${({ $danger }) => ($danger ? "#b42318" : "#111827")};
+  font-size: 13px;
+  color: ${({ $danger }) => ($danger ? "#dc2626" : "#2563eb")};
+  transition: all 0.2s ease;
 
   &:hover {
-    background: ${({ $danger }) => ($danger ? "#fff5f5" : "#f8fafc")};
+    background: ${({ $danger }) => ($danger ? "#fee2e2" : "#dbeafe")};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   svg {
-    opacity: 0.8;
+    opacity: 0.9;
   }
 `;
 
 const MainRow = styled.div`
   display: grid;
   grid-template-columns: 140px 1fr 360px;
-  gap: 18px;
+  gap: 24px;
   align-items: center;
 
   @media (max-width: 980px) {
@@ -78,12 +89,52 @@ const AvatarWrap = styled.div`
   place-items: center;
 `;
 
-const Avatar = styled.div`
-  width: 110px;
-  height: 110px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #eef2ff, #f8fafc);
-  border: 1px solid #e5e7eb;
+const Avatar = styled.img`
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  object-fit: cover;
+  border: 2px solid #bfdbfe;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+`;
+
+const AvatarPlaceholder = styled.div`
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  border: 2px solid #bfdbfe;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+  display: grid;
+  place-items: center;
+  font-size: 48px;
+  font-weight: 700;
+  color: #0854a0;
+`;
+
+const AvatarUploadBtn = styled.label`
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #dbeafe;
+  color: #2563eb;
+  border: 1px solid #93c5fd;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #bfdbfe;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+
+  input[type="file"] {
+    display: none;
+  }
 `;
 
 const NameBlock = styled.div`
@@ -93,10 +144,11 @@ const NameBlock = styled.div`
 `;
 
 const Name = styled.div`
-  font-size: 22px;
-  font-weight: 800;
-  color: #111827;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
   line-height: 1.2;
+  letter-spacing: -0.3px;
 `;
 
 const Meta = styled.div`
@@ -109,19 +161,20 @@ const Chip = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  padding: 8px 12px;
+  border-radius: 8px;
   background: #f1f5f9;
   color: #0f172a;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cbd5e1;
   font-weight: 700;
   font-size: 12px;
+  letter-spacing: 0.3px;
 `;
 
 const RightInfo = styled.div`
   display: grid;
-  gap: 10px;
-  justify-items: start;
+  gap: 16px;
+  align-items: start;
 
   @media (max-width: 980px) {
     grid-column: 1 / -1;
@@ -135,14 +188,14 @@ const InfoRow = styled.div`
   gap: 10px;
 
   .k {
-    color: #6b7280;
+    color: #64748b;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
   }
   .v {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 14px;
-    color: #111827;
+    color: #1e293b;
   }
   svg {
     opacity: 0.75;
@@ -154,22 +207,25 @@ const InfoRow = styled.div`
 `;
 
 const Tabs = styled.div`
-  margin-top: 12px;
+  margin-top: 20px;
   display: flex;
-  gap: 18px;
+  gap: 20px;
   flex-wrap: wrap;
-  border-top: 1px solid #eef2f7;
-  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
 `;
 
 const Tab = styled.button`
   border: 0;
   background: transparent;
   cursor: pointer;
-  padding: 10px 4px;
-  font-weight: 800;
-  color: ${({ $active }) => ($active ? "#2563eb" : "#111827")};
-  border-bottom: 2px solid ${({ $active }) => ($active ? "#2563eb" : "transparent")};
+  padding: 10px 0;
+  font-weight: 700;
+  font-size: 14px;
+  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
+  border-bottom: 3px solid ${({ $active }) => ($active ? "#2563eb" : "transparent")};
+  transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     color: #2563eb;
@@ -179,7 +235,7 @@ const Tab = styled.button`
 const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 
   @media (max-width: 980px) {
     grid-template-columns: 1fr;
@@ -187,100 +243,135 @@ const ContentGrid = styled.div`
 `;
 
 const Panel = styled.div`
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  background: #ffffff;
+  border: 1px solid #d1d8e0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.03);
   overflow: hidden;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+  }
 `;
 
 const PanelHeader = styled.div`
-  padding: 14px 16px;
-  border-bottom: 1px solid #eef2f7;
-  font-weight: 900;
-  color: #111827;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 700;
+  font-size: 15px;
+  color: #1e293b;
+  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
+  letter-spacing: 0.2px;
 `;
 
 const PanelBody = styled.div`
-  padding: 14px 16px;
+  padding: 18px;
   display: grid;
-  gap: 12px;
+  gap: 16px;
 `;
 
 const Field = styled.div`
   display: grid;
-  gap: 6px;
+  gap: 8px;
 
   .label {
     font-size: 12px;
-    color: #6b7280;
+    color: #64748b;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   .value {
     font-size: 14px;
-    color: #111827;
-    font-weight: 800;
+    color: #1e293b;
+    font-weight: 600;
   }
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #dbe3f0;
-  background: #fff;
-  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-weight: 500;
   font-size: 14px;
-  color: #111827;
+  color: #1e293b;
   outline: none;
-  transition: 0.15s ease;
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.2);
+    background: #f8fafc;
+  }
+
+  &::placeholder {
+    color: #94a3b8;
   }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-weight: 700;
-  color: #111827;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1e293b;
   outline: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
 
   &:focus {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.2);
+  }
+
+  &:hover {
+    border-color: #94a3b8;
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  min-height: 90px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-weight: 700;
-  color: #111827;
+  min-height: 100px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1e293b;
   outline: none;
   resize: vertical;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   &:focus {
-    border-color: #93c5fd;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.2);
+    background: #f8fafc;
+  }
+
+  &::placeholder {
+    color: #94a3b8;
   }
 `;
 
 const Hint = styled.div`
-  margin-top: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
   font-size: 12px;
-  color: #6b7280;
+  color: #0854a0;
   font-weight: 700;
+  background: #dbeafe;
+  border-left: 3px solid #2563eb;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
 `;
 
 /* ===================== COMPONENT ===================== */
@@ -309,15 +400,18 @@ export default function MyProfile() {
       dob: user?.dob || "",
       gender: user?.gender || "",
       address: user?.address || "",
+      profilePhoto: user?.profilePhoto || "",
     }),
     [user]
   );
 
   const [form, setForm] = useState(initialForm);
 
-  // refresh form if user changes and not editing
+  // ✅ Sync form with latest user data when not editing
   useEffect(() => {
-    if (!editing) setForm(initialForm);
+    if (!editing) {
+      setForm(initialForm);
+    }
   }, [initialForm, editing]);
 
   // if completely empty, open edit automatically
@@ -351,16 +445,14 @@ export default function MyProfile() {
   const onSave = () => {
     const err = validate();
     if (err) {
-      console.warn(err);
+      alert(err);
       return;
     }
 
+    // ✅ Update auth store (will also save to localStorage)
     updateUser(form);
 
-    try {
-      localStorage.setItem("profile_user_patch", JSON.stringify(form));
-    } catch {}
-
+    // ✅ Exit edit mode - form will auto-refresh from updated user data
     setEditing(false);
   };
 
@@ -369,17 +461,40 @@ export default function MyProfile() {
     setEditing(false);
   };
 
-  // hydrate from local storage
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("profile_user_patch");
-      if (!raw) return;
-      const patch = JSON.parse(raw);
-      setForm((p) => ({ ...p, ...patch }));
-      if (updateUser) updateUser(patch);
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // ✅ Handle profile photo upload
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Photo size must be less than 2MB");
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result;
+      setForm((p) => ({ ...p, profilePhoto: base64 }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ✅ Get initials from name
+  const getInitials = () => {
+    const names = form.name?.split(" ") || [];
+    return names.map((n) => n[0]).join("").toUpperCase();
+  };
+
+  // ✅ No need for extra localStorage hydration - auth store handles it all
+
 
   const showVal = (v) => (v ? v : "-");
 
@@ -406,7 +521,21 @@ export default function MyProfile() {
 
           <MainRow>
             <AvatarWrap>
-              <Avatar />
+              {form.profilePhoto ? (
+                <Avatar src={form.profilePhoto} alt={form.name} />
+              ) : (
+                <AvatarPlaceholder>{getInitials()}</AvatarPlaceholder>
+              )}
+              {editing && (
+                <AvatarUploadBtn>
+                  📷 Change Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                  />
+                </AvatarUploadBtn>
+              )}
             </AvatarWrap>
 
             <NameBlock>

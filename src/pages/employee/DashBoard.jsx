@@ -61,7 +61,7 @@ const findTodayTimes = (records) => {
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-const fmtDay = (d) => d.toLocaleDateString(undefined, { weekday: "short" }); // Mon, Tue...
+const fmtDay = (d) => d.toLocaleDateString(undefined, { weekday: "short" });
 
 const isSameDay = (a, b) =>
   a.getFullYear() === b.getFullYear() &&
@@ -71,11 +71,9 @@ const isSameDay = (a, b) =>
 const parseDueDate = (due) => {
   if (!due) return null;
 
-  // ISO / normal Date parsing
   const d1 = new Date(due);
   if (!Number.isNaN(d1.getTime())) return d1;
 
-  // Try dd/mm/yyyy or dd-mm-yyyy
   const s = String(due).trim();
   const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
   if (m) {
@@ -348,6 +346,7 @@ const TaskItem = styled.div`
 export default function DashBoard() {
   const user = useAuthStore((s) => s.user);
   const userName = user?.name || "Employee";
+  const loggedInEmployee = user?.name;
 
   const [att, setAtt] = useState(() => getAttendanceState());
   const [records, setRecords] = useState(() => getRecords());
@@ -357,6 +356,7 @@ export default function DashBoard() {
   const [reminders, setReminders] = useState([]);
   const [schedule, setSchedule] = useState([]);
 
+  // ✅ Attendance score (you were using it but not defining it)
   const attendanceScore = useMemo(() => {
     if (!records.length) return 0;
 
@@ -374,32 +374,72 @@ export default function DashBoard() {
     return Math.min(100, Math.round((checkIns / days) * 100));
   }, [records]);
 
+  // ✅ Load Attendance + Records + Reminders + Schedule
   useEffect(() => {
     const load = () => {
-      setTasks(safeParse("employee_tasks", []));
-      setReminders(safeParse("employee_reminders", []));
-      setSchedule(safeParse("employee_schedule", []));
       setAtt(getAttendanceState());
       setRecords(getRecords());
+      setReminders(safeParse("employee_reminders", []));
+      setSchedule(safeParse("employee_schedule", []));
     };
 
     load();
 
     window.addEventListener("storage", load);
     window.addEventListener("attendance_updated", load);
-    window.addEventListener("tasks_updated", load);
     window.addEventListener("reminders_updated", load);
     window.addEventListener("schedule_updated", load);
 
     return () => {
       window.removeEventListener("storage", load);
       window.removeEventListener("attendance_updated", load);
-      window.removeEventListener("tasks_updated", load);
       window.removeEventListener("reminders_updated", load);
       window.removeEventListener("schedule_updated", load);
     };
   }, []);
 
+  // ✅ Load tasks (REAL source: "tasks") + filter by employee
+  useEffect(() => {
+    const loadTasks = () => {
+      if (!loggedInEmployee) {
+        setTasks([]);
+        return;
+      }
+
+      const stored = safeParse("tasks", []);
+
+      const myTasks = stored
+        .filter(
+          (t) =>
+            t.assignedTo &&
+            t.assignedTo.toLowerCase() === loggedInEmployee.toLowerCase()
+        )
+        .map((t) => ({
+          ...t,
+          due: t.dueDate ?? t.due,
+          pct:
+            t.status === "Completed"
+              ? 100
+              : t.status === "In Progress"
+              ? 50
+              : 0,
+        }));
+
+      setTasks(myTasks);
+    };
+
+    loadTasks();
+
+    window.addEventListener("storage", loadTasks);
+    window.addEventListener("tasks_updated", loadTasks);
+
+    return () => {
+      window.removeEventListener("storage", loadTasks);
+      window.removeEventListener("tasks_updated", loadTasks);
+    };
+  }, [loggedInEmployee]);
+
+  // ✅ Live timer tick
   useEffect(() => {
     if (!att.checkedIn) return;
     const id = setInterval(() => setTick((t) => t + 1), 1000);
@@ -415,7 +455,7 @@ export default function DashBoard() {
 
   const pendingTasks = tasks.filter((t) => Number(t.pct || 0) < 100).length;
 
-  // ✅ REAL CHART: last 7 days productivity
+  // ✅ Chart data
   const chartData = useMemo(() => {
     const now = new Date();
 
@@ -425,7 +465,6 @@ export default function DashBoard() {
       return startOfDay(d);
     });
 
-    // attendance: 100 if any CHECK_IN on that day
     const recordDates = records
       .map((r) => ({ ...r, _d: new Date(r.time) }))
       .filter((r) => !Number.isNaN(r._d.getTime()));
@@ -437,7 +476,6 @@ export default function DashBoard() {
       return checkedIn ? 100 : 0;
     });
 
-    // tasks: avg pct for tasks due that day
     const tasksWithDue = tasks
       .map((t) => ({
         ...t,
@@ -453,7 +491,6 @@ export default function DashBoard() {
       return Math.round(avg);
     });
 
-    // fallback if due dates aren’t parseable
     const hasAnyDue = tasksWithDue.length > 0;
     const overallAvgPct =
       tasks.length > 0
@@ -523,11 +560,11 @@ export default function DashBoard() {
 
           <StatGrid>
             <Stat>
-              <div className="label">Clock-in</div>
+              <div className="label">Check-in</div>
               <div className="value">{todayTimes.clockIn}</div>
             </Stat>
             <Stat>
-              <div className="label">Clock-out</div>
+              <div className="label">Check-out</div>
               <div className="value">{todayTimes.clockOut}</div>
             </Stat>
           </StatGrid>
@@ -572,11 +609,7 @@ export default function DashBoard() {
                     return `${label} • Attendance: ${p.attendance}% • Tasks: ${p.taskScore}%`;
                   }}
                 />
-                <RBar
-                  dataKey="value"
-                  radius={[10, 10, 10, 10]}
-                  fill="#2563eb"
-                />
+                <RBar dataKey="value" radius={[10, 10, 10, 10]} fill="#2563eb" />
               </BarChart>
             </ResponsiveContainer>
           </ChartWrap>
@@ -604,9 +637,9 @@ export default function DashBoard() {
             <EmptyState>No tasks yet. Assigned tasks will show up here.</EmptyState>
           ) : (
             tasks.map((t, i) => (
-              <TaskItem key={i}>
+              <TaskItem key={t.id ?? i}>
                 <div className="title">{t.title}</div>
-                <div className="meta">Due: {t.due}</div>
+                <div className="meta">Due: {t.due || "--"}</div>
 
                 <ProgressBar>
                   <div style={{ width: `${Number(t.pct || 0)}%` }} />

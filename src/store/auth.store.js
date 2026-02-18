@@ -31,5 +31,14 @@ export const useAuthStore = create((set, get) => {
       localStorage.removeItem(STORAGE_KEY);
       set({ user: null, token: null, role: null });
     },
+
+    // ✅ UPDATE USER: Updates both store and localStorage
+    updateUser: (updatedUserData) => {
+      const current = get();
+      const newUser = { ...current.user, ...updatedUserData };
+      const payload = { user: newUser, token: current.token, role: current.role };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      set(payload);
+    },
   };
 });
