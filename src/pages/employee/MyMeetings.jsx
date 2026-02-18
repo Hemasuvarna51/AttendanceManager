@@ -204,8 +204,11 @@ export default function MyMeetings() {
 
   const myMeetings = useMemo(() => {
     // only this employee + upcoming first
+    const norm = (s) => (s || "").toString().trim().toLowerCase();
+    const uname = norm(userName);
+
     return meetings
-      .filter((m) => m.employee === userName)
+      .filter((m) => norm(m.employee) === uname)
       .slice()
       .sort((a, b) => {
         const ad = new Date(`${a.date}T${a.time || "00:00"}`).getTime();

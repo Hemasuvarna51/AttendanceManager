@@ -231,12 +231,6 @@ export default function Dashboard() {
         <Header>
           <Title>Dashboard</Title>
           <HeaderActions>
-            <IconWrapper onClick={handleMailClick}>
-              <Mail />
-            </IconWrapper>
-            <IconWrapper onClick={handleBellClick}>
-              <Bell />
-            </IconWrapper>
             <AddButton onClick={handleAddProject}>
               <Plus size={16} /> Add Project
             </AddButton>
