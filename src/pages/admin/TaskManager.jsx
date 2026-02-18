@@ -25,13 +25,18 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
 
-  th, td {
+  th{
     padding: 10px;
-    border: 1px solid #ddd;
+    background: #f3f4f6;
+    text-align: left
+   ;
   }
 
-  th {
-    background: #f3f4f6;
+  td{
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  
+  
   }
 `;
 

@@ -114,12 +114,13 @@ const Table = styled.table`
 
   th,
   td {
-    border: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
     padding: 10px;
     text-align: left;
   }
 
   th {
+    border-bottom: 2px solid #ddd;
     background-color: #f2f2f2;
   }
 

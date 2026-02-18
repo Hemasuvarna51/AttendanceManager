@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useEmployeeStore } from "../../store/employee.store";
 
@@ -116,6 +116,7 @@ const Th = styled.th`
   text-align: left;
   padding: 12px;
   background: #f3f4f6;
+  border-bottom: 2px solid #e5e7eb;
 `;
 
 const Td = styled.td`
@@ -163,10 +164,28 @@ const DeleteBtn = styled.button`
   }
 `;
 
+/* ===================== HELPERS ===================== */
+
+const safeParse = (key, fallback = []) => {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : fallback;
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const syncEmployeesToLocalStorage = (employees) => {
+  localStorage.setItem("employees", JSON.stringify(employees));
+  window.dispatchEvent(new Event("employees_updated")); // ✅ same-tab updates
+};
+
 /* ===================== COMPONENT ===================== */
 
 export default function Employee() {
-  const { employees, addEmployee, updateEmployee, deleteEmployee } = useEmployeeStore();
+  const { employees, addEmployee, updateEmployee, deleteEmployee, setEmployees } =
+    useEmployeeStore();
 
   const [showForm, setShowForm] = useState(false);
   const [editingEmp, setEditingEmp] = useState(null);
@@ -179,6 +198,17 @@ export default function Employee() {
     status: "Active",
   });
 
+  // ✅ On first load: hydrate store from localStorage if store is empty
+  useEffect(() => {
+    // only hydrate if store doesn't already have data
+    if (employees && employees.length > 0) return;
+
+    const stored = safeParse("employees", []);
+    if (stored.length > 0 && typeof setEmployees === "function") {
+      setEmployees(stored);
+    }
+  }, []); // intentionally one-time
+
   /* ===================== CRUD LOGIC ===================== */
 
   const handleSubmit = () => {
@@ -189,8 +219,24 @@ export default function Employee() {
 
     if (editingEmp) {
       updateEmployee(editingEmp.id, formData);
+
+      // ✅ sync after update
+      const next = employees.map((e) =>
+        e.id === editingEmp.id ? { ...formData } : e
+      );
+      syncEmployeesToLocalStorage(next);
     } else {
+      // block duplicates
+      if (employees.some((e) => e.id === formData.id)) {
+        alert("Employee ID already exists!");
+        return;
+      }
+
       addEmployee(formData);
+
+      // ✅ sync after add
+      const next = [...employees, formData];
+      syncEmployeesToLocalStorage(next);
     }
 
     resetForm();
@@ -203,9 +249,13 @@ export default function Employee() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm("Delete this employee?")) {
-      deleteEmployee(id);
-    }
+    if (!window.confirm("Delete this employee?")) return;
+
+    deleteEmployee(id);
+
+    // ✅ sync after delete
+    const next = employees.filter((e) => e.id !== id);
+    syncEmployeesToLocalStorage(next);
   };
 
   const resetForm = () => {
@@ -309,9 +359,7 @@ export default function Employee() {
               <Td>{emp.email}</Td>
               <Td>{emp.joined}</Td>
               <Td>
-                <Status active={emp.status === "Active"}>
-                  {emp.status}
-                </Status>
+                <Status active={emp.status === "Active"}>{emp.status}</Status>
               </Td>
               <Td>
                 <ActionBox>

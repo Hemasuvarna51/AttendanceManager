@@ -19,6 +19,7 @@ import Reports from "./pages/admin/Reports";
 import Payroll from "./pages/admin/Payroll";
 import RunPayroll from "./pages/admin/payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
+import Projects from "./pages/admin/Projects";
 
 
 
@@ -207,6 +208,15 @@ export const router = createBrowserRouter([
         element: (
           <RoleRoute allow={["admin"]}>
             <Meetings />
+          </RoleRoute>
+        ),
+      },
+
+      {
+        path: "admin/projects",
+        element: (
+          <RoleRoute allow={["admin"]}>
+            <Projects />
           </RoleRoute>
         ),
       },
