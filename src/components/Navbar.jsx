@@ -59,6 +59,7 @@ const MenuBtn = styled.button`
 const Brand = styled.div`
   font-weight: 600;
   color: #222;
+  margin-left: 24px;
 `;
 
 const Timer = styled.div`
