@@ -7,9 +7,11 @@ import { getRecords } from "../../utils/attendanceLocalDb";
 /* ================= LAYOUT ================= */
 
 const Page = styled.div`
-  min-height: 100vh;
-  background: #f4f7ff;
-  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Content = styled.div`

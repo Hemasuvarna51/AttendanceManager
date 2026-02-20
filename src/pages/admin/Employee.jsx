@@ -5,10 +5,11 @@ import { useEmployeeStore } from "../../store/employee.store";
 /* ===================== STYLED COMPONENTS ===================== */
 
 const Card = styled.div`
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Header = styled.div`

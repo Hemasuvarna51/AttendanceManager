@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const Container = styled.div`
-  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Header = styled.div`

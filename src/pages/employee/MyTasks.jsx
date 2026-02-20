@@ -3,7 +3,11 @@ import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
 
 const Container = styled.div`
-  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Table = styled.table`
@@ -14,6 +18,9 @@ const Table = styled.table`
   td {
     padding: 10px;
     border: 1px solid #ddd;
+    input {
+      border-bottom: 1px solid #ddd;
+      
   }
 
   th {

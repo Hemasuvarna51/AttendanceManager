@@ -5,12 +5,11 @@ import { useLeaveStore } from "../../store/leave.store";
 /* ===== styled components ===== */
 
 const Container = styled.div`
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 25px;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Title = styled.h2`

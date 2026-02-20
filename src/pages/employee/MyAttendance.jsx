@@ -3,11 +3,10 @@ import styled from "styled-components";
 import { clearRecords, getRecords } from "../../utils/attendanceLocalDb";
 
 const Page = styled.div`
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 18px 40px;
-
-  /* subtle app background feel */
+  padding: 28px 22px 40px;
+  background: #f8fafc;
   min-height: calc(100vh - 60px);
 `;
 

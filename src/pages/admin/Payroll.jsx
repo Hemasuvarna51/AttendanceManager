@@ -5,9 +5,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 /* ================= Styled Components ================= */
 
 const Container = styled.div`
-  padding: 30px;
-  background: #f6f7fb;
-  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Title = styled.h2`

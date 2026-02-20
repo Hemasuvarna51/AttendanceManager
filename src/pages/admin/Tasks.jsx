@@ -5,10 +5,11 @@ import { useAuthStore } from "../../store/auth.store";
 const STATUS = ["Pending", "In Progress", "Completed"];
 
 const Hero = styled.div`
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const HeaderRow = styled.div`
@@ -151,14 +152,7 @@ export default function Tasks() {
   // Get current admin user info
   const adminUser = useAuthStore((s) => s.user);
   
-  // Sample employee list - matches what employees will have in their auth store
-  const employees = [
-    "John Doe",
-    "Jane Smith",
-    "Mike Johnson",
-    "Sarah Williams",
-    "Alex Brown"
-  ];
+  
 
   const [tasks, setTasks] = useState(() => {
     const stored = localStorage.getItem("tasks");

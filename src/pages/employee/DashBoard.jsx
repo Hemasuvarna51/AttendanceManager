@@ -93,7 +93,9 @@ const parseDueDate = (due) => {
 const Page = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 26px 18px 40px;
+  padding: 28px 22px 40px;
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
 `;
 
 const Top = styled.div`
