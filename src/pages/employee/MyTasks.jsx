@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
 
+
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -10,35 +11,74 @@ const Container = styled.div`
   min-height: calc(100vh - 60px);
 `;
 
+const TableWrap = styled.div`
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 
   th,
   td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    input {
-      border-bottom: 1px solid #ddd;
-      
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef2f7;
+    text-align: left;
+    vertical-align: top;
+    font-size: 14px;
   }
 
   th {
     background: #f3f4f6;
+    font-weight: 700;
+    color: #111827;
+    border-bottom: 2px solid #e5e7eb;
+    
+  }
+
+  td {
+    color: #1f2937;
+    
+  }
+
+  tr:last-child td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  /* Make long text not destroy layout */
+  td:nth-child(1),
+  td:nth-child(2) {
+    word-break: break-word;
+    white-space: normal;
   }
 
   select {
-    padding: 6px 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
     width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    outline: none;
+  }
+
+  select:focus {
+    border-color: #94a3b8;
   }
 `;
 
 const PriorityBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
   font-size: 12px;
+  font-weight: 700;
   color: white;
   background: ${({ priority }) =>
     priority === "High"
@@ -46,6 +86,16 @@ const PriorityBadge = styled.span`
       : priority === "Medium"
       ? "#f59e0b"
       : "#10b981"};
+`;
+
+const DebugBox = styled.div`
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #334155;
 `;
 
 const safeParse = (key, fallback = []) => {
