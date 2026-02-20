@@ -30,15 +30,16 @@ const Table = styled.table`
   border-collapse: collapse;
 
   th{
-    padding: 10px;
+    text-align: left;
+    padding: 12px;
     background: #f3f4f6;
-    text-align: left
+    border-bottom: 2px solid #e5e7eb;
    ;
   }
 
   td{
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
   
   
   }

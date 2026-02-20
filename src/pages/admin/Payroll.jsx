@@ -13,9 +13,7 @@ const Container = styled.div`
 `;
 
 const Title = styled.h2`
-  margin-bottom: 20px;
-  font-size: 26px;
-  font-weight: 600;
+  margin : 0 0 20px;
 `;
 
 const TopSection = styled.div`

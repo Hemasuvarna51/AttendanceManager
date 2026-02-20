@@ -37,16 +37,15 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  padding: 14px;
-  background: #f3f4f6;
   text-align: left;
-  font-size: 14px;
+  padding: 12px;
+  background: #f3f4f6;
+  border-bottom: 2px solid #e5e7eb;
 `;
 
 const Td = styled.td`
-  padding: 14px;
+  padding: 12px;
   border-bottom: 1px solid #e5e7eb;
-  font-size: 14px;
 `;
 
 const Status = styled.span`
