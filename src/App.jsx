@@ -1,26 +1,48 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import styled from "styled-components";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+
+const SIDEBAR_W = 200;
+
+const Layout = styled.div`
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+`;
+
+const ContentArea = styled.div`
+  flex: 1;
+  margin-left: ${SIDEBAR_W}px;   /* 👈 THIS IS THE FIX */
+
+  @media (max-width: 979px) {
+    margin-left: 0;
+  }
+`;
+
+const Main = styled.main`
+  padding: 10px 24px;
+`;
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex" }}>
+    <Layout>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+      <ContentArea>
         <Navbar
           title="Horilla"
           onMenu={() => setSidebarOpen(true)}
           notificationCount={4}
         />
 
-        <main style={{ flex: 1, padding: 22 }}>
+        <Main>
           <Outlet />
-        </main>
-      </div>
-    </div>
+        </Main>
+      </ContentArea>
+    </Layout>
   );
 }

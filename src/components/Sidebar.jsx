@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 
-const SIDEBAR_W = 260;
+const SIDEBAR_W = 200;
 
 const Overlay = styled.div`
   position: fixed;
@@ -36,14 +36,14 @@ const Aside = styled.aside`
   color: #fff;
   height: 100vh;
   padding: 16px 14px;
-  position: sticky;
+
+  position: fixed;   /* 👈 CHANGE HERE */
+  left: 0;
   top: 0;
+
   z-index: 50;
 
   @media (max-width: 979px) {
-    position: fixed;
-    left: 0;
-    top: 0;
     transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
     transition: 0.22s ease;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
