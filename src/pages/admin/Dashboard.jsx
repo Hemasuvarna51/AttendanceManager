@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import { Plus, Pause, Play } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { getRecords } from "../../utils/attendanceLocalDb";
 
 /* ================== HELPERS ================== */
 
@@ -93,8 +95,8 @@ const Card = styled.button`
 
   &:hover {
     ${(props) =>
-      props.clickable &&
-      `
+    props.clickable &&
+    `
       transform: translateY(-4px);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
     `}
@@ -159,31 +161,6 @@ const TeamList = styled.ul`
   padding: 0;
 `;
 
-/* ================== TIME TRACKER ================== */
-
-const TimeBox = styled.div`
-  background: #77809f;
-  color: #ffffff;
-  padding: 24px;
-  border-radius: 16px;
-  text-align: center;
-`;
-
-const Time = styled.p`
-  font-size: 30px;
-  font-weight: bold;
-`;
-
-const PauseButton = styled.button`
-  margin-top: 16px;
-  background: #ffffff;
-  color: blue;
-  padding: 10px 16px;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-`;
-
 /* ================== COMPONENT ================== */
 
 export default function Dashboard() {
@@ -197,9 +174,8 @@ export default function Dashboard() {
   // ✅ projects: store array in localStorage
   const [projects, setProjects] = useState(() => safeParse("projects", []));
 
-  // timer
-  const [isRunning, setIsRunning] = useState(false);
-  const [seconds, setSeconds] = useState(0);
+  // ✅ daily attendance data for chart
+  const [dailyAttendanceData, setDailyAttendanceData] = useState([]);
 
   const navigate = useNavigate();
 
@@ -285,24 +261,57 @@ export default function Dashboard() {
     };
   }, []);
 
-
-  /* ---------- TIMER ---------- */
+  /* ---------- Daily Attendance Chart ---------- */
   useEffect(() => {
-    let timer;
-    if (isRunning) timer = setInterval(() => setSeconds((p) => p + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isRunning]);
+    const updateAttendanceChart = () => {
+      const records = getRecords();
+      const dailyData = {};
+      const today = new Date();
 
-  const formatTime = () => {
-    const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
-    const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-    const secs = String(seconds % 60).padStart(2, "0");
-    return `${hrs}:${mins}:${secs}`;
-  };
+      // Initialize last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const fullDateStr = date.toDateString();
+        dailyData[fullDateStr] = { date: dateStr, present: 0 };
+      }
 
-  /* ---------- HANDLERS ---------- */
+      // Count check-ins per day
+      const checkInsByDay = {};
+      records.forEach((r) => {
+        if (r.type === "CHECK_IN") {
+          const dateStr = new Date(r.time).toDateString();
+          if (!checkInsByDay[dateStr]) {
+            checkInsByDay[dateStr] = new Set();
+          }
+          const key = r.userName || r.userEmail || r.employeeName || r.id || "Unknown";
+          checkInsByDay[dateStr].add(key);
+        }
+      });
 
-  const toggleTimer = () => setIsRunning((v) => !v);
+      // Populate dailyData with check-in counts
+      Object.keys(checkInsByDay).forEach((dateStr) => {
+        if (dailyData[dateStr]) {
+          dailyData[dateStr].present = checkInsByDay[dateStr].size;
+        }
+      });
+
+      const chartData = Object.values(dailyData);
+      setDailyAttendanceData(chartData);
+    };
+
+    updateAttendanceChart();
+
+    // Listen for attendance updates
+    window.addEventListener("attendance_updated", updateAttendanceChart);
+    window.addEventListener("storage", updateAttendanceChart);
+
+    return () => {
+      window.removeEventListener("attendance_updated", updateAttendanceChart);
+      window.removeEventListener("storage", updateAttendanceChart);
+    };
+  }, []);
 
   const handleProjectClick = (status = null) => {
     if (status) {
@@ -399,14 +408,27 @@ export default function Dashboard() {
             <TeamList />
           </Box>
 
-          <TimeBox>
-            <BoxTitle>Time Tracker</BoxTitle>
-            <Time>{formatTime()}</Time>
-            <PauseButton onClick={toggleTimer}>
-              {isRunning ? <Pause size={16} /> : <Play size={16} />}
-              {isRunning ? " Pause" : " Start"}
-            </PauseButton>
-          </TimeBox>
+          <Box>
+            <BoxTitle>Daily Attendance Statistic (Last 7 Days)</BoxTitle>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={dailyAttendanceData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="date" />
+                <YAxis
+                  domain={[0, 'dataMax + 2']}
+                  allowDecimals={false}
+                  label={{
+                    value: "Employees Count",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="present" fill=" #77809f" name="Employees Present" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
         </BottomGrid>
       </Main>
     </Page>
