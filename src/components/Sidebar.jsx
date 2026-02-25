@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuthStore } from "../store/auth.store";
 import styled from "styled-components";
 import {
@@ -19,12 +20,12 @@ const SIDEBAR_W = 200;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(178, 173, 173, 0.45);
+  background: rgba(0,0,0,0.35);
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition: 0.2s ease;
-  z-index: 40;
 
+  z-index: 6500; /* ✅ above navbar, below sidebar */
   @media (min-width: 980px) {
     display: none;
   }
@@ -32,24 +33,25 @@ const Overlay = styled.div`
 
 const Aside = styled.aside`
   width: ${SIDEBAR_W}px;
-  background: linear-gradient(180deg, #77809f 0%, #141414 100%);
-  color: #fff;
   height: 100vh;
   padding: 16px 14px;
+  color: #fff;
+  background: linear-gradient(180deg, #77809f 0%, #141414 100%);
 
-  position: fixed;   /* 👈 CHANGE HERE */
-  left: 0;
+  position: fixed;
   top: 0;
+  left: 0;
 
-  z-index: 50;
+  z-index: 7000; /* ✅ sidebar on top of navbar */
+
+  transform: translateX(0);
+  transition: transform 0.22s ease;
+  will-change: transform;
 
   @media (max-width: 979px) {
     transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
-    transition: 0.22s ease;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
   }
 `;
-
 const Brand = styled.div`
   display: flex;
   align-items: center;
@@ -63,7 +65,7 @@ const Logo = styled.div`
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: #0f0f0f;
+  background: rgba(15, 15, 15, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: grid;
   place-items: center;
@@ -119,7 +121,7 @@ const Item = styled(NavLink)`
   align-items: center;
   gap: 12px;
   padding: 12px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   color: rgba(255, 255, 255, 0.86);
   text-decoration: none;
 
@@ -130,16 +132,17 @@ const Item = styled(NavLink)`
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.07);
   }
 
+  /* ✅ “pill active” like screenshot */
   &.active {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 `;
 
-// Optional footer (like “logout” area)
 const Footer = styled.div`
   margin-top: auto;
   padding: 10px 6px 4px;
@@ -152,14 +155,14 @@ const FooterBtn = styled.button`
   align-items: center;
   gap: 12px;
   padding: 12px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 0;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.92);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
   }
 
   svg {
@@ -170,12 +173,19 @@ const FooterBtn = styled.button`
 
 export default function Sidebar({ open = false, onClose = () => {} }) {
   const role = useAuthStore((s) => s.role);
-  const logout = useAuthStore((s) => s.logout); // only if you have logout
+  const logout = useAuthStore((s) => s.logout);
+
+  const location = useLocation();
+
+  /* ✅ Close sidebar on route change (mobile UX) */
+  useEffect(() => {
+    if (open) onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   return (
     <>
       <Overlay $open={open} onClick={onClose} />
-
       <Aside $open={open}>
         <Brand>
           <Logo>GZ</Logo>
@@ -228,7 +238,6 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
               <Item to="/admin/leave-approval">
                 <CalendarCheck2 /> Leave Approval
               </Item>
-              
               <Item to="/admin/tasks">
                 <ListTodo /> All Tasks
               </Item>
@@ -246,7 +255,12 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
         )}
 
         <Footer>
-          <FooterBtn onClick={() => logout && logout()}>
+          <FooterBtn
+            onClick={() => {
+              onClose();
+              logout?.();
+            }}
+          >
             <LogOut /> Logout
           </FooterBtn>
         </Footer>

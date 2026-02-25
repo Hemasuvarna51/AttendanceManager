@@ -64,20 +64,24 @@ export default function Login() {
   const [role, setRole] = useState("employee");
 
   const handleLogin = () => {
-    if (!username || !password) {
-      alert("Credentials required");
-      return;
-    }
+  if (!username || !password) {
+    alert("Credentials required");
+    return;
+  }
 
-    login({
-      user: { name: username },
-      token: "demo-token",
-      role,
-    });
+  login({
+    user: { name: username },
+    token: "demo-token",
+    role,
+  });
 
-    navigate("/", { replace: true });
-
-  };
+  // ✅ go straight to the correct panel
+  if (role === "admin") {
+    navigate("/admin/dashboard", { replace: true });
+  } else {
+    navigate("/employee/dashboard", { replace: true });
+  }
+};
 
   return (
     <LoginCard>

@@ -1,50 +1,44 @@
+// src/routes.jsx
 import { createBrowserRouter, Navigate } from "react-router-dom";
-
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
 import Login from "./pages/auth/Login";
 import Unauthorized from "./pages/auth/Unauthorized";
 
-import AppShell from "./App";
+import AdminShell from "./layout/AdminShell";
+import EmployeeShell from "./layout/EmployeeShell";
+
 import { useAuthStore } from "./store/auth.store";
 
-// admin pages
+// ✅ import your pages
 import Dashboard from "./pages/admin/Dashboard";
+import Tasks from "./pages/admin/Tasks";
 import Employee from "./pages/admin/Employee";
 import LeaveApproval from "./pages/admin/LeaveApproval";
-import Tasks from "./pages/admin/Tasks";
-import Reports from "./pages/admin/Reports";
-// create placeholder if not yet
 import Payroll from "./pages/admin/Payroll";
 import RunPayroll from "./pages/admin/payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
 import Projects from "./pages/admin/Projects";
+import Reports from "./pages/admin/Reports";
 
-
-
-// employee pages
 import DashBoard from "./pages/employee/DashBoard";
 import CheckIn from "./pages/employee/CheckIn";
-import CheckOut from "./pages/employee/CheckOut"; // create if not yet
-import MyAttendance from "./pages/employee/MyAttendance"; // create if not yet
-import LeaveRequest from "./pages/employee/LeaveRequest"; // placeholder ok
+import CheckOut from "./pages/employee/CheckOut";
+import LeaveRequest from "./pages/employee/LeaveRequest";
+import MyAttendance from "./pages/employee/MyAttendance";
 import MyTasks from "./pages/employee/MyTasks";
-import MyProfile from "./pages/employee/MyProfile"; // create if not yet
-import MyMeetings from "./pages/employee/MyMeetings"; // create if not yet
+import MyProfile from "./pages/employee/MyProfile";
+import MyMeetings from "./pages/employee/MyMeetings";
 
 function HomeRedirect() {
   const role = useAuthStore((s) => s.role);
-  if (role === "admin") return <Navigate to="/admin/dashboard" replace />;
-  return <Navigate to="/employee/dashboard" replace />;
+  return role === "admin" ? (
+    <Navigate to="/admin/dashboard" replace />
+  ) : (
+    <Navigate to="/employee/dashboard" replace />
+  );
 }
-
-function ProfileRedirect() {
-  const role = useAuthStore((s) => s.role);
-  if (role === "admin") return <Navigate to="/admin/profile" replace />;
-  return <Navigate to="/employee/my-profile" replace />;
-}
-
 
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
@@ -54,188 +48,53 @@ export const router = createBrowserRouter([
     path: "/",
     element: (
       <ProtectedRoute>
-        <AppShell />
+        <HomeRedirect />
+      </ProtectedRoute>
+    ),
+  },
+
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute>
+        <RoleRoute allow={["admin"]}>
+          <AdminShell />
+        </RoleRoute>
       </ProtectedRoute>
     ),
     children: [
-      // ✅ default landing after login
-      { index: true, element: <HomeRedirect /> },
-      {
-        path: "profile",
-        element: (
-          <RoleRoute allow={["employee", "admin"]}>
-            <ProfileRedirect />
-          </RoleRoute>
-        ),
-      },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "tasks", element: <Tasks /> },
+      { path: "employees", element: <Employee /> },
+      { path: "leave-approval", element: <LeaveApproval /> },
+      { path: "payroll", element: <Payroll /> },
+      { path: "payroll/run", element: <RunPayroll /> },
+      { path: "meetings", element: <Meetings /> },
+      { path: "projects", element: <Projects /> },
+      { path: "reports", element: <Reports /> },
+      { path: "*", element: <Navigate to="/admin/dashboard" replace /> },
+    ],
+  },
 
-      {
-        path: "employee/dashboard",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <DashBoard />
-          </RoleRoute>
-        ),
-      },
-
-      // ✅ employee routes
-      {
-        path: "employee/checkin",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <CheckIn />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "employee/checkout",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <CheckOut />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "employee/leave",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <LeaveRequest />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "employee/my-attendance",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <MyAttendance />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "employee/tasks",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <MyTasks />
-          </RoleRoute>
-        ),
-      },
-
-      {
-        path: "employee/my-profile",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <MyProfile />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "employee/my-meetings",
-        element: (
-          <RoleRoute allow={["employee"]}>
-            <MyMeetings />
-          </RoleRoute>
-        ),
-      },
-
-      // optional admin profile page
-      // import AdminProfile from "./pages/admin/AdminProfile";
-
-      {
-        path: "admin/profile",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <MyProfile /> {/* or <AdminProfile /> */}
-          </RoleRoute>
-        ),
-      },
-
-      
-
-
-      // ✅ admin routes
-      {
-        path: "admin/dashboard",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Dashboard />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "admin/tasks",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Tasks />
-          </RoleRoute>
-        ),
-      },
-
-      {
-        path: "admin/employees",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Employee />
-          </RoleRoute>
-        ),
-      },
-
-      {
-        path: "admin/leave-approval",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <LeaveApproval />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "admin/payroll",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Payroll />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "admin/payroll/run",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <RunPayroll />
-          </RoleRoute>
-        ),
-      },
-      {
-        path: "admin/meetings",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Meetings />
-          </RoleRoute>
-        ),
-      },
-
-      {
-        path: "admin/projects",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Projects />
-          </RoleRoute>
-        ),
-      },
-
-
-      {
-        path: "admin/reports",
-        element: (
-          <RoleRoute allow={["admin"]}>
-            <Reports />
-          </RoleRoute>
-        ),
-      },
-
-      
-      
-
-      // ✅ fallback
-      { path: "*", element: <Navigate to="/" replace /> },
+  {
+    path: "/employee",
+    element: (
+      <ProtectedRoute>
+        <RoleRoute allow={["employee"]}>
+          <EmployeeShell />
+        </RoleRoute>
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: "dashboard", element: <DashBoard /> },
+      { path: "checkin", element: <CheckIn /> },
+      { path: "checkout", element: <CheckOut /> },
+      { path: "leave", element: <LeaveRequest /> },
+      { path: "my-attendance", element: <MyAttendance /> },
+      { path: "tasks", element: <MyTasks /> },
+      { path: "my-profile", element: <MyProfile /> },
+      { path: "my-meetings", element: <MyMeetings /> },
+      { path: "*", element: <Navigate to="/employee/dashboard" replace /> },
     ],
   },
 ]);

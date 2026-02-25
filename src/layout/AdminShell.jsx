@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 const SIDEBAR_W = 200;
 const NAV_H = 64;
@@ -13,8 +13,8 @@ const Shell = styled.div`
 `;
 
 const ContentArea = styled.div`
-  margin-left: ${SIDEBAR_W}px;     /* ✅ content starts after sidebar */
-  padding-top: ${NAV_H}px;         /* ✅ content starts below fixed navbar */
+  margin-left: ${SIDEBAR_W}px;
+  padding-top: ${NAV_H}px;
 
   @media (max-width: 979px) {
     margin-left: 0;
@@ -25,7 +25,7 @@ const Main = styled.main`
   padding: 18px 24px;
 `;
 
-export default function App() {
+export default function AdminShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../store/auth.store";
-import { Bell, Globe, Menu, ChevronDown, User, LogOut, Check, Trash2 } from "lucide-react";
+import {
+  Bell,
+  Globe,
+  Menu,
+  ChevronDown,
+  User,
+  LogOut,
+  Check,
+  Trash2,
+} from "lucide-react";
 import { getAttendanceState } from "../utils/attendanceLocalDb";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -17,16 +26,35 @@ const formatHMS = (ms) => {
 
 /* ===================== STYLES ===================== */
 
+
+
+
+
+const SIDEBAR_W = 200;
+
 const Header = styled.header`
   height: 64px;
   background: #fff;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
-  padding: 0 18px;
   justify-content: space-between;
-`;
+  padding: 0 24px;
 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  
+
+  padding-left: calc(24px + ${SIDEBAR_W}px);
+
+  z-index: 3000; /* ✅ lower than sidebar */
+
+  @media (max-width: 979px) {
+    padding-left: 24px;
+  }
+`;
 const Left = styled.div`
   display: flex;
   align-items: center;
@@ -37,13 +65,12 @@ const Right = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-left: auto;
 `;
 
 const MenuBtn = styled.button`
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 999px;
   border: 1px solid #eee;
   background: #fff;
   display: inline-flex;
@@ -51,23 +78,28 @@ const MenuBtn = styled.button`
   justify-content: center;
   cursor: pointer;
 
+  &:hover {
+    background: #f6f6f6;
+  }
+
   @media (min-width: 980px) {
     display: none;
   }
 `;
 
 const Brand = styled.div`
-  font-weight: 600;
-  color: #222;
-  margin-left: 24px;
+  font-weight: 700;
+  color: #111;
+  font-size: 18px;
+  margin-left: 20px;
 `;
 
 const Timer = styled.div`
   border: 1px solid #b9e6c7;
   color: #1a9b4a;
   padding: 8px 12px;
-  border-radius: 10px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 13px;
 
   @media (max-width: 560px) {
@@ -77,12 +109,12 @@ const Timer = styled.div`
 
 const CheckBtn = styled.button`
   height: 42px;
-  padding: 0 22px;
-  border-radius: 6px;
+  padding: 0 18px;
+  border-radius: 12px;
   border: 1px solid ${({ $out }) => ($out ? "#ef4444" : "#16a34a")};
   background: ${({ $out }) => ($out ? "#ef4444" : "#22c55e")};
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 
   &:hover {
@@ -99,45 +131,56 @@ const CheckBtn = styled.button`
   }
 `;
 
+const IconWrap = styled.div`
+  position: relative;
+`;
+
 const IconBtn = styled.button`
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
   border: 1px solid #eee;
   background: #fff;
   cursor: pointer;
   position: relative;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #f6f6f6;
+  }
 `;
 
-const Badge = styled.span`
+const Dot = styled.span`
   position: absolute;
-  right: 6px;
-  top: 6px;
-  background: #ff4d4f;
-  color: #fff;
-  font-size: 11px;
-  padding: 2px 6px;
+  right: 9px;
+  top: 9px;
+  width: 9px;
+  height: 9px;
+  background: #ff3b30;
   border-radius: 999px;
+  box-shadow: 0 0 0 2px #fff;
 `;
 
 /* ===== Profile dropdown styles ===== */
 
 const ProfileWrap = styled.div`
   position: relative;
-  padding-left: 16px;
+  padding-left: 14px;
   border-left: 1px solid #eee;
 `;
-
 
 const ProfileBtn = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border: 0;
   background: transparent;
   cursor: pointer;
   padding: 6px 10px;
-  border-radius: 12px;
+  border-radius: 14px;
 
   &:hover {
     background: #f6f6f6;
@@ -147,7 +190,7 @@ const ProfileBtn = styled.button`
 const Avatar = styled.div`
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: #eaeaea;
 `;
 
@@ -156,7 +199,7 @@ const NameRole = styled.div`
 
   .name {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700;
   }
   .role {
     font-size: 12px;
@@ -171,7 +214,7 @@ const NameRole = styled.div`
 
 const Dropdown = styled.div`
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   right: 0;
   width: 220px;
   background: #fff;
@@ -179,21 +222,22 @@ const Dropdown = styled.div`
   border: 1px solid #eef2f7;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
   padding: 8px;
-  z-index: 100;
+  z-index: 3000;
 
   transform-origin: top right;
   animation: popIn 140ms ease-out forwards;
 
   @keyframes popIn {
-    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
-
-  
 `;
-
-
-
 
 const DropItem = styled.button`
   width: 100%;
@@ -208,7 +252,7 @@ const DropItem = styled.button`
   align-items: center;
   gap: 12px;
 
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   line-height: 1;
   transition: background 0.15s ease;
@@ -224,8 +268,6 @@ const DropItem = styled.button`
   }
 `;
 
-
-
 const Divider = styled.div`
   height: 1px;
   background: #e9eef5;
@@ -237,14 +279,14 @@ const Divider = styled.div`
 
 const NotificationDropdown = styled.div`
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   right: 0;
   width: 360px;
   background: #fff;
   border-radius: 16px;
   border: 1px solid #eef2f7;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-  z-index: 100;
+  z-index: 3000;
   max-height: 400px;
   overflow-y: auto;
 
@@ -252,15 +294,21 @@ const NotificationDropdown = styled.div`
   animation: popIn 140ms ease-out forwards;
 
   @keyframes popIn {
-    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 `;
 
 const NotificationHeader = styled.div`
   padding: 14px 16px;
   border-bottom: 1px solid #f0f0f0;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   display: flex;
   justify-content: space-between;
@@ -273,7 +321,7 @@ const ClearBtn = styled.button`
   color: #256aeb;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 
   &:hover {
     opacity: 0.7;
@@ -297,7 +345,7 @@ const NotifContent = styled.div`
 `;
 
 const NotifTitle = styled.div`
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
   color: #222;
 `;
@@ -339,22 +387,28 @@ const EmptyNotif = styled.div`
 
 const LanguageDropdown = styled.div`
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   right: 0;
-  width: 160px;
+  width: 180px;
   background: #fff;
   border-radius: 16px;
   border: 1px solid #eef2f7;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-  z-index: 100;
+  z-index: 3000;
   padding: 8px;
 
   transform-origin: top right;
   animation: popIn 140ms ease-out forwards;
 
   @keyframes popIn {
-    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 `;
 
@@ -369,7 +423,7 @@ const LanguageItem = styled.button`
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: ${({ $active }) => ($active ? 600 : 500)};
+  font-weight: ${({ $active }) => ($active ? 700 : 600)};
   font-size: 14px;
   transition: background 0.15s ease;
 
@@ -381,15 +435,6 @@ const LanguageItem = styled.button`
     width: 16px;
     height: 16px;
   }
-`;
-
-const LanguageBadge = styled.span`
-  margin-left: auto;
-  font-size: 12px;
-  background: #256aeb;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
 `;
 
 /* ===================== COMPONENT ===================== */
@@ -410,29 +455,40 @@ export default function Navbar({ onMenu = () => {} }) {
   const CHECKIN = "/employee/checkin";
   const CHECKOUT = "/employee/checkout";
 
-  // attendance state
   const [att, setAtt] = useState(() => getAttendanceState());
-
-  // live timer string
   const [timer, setTimer] = useState("00:00:00");
 
-  // profile dropdown state
   const [openProfile, setOpenProfile] = useState(false);
   const profileRef = useRef(null);
 
-  // notifications state
   const [openNotifications, setOpenNotifications] = useState(false);
   const notificationsRef = useRef(null);
   const [notifications, setNotifications] = useState(() => {
     const stored = localStorage.getItem("notifications");
-    return stored ? JSON.parse(stored) : [
-      { id: 1, title: "Task Assigned", message: "You have been assigned a new task", time: "2 hours ago" },
-      { id: 2, title: "Meeting Scheduled", message: "Team meeting scheduled for tomorrow at 10 AM", time: "1 day ago" },
-      { id: 3, title: "Attendance Approved", message: "Your attendance has been approved", time: "3 days ago" },
-    ];
+    return stored
+      ? JSON.parse(stored)
+      : [
+          {
+            id: 1,
+            title: "Task Assigned",
+            message: "You have been assigned a new task",
+            time: "2 hours ago",
+          },
+          {
+            id: 2,
+            title: "Meeting Scheduled",
+            message: "Team meeting scheduled for tomorrow at 10 AM",
+            time: "1 day ago",
+          },
+          {
+            id: 3,
+            title: "Attendance Approved",
+            message: "Your attendance has been approved",
+            time: "3 days ago",
+          },
+        ];
   });
 
-  // language state
   const [openLanguage, setOpenLanguage] = useState(false);
   const languageRef = useRef(null);
   const [language, setLanguage] = useState(() => {
@@ -446,32 +502,25 @@ export default function Navbar({ onMenu = () => {} }) {
     { code: "fr", name: "French" },
   ];
 
-  // keep att updated (same tab + other tabs)
   useEffect(() => {
     const refresh = () => setAtt(getAttendanceState());
-
     window.addEventListener("storage", refresh);
     window.addEventListener("attendance_updated", refresh);
-
     refresh();
-
     return () => {
       window.removeEventListener("storage", refresh);
       window.removeEventListener("attendance_updated", refresh);
     };
   }, []);
 
-  // live timer updates
   useEffect(() => {
     if (!att.checkedIn || !att.checkInTime) {
       setTimer("00:00:00");
       return;
     }
-
     const start = new Date(att.checkInTime).getTime();
     const tick = () => setTimer(formatHMS(Date.now() - start));
     tick();
-
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [att.checkedIn, att.checkInTime]);
@@ -482,18 +531,22 @@ export default function Navbar({ onMenu = () => {} }) {
 
   const closeProfile = useCallback(() => setOpenProfile(false), []);
 
-  // click outside to close dropdowns
   useEffect(() => {
     const onDocClick = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) closeProfile();
-      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) setOpenNotifications(false);
-      if (languageRef.current && !languageRef.current.contains(e.target)) setOpenLanguage(false);
+      if (profileRef.current && !profileRef.current.contains(e.target))
+        closeProfile();
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(e.target)
+      )
+        setOpenNotifications(false);
+      if (languageRef.current && !languageRef.current.contains(e.target))
+        setOpenLanguage(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [closeProfile]);
 
-  // Esc to close dropdowns
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") {
@@ -506,24 +559,19 @@ export default function Navbar({ onMenu = () => {} }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [closeProfile]);
 
-  // Save notifications to localStorage
   useEffect(() => {
     localStorage.setItem("notifications", JSON.stringify(notifications));
   }, [notifications]);
 
-  // Save language preference
   useEffect(() => {
     localStorage.setItem("language", language);
-    console.log(`🌍 Language changed to: ${language}`);
   }, [language]);
 
   const removeNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
+  const clearAllNotifications = () => setNotifications([]);
 
   const doLogout = () => {
     closeProfile();
@@ -541,10 +589,8 @@ export default function Navbar({ onMenu = () => {} }) {
       </Left>
 
       <Right>
-        {/* ✅ show timer only when employee is checked in */}
         {isEmployee && att.checkedIn && <Timer>⏱ {timer}</Timer>}
 
-        {/* ✅ Check-In / Check-Out button */}
         {isEmployee && (
           <CheckBtn
             $out={att.checkedIn}
@@ -555,9 +601,8 @@ export default function Navbar({ onMenu = () => {} }) {
           </CheckBtn>
         )}
 
-        {/* ✅ Admin notifications */}
         {isAdmin && (
-          <div ref={notificationsRef} style={{ position: "relative" }}>
+          <IconWrap ref={notificationsRef}>
             <IconBtn
               aria-label="Notifications"
               onClick={() => setOpenNotifications((v) => !v)}
@@ -565,7 +610,7 @@ export default function Navbar({ onMenu = () => {} }) {
               aria-expanded={openNotifications}
             >
               <Bell size={18} />
-              {notifications.length > 0 && <Badge>{notifications.length}</Badge>}
+              {notifications.length > 0 && <Dot />}
             </IconBtn>
 
             {openNotifications && (
@@ -598,11 +643,10 @@ export default function Navbar({ onMenu = () => {} }) {
                 )}
               </NotificationDropdown>
             )}
-          </div>
+          </IconWrap>
         )}
 
-        {/* ✅ Language selector */}
-        <div ref={languageRef} style={{ position: "relative" }}>
+        <IconWrap ref={languageRef}>
           <IconBtn
             aria-label="Language"
             onClick={() => setOpenLanguage((v) => !v)}
@@ -630,9 +674,8 @@ export default function Navbar({ onMenu = () => {} }) {
               ))}
             </LanguageDropdown>
           )}
-        </div>
+        </IconWrap>
 
-        {/* ✅ Profile dropdown */}
         <ProfileWrap ref={profileRef}>
           <ProfileBtn
             type="button"
@@ -670,7 +713,6 @@ export default function Navbar({ onMenu = () => {} }) {
             </Dropdown>
           )}
         </ProfileWrap>
-        
       </Right>
     </Header>
   );
