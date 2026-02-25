@@ -387,7 +387,8 @@ export default function MyProfile() {
   // ✅ NO HARDCODED DEFAULTS: user fills everything
   const initialForm = useMemo(
     () => ({
-      name: user?.name || user?.username || "",
+      username: user?.username || "",   // ✅ add this
+      name: user?.name || "",
       empId: user?.empId || user?.employeeId || "",
       workEmail: user?.workEmail || "",
       email: user?.email || "",
@@ -426,7 +427,7 @@ export default function MyProfile() {
     if (empty) setEditing(true);
   }, [initialForm]);
 
-  const displayName = form.name || user?.name || user?.username || "User";
+  const displayName = form.username || form.name || user?.email || "User";
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -434,13 +435,16 @@ export default function MyProfile() {
   };
 
   const validate = () => {
+    if (!form.username.trim()) return "Username is required.";
     if (!form.name.trim()) return "Full Name is required.";
     if (!form.email.trim()) return "Email is required.";
     if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Email looks invalid.";
     if (!form.phone.trim()) return "Phone is required.";
     if (form.phone.trim().length < 8) return "Phone number looks too short.";
+    
     return null;
   };
+
 
   const onSave = () => {
     const err = validate();
@@ -478,6 +482,7 @@ export default function MyProfile() {
       return;
     }
 
+
     // Convert to base64
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -501,7 +506,9 @@ export default function MyProfile() {
   return (
     <Page>
       <Shell>
+
         <ProfileCard $editing={editing}>
+
           <TopRow>
             {!editing ? (
               <IconAction onClick={() => setEditing(true)}>
@@ -634,6 +641,19 @@ export default function MyProfile() {
             <Panel>
               <PanelHeader>Personal Information</PanelHeader>
               <PanelBody>
+                <Field>
+                  <div className="label">Username</div>
+                  {editing ? (
+                    <Input
+                      name="username"
+                      value={form.username}
+                      onChange={onChange}
+                      placeholder="Enter username"
+                    />
+                  ) : (
+                    <div className="value">{showVal(form.username)}</div>
+                  )}
+                </Field>
                 <Field>
                   <div className="label">Full Name</div>
                   {editing ? (

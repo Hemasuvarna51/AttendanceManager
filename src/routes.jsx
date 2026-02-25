@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
 import Login from "./pages/auth/Login";
+import SignUP from "./pages/auth/signUp";
 import Unauthorized from "./pages/auth/Unauthorized";
 
 import AdminShell from "./layout/AdminShell";
@@ -32,16 +33,27 @@ import MyProfile from "./pages/employee/MyProfile";
 import MyMeetings from "./pages/employee/MyMeetings";
 
 function HomeRedirect() {
+  const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.role);
-  return role === "admin" ? (
-    <Navigate to="/admin/dashboard" replace />
-  ) : (
-    <Navigate to="/employee/dashboard" replace />
-  );
+
+  // if not logged in
+  if (!token) return <Navigate to="/employee/login" replace />;
+
+  // if role missing (rare)
+  if (!role) return <Navigate to="/employee/login" replace />;
+
+  return role === "admin"
+    ? <Navigate to="/admin/dashboard" replace />
+    : <Navigate to="/employee/dashboard" replace />;
 }
 
 export const router = createBrowserRouter([
-  { path: "/login", element: <Login /> },
+  { path: "/login", element: <Navigate to="/employee/login" replace /> },
+
+  { path: "/admin/login", element: <Login panel="admin" /> },
+  { path: "/employee/login", element: <Login panel="employee" /> },
+ 
+  { path: "/signup", element: <SignUP /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 
   {

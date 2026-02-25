@@ -1,44 +1,57 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-const STORAGE_KEY = "attendance_auth";
+export const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      user: null,
+      token: null,
+      role: null, // "admin" | "employee"
+      hasHydrated: false,
 
-const loadAuth = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
+      isLoggedIn: () => !!get().token,
 
-export const useAuthStore = create((set, get) => {
-  const saved = loadAuth();
+      login: ({ user, token, role }) => {
+        // normalize role just in case
+        const safeRole =
+          role === "Admin" ? "admin" :
+          role === "Employee" ? "employee" :
+          role;
 
-  return {
-    user: saved?.user || null,
-    token: saved?.token || null,
-    role: saved?.role || null,
+        set({ user, token, role: safeRole });
+      },
 
-    isLoggedIn: () => !!get().token,
+      logout: () => {
+        set({ user: null, token: null, role: null });
+      },
 
-    login: ({ user, token, role }) => {
-      const payload = { user, token, role };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      set(payload);
-    },
+      updateUser: (updatedUserData) => {
+        const current = get();
+        if (!current.user) return;
 
-    logout: () => {
-      localStorage.removeItem(STORAGE_KEY);
-      set({ user: null, token: null, role: null });
-    },
-
-    // ✅ UPDATE USER: Updates both store and localStorage
-    updateUser: (updatedUserData) => {
-      const current = get();
-      const newUser = { ...current.user, ...updatedUserData };
-      const payload = { user: newUser, token: current.token, role: current.role };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      set(payload);
-    },
-  };
-});
+        set({
+          user: { ...current.user, ...updatedUserData },
+        });
+      },
+    }),
+    {
+      name: "attendance_auth",
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        // called after rehydration
+        state?.hasHydrated && state.hasHydrated; // no-op safe
+      },
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        role: state.role,
+      }),
+      // ✅ set hydration flag once loaded
+      merge: (persisted, current) => ({
+        ...current,
+        ...persisted,
+        hasHydrated: true,
+      }),
+    }
+  )
+);

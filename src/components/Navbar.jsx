@@ -447,7 +447,9 @@ export default function Navbar({ onMenu = () => {} }) {
   const isEmployee = role === "employee";
   const isAdmin = role === "admin";
 
-  const userName = useMemo(() => user?.name || "Hema Suvarna", [user]);
+  const userName = useMemo(() => {
+  return user?.username || user?.name || user?.email || "User";
+}, [user]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -574,10 +576,10 @@ export default function Navbar({ onMenu = () => {} }) {
   const clearAllNotifications = () => setNotifications([]);
 
   const doLogout = () => {
-    closeProfile();
-    logoutAction();
-    navigate("/login", { replace: true });
-  };
+  closeProfile();
+  logoutAction();
+  navigate(role === "admin" ? "/admin/login" : "/employee/login", { replace: true });
+};
 
   return (
     <Header>
@@ -697,7 +699,7 @@ export default function Navbar({ onMenu = () => {} }) {
                 role="menuitem"
                 onClick={() => {
                   closeProfile();
-                  navigate("/profile");
+                  navigate(isAdmin ? "/admin/profile" : "/employee/my-profile");
                 }}
               >
                 <User size={16} />

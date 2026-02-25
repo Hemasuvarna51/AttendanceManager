@@ -5,11 +5,12 @@ export default function ProtectedRoute({ children }) {
   const token = useAuthStore((s) => s.token);
   const location = useLocation();
 
-  // ✅ Keep logs INSIDE the component only
-  console.log("token in ProtectedRoute:", token);
-
   if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    const loginPath = location.pathname.startsWith("/admin")
+      ? "/admin/login"
+      : "/employee/login";
+
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
   return children;
