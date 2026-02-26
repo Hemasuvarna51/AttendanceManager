@@ -4,7 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
 import Login from "./pages/auth/Login";
-import SignUp from "./pages/auth/SignUp";
+import Signup from "./pages/auth/Signup";
 import Unauthorized from "./pages/auth/Unauthorized";
 
 import AdminShell from "./layout/AdminShell";
@@ -18,12 +18,12 @@ import Tasks from "./pages/admin/Tasks";
 import Employee from "./pages/admin/Employee";
 import LeaveApproval from "./pages/admin/LeaveApproval";
 import Payroll from "./pages/admin/Payroll";
-import RunPayroll from "./pages/admin/payroll/RunPayroll";
+import RunPayroll from "./pages/admin/Payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
 import Projects from "./pages/admin/Projects";
 import Reports from "./pages/admin/Reports";
 
-import DashBoard from "./pages/employee/DashBoard";
+import Dashboard from "./pages/employee/DashBoard";
 import CheckIn from "./pages/employee/CheckIn";
 import CheckOut from "./pages/employee/CheckOut";
 import LeaveRequest from "./pages/employee/LeaveRequest";
@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
   { path: "/admin/login", element: <Login /> },
   { path: "/employee/login", element: <Login /> },
 
-  { path: "/signup", element: <SignUp /> },
+  { path: "/signup", element: <Signup /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 
   {
@@ -98,7 +98,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: "dashboard", element: <DashBoard /> },
+      { path: "dashboard", element: <Dashboard /> },
       { path: "checkin", element: <CheckIn /> },
       { path: "checkout", element: <CheckOut /> },
       { path: "leave", element: <LeaveRequest /> },
