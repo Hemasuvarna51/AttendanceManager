@@ -13,7 +13,7 @@ import EmployeeShell from "./layout/EmployeeShell";
 import { useAuthStore } from "./store/auth.store";
 
 // ✅ import your pages
-import Dashboard from "./pages/admin/Dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
 import Tasks from "./pages/admin/Tasks";
 import Employee from "./pages/admin/Employee";
 import LeaveApproval from "./pages/admin/LeaveApproval";
@@ -23,7 +23,7 @@ import Meetings from "./pages/admin/Meetings";
 import Projects from "./pages/admin/Projects";
 import Reports from "./pages/admin/Reports";
 
-import Dashboard from "./pages/employee/DashBoard";
+import EmployeeDashboard from "./pages/employee/DashBoard";
 import CheckIn from "./pages/employee/CheckIn";
 import CheckOut from "./pages/employee/CheckOut";
 import LeaveRequest from "./pages/employee/LeaveRequest";
@@ -75,7 +75,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: "dashboard", element: <Dashboard /> },
+      { path: "dashboard", element: <AdminDashboard /> },
       { path: "tasks", element: <Tasks /> },
       { path: "employees", element: <Employee /> },
       { path: "leave-approval", element: <LeaveApproval /> },
@@ -98,7 +98,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { path: "dashboard", element: <Dashboard /> },
+      { path: "dashboard", element: <EmployeeDashboard /> },
       { path: "checkin", element: <CheckIn /> },
       { path: "checkout", element: <CheckOut /> },
       { path: "leave", element: <LeaveRequest /> },
