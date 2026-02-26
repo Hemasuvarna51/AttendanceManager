@@ -36,7 +36,7 @@ const Aside = styled.aside`
   height: 100vh;
   padding: 16px 14px;
   color: #fff;
-  background: linear-gradient(180deg, #77809f 0%, #141414 100%);
+  background: linear-gradient(135deg, #6849d9, #205eda, #3b82f6);
 
   position: fixed;
   top: 0;
@@ -114,6 +114,7 @@ const Nav = styled.nav`
   flex-direction: column;
   gap: 6px;
   padding: 4px 6px 10px;
+  color: solid rgba(255, 255, 255, 0.92);
 `;
 
 const Item = styled(NavLink)`

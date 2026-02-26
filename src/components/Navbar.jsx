@@ -1,21 +1,11 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../store/auth.store";
-import {
-  Bell,
-  Globe,
-  Menu,
-  ChevronDown,
-  User,
-  LogOut,
-  Check,
-  Trash2,
-} from "lucide-react";
+import { Bell, Globe, Menu, ChevronDown, User, LogOut, Check, Trash2 } from "lucide-react";
 import { getAttendanceState } from "../utils/attendanceLocalDb";
 import { useLocation, useNavigate } from "react-router-dom";
 
 /* ===================== HELPERS ===================== */
-
 const formatHMS = (ms) => {
   const s = Math.max(0, Math.floor(ms / 1000));
   const hh = String(Math.floor(s / 3600)).padStart(2, "0");
@@ -439,17 +429,18 @@ const LanguageItem = styled.button`
 
 /* ===================== COMPONENT ===================== */
 
-export default function Navbar({ onMenu = () => {} }) {
+export default function Navbar({ onMenu = () => { } }) {
   const logoutAction = useAuthStore((s) => s.logout);
   const role = useAuthStore((s) => s.role);
   const user = useAuthStore((s) => s.user);
+  const userId = user?.id; // ✅ IMPORTANT
 
   const isEmployee = role === "employee";
   const isAdmin = role === "admin";
 
   const userName = useMemo(() => {
-  return user?.username || user?.name || user?.email || "User";
-}, [user]);
+    return user?.username || user?.name || user?.email || "User";
+  }, [user]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -457,7 +448,7 @@ export default function Navbar({ onMenu = () => {} }) {
   const CHECKIN = "/employee/checkin";
   const CHECKOUT = "/employee/checkout";
 
-  const [att, setAtt] = useState(() => getAttendanceState());
+  const [att, setAtt] = useState(() => getAttendanceState(userId));
   const [timer, setTimer] = useState("00:00:00");
 
   const [openProfile, setOpenProfile] = useState(false);
@@ -470,32 +461,15 @@ export default function Navbar({ onMenu = () => {} }) {
     return stored
       ? JSON.parse(stored)
       : [
-          {
-            id: 1,
-            title: "Task Assigned",
-            message: "You have been assigned a new task",
-            time: "2 hours ago",
-          },
-          {
-            id: 2,
-            title: "Meeting Scheduled",
-            message: "Team meeting scheduled for tomorrow at 10 AM",
-            time: "1 day ago",
-          },
-          {
-            id: 3,
-            title: "Attendance Approved",
-            message: "Your attendance has been approved",
-            time: "3 days ago",
-          },
-        ];
+        { id: 1, title: "Task Assigned", message: "You have been assigned a new task", time: "2 hours ago" },
+        { id: 2, title: "Meeting Scheduled", message: "Team meeting scheduled for tomorrow at 10 AM", time: "1 day ago" },
+        { id: 3, title: "Attendance Approved", message: "Your attendance has been approved", time: "3 days ago" },
+      ];
   });
 
   const [openLanguage, setOpenLanguage] = useState(false);
   const languageRef = useRef(null);
-  const [language, setLanguage] = useState(() => {
-    return localStorage.getItem("language") || "en";
-  });
+  const [language, setLanguage] = useState(() => localStorage.getItem("language") || "en");
 
   const languages = [
     { code: "en", name: "English" },
@@ -504,17 +478,27 @@ export default function Navbar({ onMenu = () => {} }) {
     { code: "fr", name: "French" },
   ];
 
+  // ✅ Refresh attendance when userId changes + when attendance updates
   useEffect(() => {
-    const refresh = () => setAtt(getAttendanceState());
-    window.addEventListener("storage", refresh);
-    window.addEventListener("attendance_updated", refresh);
-    refresh();
-    return () => {
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener("attendance_updated", refresh);
-    };
-  }, []);
+    if (!userId) {
+      setAtt(getAttendanceState(undefined));
+      return;
+    }
 
+    const refresh = () => setAtt(getAttendanceState(userId));
+
+    window.addEventListener("attendance_updated", refresh);
+    window.addEventListener("storage", refresh);
+
+    refresh();
+
+    return () => {
+      window.removeEventListener("attendance_updated", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, [userId]);
+
+  // ✅ Timer depends on user-specific attendance state
   useEffect(() => {
     if (!att.checkedIn || !att.checkInTime) {
       setTimer("00:00:00");
@@ -527,7 +511,9 @@ export default function Navbar({ onMenu = () => {} }) {
     return () => clearInterval(id);
   }, [att.checkedIn, att.checkInTime]);
 
+  // ✅ Disable if user not loaded OR already on correct page
   const disabled =
+    !userId ||
     (att.checkedIn && location.pathname === CHECKOUT) ||
     (!att.checkedIn && location.pathname === CHECKIN);
 
@@ -576,10 +562,12 @@ export default function Navbar({ onMenu = () => {} }) {
   const clearAllNotifications = () => setNotifications([]);
 
   const doLogout = () => {
-  closeProfile();
-  logoutAction();
-  navigate(role === "admin" ? "/admin/login" : "/employee/login", { replace: true });
-};
+    closeProfile();
+    setTimer("00:00:00");
+    setAtt(getAttendanceState(undefined));
+    logoutAction();
+    navigate(role === "admin" ? "/admin/login" : "/employee/login", { replace: true });
+  };
 
   return (
     <Header>
@@ -597,7 +585,11 @@ export default function Navbar({ onMenu = () => {} }) {
           <CheckBtn
             $out={att.checkedIn}
             disabled={disabled}
-            onClick={() => navigate(att.checkedIn ? CHECKOUT : CHECKIN)}
+            onClick={() => {
+              if (!userId) return; // ✅ safety
+              navigate(att.checkedIn ? CHECKOUT : CHECKIN);
+            }}
+            title={!userId ? "Login required" : ""}
           >
             {att.checkedIn ? "Check-Out" : "Check-In"}
           </CheckBtn>

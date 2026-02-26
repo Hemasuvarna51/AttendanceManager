@@ -135,20 +135,39 @@ export default function CheckIn() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "success" });
 
-  const selfieOk = !!selfie;
-  const locOk = !!loc;
+  const user = useAuthStore((state) => state.user);
+  const userId = user?.id;
 
-  const canSubmit = selfieOk && locOk && !loading;
-
+  // ✅ HOOK must be before any conditional return
   const timestampLabel = useMemo(() => {
     const d = new Date();
     return d.toLocaleString();
   }, []);
 
+  if (!user) {
+    return (
+      <Page>
+        <Alert $type="error">❌ You must be logged in to check in.</Alert>
+      </Page>
+    );
+  }
+
+  if (!userId) {
+    return (
+      <Page>
+        <Alert $type="error">⚠️ Cannot identify user. Please log in again.</Alert>
+      </Page>
+    );
+  }
+
+  const selfieOk = !!selfie;
+  const locOk = !!loc;
+  const canSubmit = selfieOk && locOk && !loading;
+
   const submit = async () => {
     setMsg({ text: "", type: "success" });
 
-    if (!canCheckIn()) {
+    if (!canCheckIn(userId)) {
       setMsg({ text: "❌ You already checked in. Please check out first.", type: "error" });
       return;
     }
@@ -158,29 +177,22 @@ export default function CheckIn() {
 
     try {
       setLoading(true);
-
       const selfieBase64 = await toBase64(selfie);
-
-      const user = useAuthStore.getState().user;
 
       addRecord({
         id: crypto.randomUUID(),
+        userId,
         type: "CHECK_IN",
         time: new Date().toISOString(),
         lat: loc.lat,
         lng: loc.lng,
         distance: loc.distance,
-        selfieBase64,
-        // include currently logged in user info for reports
-        userName: user?.name || "Unknown",
-        userEmail: user?.email || null,
+        selfie: selfieBase64,
       });
+
       window.dispatchEvent(new Event("attendance_updated"));
 
-
       setMsg({ text: "✅ Check-in saved locally (frontend-only).", type: "success" });
-
-      // reset both to prevent double submit feeling
       setSelfie(null);
       setLoc(null);
     } catch {
@@ -209,7 +221,6 @@ export default function CheckIn() {
               <h3>📍 Location Verification</h3>
               <span>Confirm you are inside office radius</span>
             </div>
-          
           </CardHead>
           <LocationGate onPass={setLoc} />
         </Card>
@@ -220,7 +231,6 @@ export default function CheckIn() {
               <h3>📸 Selfie Verification</h3>
               <span>Upload or capture a selfie</span>
             </div>
-           
           </CardHead>
           <UploadSelfie value={selfie} onChange={setSelfie} />
         </Card>

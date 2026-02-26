@@ -12,13 +12,19 @@ export const useAuthStore = create(
       isLoggedIn: () => !!get().token,
 
       login: ({ user, token, role }) => {
-        // normalize role just in case
         const safeRole =
           role === "Admin" ? "admin" :
-          role === "Employee" ? "employee" :
-          role;
+            role === "Employee" ? "employee" :
+              role;
 
-        set({ user, token, role: safeRole });
+        const normalizedUser = user
+          ? {
+            ...user,
+            id: user.id || user.email || user.employeeId || user.username || crypto.randomUUID(),
+          }
+          : null;
+
+        set({ user: normalizedUser, token, role: safeRole });
       },
 
       logout: () => {
@@ -38,8 +44,7 @@ export const useAuthStore = create(
       name: "attendance_auth",
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
-        // called after rehydration
-        state?.hasHydrated && state.hasHydrated; // no-op safe
+       
       },
       partialize: (state) => ({
         user: state.user,

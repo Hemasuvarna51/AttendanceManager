@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import styled from "styled-components";
 import LocationGate from "../../components/LocationGate";
 import { addRecord, canCheckOut } from "../../utils/attendanceLocalDb";
-
+import { useAuthStore } from "../../store/auth.store";
 const Page = styled.div`
   max-width: 800px;
   margin: 0 auto;
@@ -70,10 +70,21 @@ export default function CheckOut() {
   const canSubmit = !!loc && !loading;
   const timestampLabel = useMemo(() => new Date().toLocaleString(), []);
 
+  const user = useAuthStore((s) => s.user); // adjust if your store shape differs
+  const userId = user?.id;
+
+  if (!userId) {
+    return (
+      <Page>
+        <Alert $type="error">⚠️ Cannot identify user. Please log in again.</Alert>
+      </Page>
+    );
+  }
+
   const submit = async () => {
     setMsg({ text: "", type: "success" });
 
-    if (!canCheckOut()) {
+    if (!canCheckOut(userId)) {
       setMsg({ text: "❌ You must check in before checking out.", type: "error" });
       return;
     }
@@ -88,6 +99,7 @@ export default function CheckOut() {
 
       addRecord({
         id: crypto.randomUUID(),
+        userId,                 // ✅ add this
         type: "CHECK_OUT",
         time: new Date().toISOString(),
         lat: loc.lat,

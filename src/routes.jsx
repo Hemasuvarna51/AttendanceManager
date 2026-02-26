@@ -50,9 +50,9 @@ function HomeRedirect() {
 export const router = createBrowserRouter([
   { path: "/login", element: <Navigate to="/employee/login" replace /> },
 
-  { path: "/admin/login", element: <Login panel="admin" /> },
-  { path: "/employee/login", element: <Login panel="employee" /> },
- 
+  { path: "/admin/login", element: <Login /> },
+  { path: "/employee/login", element: <Login /> },
+
   { path: "/signup", element: <SignUP /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 

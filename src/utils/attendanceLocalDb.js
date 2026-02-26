@@ -10,7 +10,7 @@ export const getRecords = () => {
 
 export const addRecord = (record) => {
   const prev = getRecords();
-  const next = [record, ...prev];
+  const next = [record, ...prev]; // newest first
   localStorage.setItem(KEY, JSON.stringify(next));
   return next;
 };
@@ -19,26 +19,33 @@ export const clearRecords = () => {
   localStorage.removeItem(KEY);
 };
 
-// ✅ helpers
-export const getLastRecord = () => {
+/* ===========================
+   ✅ USER-SCOPED HELPERS
+   =========================== */
+
+export const getUserRecords = (userId) => {
   const all = getRecords();
-  return all.length ? all[0] : null; // because we store newest first
+  if (!userId) return [];
+  return all.filter((r) => r.userId === userId);
 };
 
-export const canCheckIn = () => {
-  const last = getLastRecord();
-  // can check in if no records or last is CHECK_OUT
+export const getLastRecord = (userId) => {
+  const mine = getUserRecords(userId);
+  return mine.length ? mine[0] : null; // newest first
+};
+
+export const canCheckIn = (userId) => {
+  const last = getLastRecord(userId);
   return !last || last.type === "CHECK_OUT";
 };
 
-export const canCheckOut = () => {
-  const last = getLastRecord();
-  // can check out only if last is CHECK_IN
+export const canCheckOut = (userId) => {
+  const last = getLastRecord(userId);
   return !!last && last.type === "CHECK_IN";
 };
 
-export const getAttendanceState = () => {
-  const last = getLastRecord();
+export const getAttendanceState = (userId) => {
+  const last = getLastRecord(userId);
 
   if (!last) {
     return { checkedIn: false, status: "NOT_STARTED", last: null, checkInTime: null };
@@ -49,7 +56,7 @@ export const getAttendanceState = () => {
       checkedIn: true,
       status: "CHECKED_IN",
       last,
-      checkInTime: last.time, // ✅ ISO string of check-in
+      checkInTime: last.time,
     };
   }
 
@@ -64,5 +71,3 @@ export const getAttendanceState = () => {
 
   return { checkedIn: false, status: "NOT_STARTED", last, checkInTime: null };
 };
-
-

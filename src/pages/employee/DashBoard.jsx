@@ -1,8 +1,13 @@
+// ✅ UPDATED: DashBoard.jsx (user-scoped attendance + live updates)
+// - Uses getAttendanceState(userId) and getUserRecords(userId)
+// - Fixes today times to use only this user's records
+// - Updates attendance score/chart based on this user's data
+
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Clock, Sparkles, CalendarDays, ListTodo } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
-import { getAttendanceState, getRecords } from "../../utils/attendanceLocalDb";
+import { getAttendanceState, getUserRecords } from "../../utils/attendanceLocalDb";
 import { useNavigate } from "react-router-dom";
 
 // ✅ Recharts
@@ -38,30 +43,7 @@ const formatHMS = (ms) => {
   return `${h}:${m}:${sec}`;
 };
 
-const findTodayTimes = (records) => {
-  const now = new Date();
-  const today = records
-    .map((r) => ({ ...r, _t: new Date(r.time) }))
-    .filter(
-      (r) =>
-        r._t.getFullYear() === now.getFullYear() &&
-        r._t.getMonth() === now.getMonth() &&
-        r._t.getDate() === now.getDate()
-    )
-    .sort((a, b) => a._t - b._t);
-
-  const firstIn = today.find((r) => r.type === "CHECK_IN");
-  const lastOut = [...today].reverse().find((r) => r.type === "CHECK_OUT");
-
-  return {
-    clockIn: firstIn ? firstIn._t.toLocaleTimeString() : "--:--",
-    clockOut: lastOut ? lastOut._t.toLocaleTimeString() : "--:--",
-    lastCheckIn: firstIn ? firstIn._t : null,
-  };
-};
-
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
 const fmtDay = (d) => d.toLocaleDateString(undefined, { weekday: "short" });
 
 const isSameDay = (a, b) =>
@@ -88,7 +70,30 @@ const parseDueDate = (due) => {
   return null;
 };
 
-/* ===================== STYLES ===================== */
+const findTodayTimes = (records) => {
+  const now = new Date();
+
+  const today = records
+    .map((r) => ({ ...r, _t: new Date(r.time) }))
+    .filter(
+      (r) =>
+        r._t.getFullYear() === now.getFullYear() &&
+        r._t.getMonth() === now.getMonth() &&
+        r._t.getDate() === now.getDate()
+    )
+    .sort((a, b) => a._t - b._t);
+
+  const firstIn = today.find((r) => r.type === "CHECK_IN");
+  const lastOut = [...today].reverse().find((r) => r.type === "CHECK_OUT");
+
+  return {
+    clockIn: firstIn ? firstIn._t.toLocaleTimeString() : "--:--",
+    clockOut: lastOut ? lastOut._t.toLocaleTimeString() : "--:--",
+    lastCheckIn: firstIn ? firstIn._t : null,
+  };
+};
+
+/* ===================== STYLES (unchanged) ===================== */
 
 const Page = styled.div`
   width: 100%;
@@ -155,7 +160,8 @@ const Grid = styled.div`
 
 const Card = styled.button.attrs({ type: "button" })`
   position: relative;
-  background: ${({ $highlight }) => ($highlight ? "rgba(119,128,159,0.12)" : "rgba(255,255,255,0.92)")};
+  background: ${({ $highlight }) =>
+    $highlight ? "rgba(119,128,159,0.12)" : "rgba(255,255,255,0.92)"};
   border: 1px solid #eef2f7;
   border-radius: 18px;
   padding: 18px;
@@ -357,20 +363,24 @@ const TaskItem = styled.div`
 /* ===================== COMPONENT ===================== */
 
 export default function DashBoard() {
-  const navigate = useNavigate(); // ✅ hook inside component
+  const navigate = useNavigate();
 
   const user = useAuthStore((s) => s.user);
+  const userId = user?.id;
   const userName = user?.name || "Employee";
   const loggedInEmployee = user?.name;
 
-  const [att, setAtt] = useState(() => getAttendanceState());
-  const [records, setRecords] = useState(() => getRecords());
+  // ✅ user-scoped attendance/records
+  const [att, setAtt] = useState(() => getAttendanceState(userId));
+  const [records, setRecords] = useState(() => getUserRecords(userId));
+
   const [tick, setTick] = useState(0);
 
   const [tasks, setTasks] = useState([]);
   const [reminders, setReminders] = useState([]);
   const [schedule, setSchedule] = useState([]);
 
+  // ✅ Attendance score (based on THIS user's records)
   const attendanceScore = useMemo(() => {
     if (!records.length) return 0;
 
@@ -388,10 +398,13 @@ export default function DashBoard() {
     return Math.min(100, Math.round((checkIns / days) * 100));
   }, [records]);
 
+  // ✅ Load attendance + reminders + schedule (user-scoped)
   useEffect(() => {
+    if (!userId) return;
+
     const load = () => {
-      setAtt(getAttendanceState());
-      setRecords(getRecords());
+      setAtt(getAttendanceState(userId));
+      setRecords(getUserRecords(userId));
       setReminders(safeParse("employee_reminders", []));
       setSchedule(safeParse("employee_schedule", []));
     };
@@ -409,8 +422,9 @@ export default function DashBoard() {
       window.removeEventListener("reminders_updated", load);
       window.removeEventListener("schedule_updated", load);
     };
-  }, []);
+  }, [userId]);
 
+  // ✅ Tasks (same as your logic, based on loggedInEmployee)
   useEffect(() => {
     const loadTasks = () => {
       if (!loggedInEmployee) {
@@ -451,6 +465,7 @@ export default function DashBoard() {
     };
   }, [loggedInEmployee]);
 
+  // ✅ Live timer tick only if checked in
   useEffect(() => {
     if (!att.checkedIn) return;
     const id = setInterval(() => setTick((t) => t + 1), 1000);
@@ -466,6 +481,7 @@ export default function DashBoard() {
 
   const pendingTasks = tasks.filter((t) => Number(t.pct || 0) < 100).length;
 
+  // ✅ Chart data (attendance from THIS user)
   const chartData = useMemo(() => {
     const now = new Date();
 
@@ -506,8 +522,7 @@ export default function DashBoard() {
       tasks.length > 0
         ? Math.round(
             tasks.reduce(
-              (sum, t) =>
-                sum + Math.max(0, Math.min(100, Number(t.pct || 0))),
+              (sum, t) => sum + Math.max(0, Math.min(100, Number(t.pct || 0))),
               0
             ) / tasks.length
           )
@@ -527,6 +542,19 @@ export default function DashBoard() {
       };
     });
   }, [records, tasks]);
+
+  if (!userId) {
+    return (
+      <Page>
+        <Top>
+          <TitleWrap>
+            <Title>Dashboard</Title>
+            <SubText>⚠️ Please login to view your dashboard.</SubText>
+          </TitleWrap>
+        </Top>
+      </Page>
+    );
+  }
 
   return (
     <Page>
@@ -624,7 +652,14 @@ export default function DashBoard() {
             </ResponsiveContainer>
           </ChartWrap>
 
-          <div style={{ fontSize: 12, marginTop: 10, color: "#64748b", fontWeight: 800 }}>
+          <div
+            style={{
+              fontSize: 12,
+              marginTop: 10,
+              color: "#64748b",
+              fontWeight: 800,
+            }}
+          >
             Productivity = 60% attendance + 40% task progress
           </div>
         </Card>

@@ -1,6 +1,8 @@
+// ✅ UPDATED: MyAttendance.jsx
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { clearRecords, getRecords } from "../../utils/attendanceLocalDb";
+import { clearRecords, getUserRecords } from "../../utils/attendanceLocalDb";
+import { useAuthStore } from "../../store/auth.store";
 
 const Page = styled.div`
   max-width: 1200px;
@@ -142,49 +144,6 @@ const Stat = styled.div`
     color: #0b0b0f;
     letter-spacing: -0.2px;
   }
-`;
-
-const Group = styled.div`
-  margin-top: 18px;
-`;
-
-const GroupHeader = styled.div`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 6px;
-  margin-top: 8px;
-
-  border-top: 1px solid #f2f2f2;
-
-  h3 {
-    margin: 0;
-    font-size: 14px;
-    letter-spacing: 0.2px;
-    color: #111;
-    text-transform: uppercase;
-  }
-
-  span {
-    font-size: 13px;
-    color: #6b7280;
-    font-weight: 600;
-  }
-`;
-
-const DistancePill = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid #efefef;
-  background: #fafafa;
-  font-size: 12px;
-  font-weight: 700;
-  color: #111;
 `;
 
 const Table = styled.table`
@@ -340,44 +299,35 @@ const computeTodaySummary = (records) => {
   };
 };
 
-const labelForDay = (dateObj) => {
-  const today = startOfDay(new Date());
-  const d = startOfDay(dateObj);
-  const diffDays = Math.round((today - d) / (24 * 60 * 60 * 1000));
-
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-
-  return d.toLocaleDateString(undefined, {
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const groupByDay = (records) => {
-  const map = new Map();
-  for (const r of records) {
-    const d = new Date(r.time);
-    const key = startOfDay(d).toISOString();
-    if (!map.has(key)) map.set(key, { date: startOfDay(d), items: [] });
-    map.get(key).items.push(r);
-  }
-  return Array.from(map.values());
-};
-
 export default function MyAttendance() {
+  const user = useAuthStore((s) => s.user);
+  const userId = user?.id;
+
   const [records, setRecords] = useState([]);
   const [filter, setFilter] = useState("ALL");
   const [zoomSrc, setZoomSrc] = useState("");
   const [tick, setTick] = useState(0);
 
-  const refresh = () => setRecords(getRecords());
+  const refresh = () => setRecords(getUserRecords(userId));
 
+  // ✅ Load + listen for check-in/out updates
   useEffect(() => {
+    if (!userId) return;
+
     refresh();
-  }, []);
+
+    const onUpdate = () => refresh();
+    window.addEventListener("attendance_updated", onUpdate);
+
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      window.removeEventListener("attendance_updated", onUpdate);
+      window.removeEventListener("focus", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const today = useMemo(() => computeTodaySummary(records), [records]);
 
@@ -406,25 +356,35 @@ export default function MyAttendance() {
     return base.slice().sort((a, b) => new Date(b.time) - new Date(a.time));
   }, [records, filter]);
 
-  // Group records by day with check-in and check-out pairs
+  // ✅ Daily view (keeps latest check-in/out for each day)
   const dailyRecords = useMemo(() => {
     const grouped = {};
-    
+
     visibleRecords.forEach((r) => {
       const d = new Date(r.time);
       const key = startOfDay(d).toISOString();
       if (!grouped[key]) {
         grouped[key] = { date: startOfDay(d), checkIn: null, checkOut: null };
       }
-      if (r.type === "CHECK_IN") {
-        grouped[key].checkIn = r;
-      } else {
-        grouped[key].checkOut = r;
-      }
+      if (r.type === "CHECK_IN") grouped[key].checkIn = r;
+      if (r.type === "CHECK_OUT") grouped[key].checkOut = r;
     });
 
     return Object.values(grouped).sort((a, b) => b.date - a.date);
   }, [visibleRecords]);
+
+  if (!userId) {
+    return (
+      <Page>
+        <Surface>
+          <h2 style={{ margin: 0 }}>My Attendance</h2>
+          <p style={{ marginTop: 8, color: "#6b7280" }}>
+            ⚠️ Please login to view your attendance.
+          </p>
+        </Surface>
+      </Page>
+    );
+  }
 
   return (
     <Page>
@@ -459,9 +419,12 @@ export default function MyAttendance() {
 
         <Actions>
           <Btn onClick={refresh}>Refresh</Btn>
+
           <Btn
             $danger
             onClick={() => {
+              // ✅ clear ONLY this user's data? (current util clears all)
+              // If you want per-user clear, tell me and I’ll update localDb helpers.
               clearRecords();
               setRecords([]);
               setZoomSrc("");
@@ -512,6 +475,7 @@ export default function MyAttendance() {
                 <th>Selfie</th>
               </tr>
             </thead>
+
             <tbody>
               {dailyRecords.map((day, idx) => (
                 <tr key={idx}>
@@ -526,12 +490,9 @@ export default function MyAttendance() {
 
                   <td>
                     {day.checkIn ? (
-                      <div>
-                        <TypeBadge $type="CHECK_IN">
-                          ✅ {new Date(day.checkIn.time).toLocaleTimeString()}
-                        </TypeBadge>
-                        
-                      </div>
+                      <TypeBadge $type="CHECK_IN">
+                        ✅ {new Date(day.checkIn.time).toLocaleTimeString()}
+                      </TypeBadge>
                     ) : (
                       <span style={{ color: "#9ca3af" }}>—</span>
                     )}
@@ -539,23 +500,21 @@ export default function MyAttendance() {
 
                   <td>
                     {day.checkOut ? (
-                      <div>
-                        <TypeBadge $type="CHECK_OUT">
-                          🏁 {new Date(day.checkOut.time).toLocaleTimeString()}
-                        </TypeBadge>
-                       
-                      </div>
+                      <TypeBadge $type="CHECK_OUT">
+                        🏁 {new Date(day.checkOut.time).toLocaleTimeString()}
+                      </TypeBadge>
                     ) : (
                       <span style={{ color: "#9ca3af" }}>—</span>
                     )}
                   </td>
 
+                  {/* ✅ FIX: selfie field name is "selfie" (from your CheckIn addRecord) */}
                   <td>
-                    {day.checkIn?.selfieBase64 ? (
+                    {day.checkIn?.selfie ? (
                       <Selfie
-                        src={day.checkIn.selfieBase64}
+                        src={day.checkIn.selfie}
                         alt="check-in selfie"
-                        onClick={() => setZoomSrc(day.checkIn.selfieBase64)}
+                        onClick={() => setZoomSrc(day.checkIn.selfie)}
                         title="Check-In Selfie - Click to enlarge"
                       />
                     ) : (
