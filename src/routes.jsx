@@ -18,7 +18,7 @@ import Tasks from "./pages/admin/Tasks";
 import Employee from "./pages/admin/Employee";
 import LeaveApproval from "./pages/admin/LeaveApproval";
 import Payroll from "./pages/admin/Payroll";
-import RunPayroll from "./pages/admin/Payroll/RunPayroll";
+import RunPayroll from "./pages/admin/payroll/RunPayroll";
 import Meetings from "./pages/admin/Meetings";
 import Projects from "./pages/admin/Projects";
 import Reports from "./pages/admin/Reports";
