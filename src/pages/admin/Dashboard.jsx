@@ -156,9 +156,28 @@ const BottomGrid = styled.div`
   margin-top: 24px;
 `;
 
-const TeamList = styled.ul`
-  list-style: none;
-  padding: 0;
+const TeamList = styled.div`
+  max-height: 300px;
+  overflow-y: auto;
+`;
+
+const EmployeeItem = styled.div`
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const EmployeeName = styled.span`
+  font-weight: 500;
+`;
+
+const EmployeeEmail = styled.span`
+  font-size: 12px;
+  color: #6b7280;
 `;
 
 /* ================== COMPONENT ================== */
@@ -167,6 +186,7 @@ export default function Dashboard() {
   // ✅ employees + attendance
   const [totalEmployees, setTotalEmployees] = useState(0);
   const [presentToday, setPresentToday] = useState(0);
+  const [employeesList, setEmployeesList] = useState([]);
 
   // ✅ meetings
   const [meetings, setMeetings] = useState([]);
@@ -230,6 +250,7 @@ export default function Dashboard() {
         const persisted = safeParse("employee-storage", null);
         const employees = persisted?.state?.employees || [];
         setTotalEmployees(employees.length);
+        setEmployeesList(employees);
 
         const today = new Date().toDateString();
         const attendance = safeParse("attendance", []);
@@ -242,6 +263,7 @@ export default function Dashboard() {
       } catch {
         setTotalEmployees(0);
         setPresentToday(0);
+        setEmployeesList([]);
       }
     };
 
@@ -404,8 +426,23 @@ export default function Dashboard() {
 
         <BottomGrid>
           <Box>
-            <BoxTitle>Team Collaboration</BoxTitle>
-            <TeamList />
+            <BoxTitle>Total Employee Details</BoxTitle>
+            <TeamList>
+              {employeesList.length === 0 ? (
+                <ReminderText>No employees added yet.</ReminderText>
+              ) : (
+                employeesList.map((emp) => (
+                  <EmployeeItem key={emp.id}>
+                    <div>
+                      <EmployeeName>{emp.name}</EmployeeName>
+                      <br />
+                      <EmployeeEmail>{emp.email}</EmployeeEmail>
+                    </div>
+                    <EmployeeEmail>ID: {emp.id}</EmployeeEmail>
+                  </EmployeeItem>
+                ))
+              )}
+            </TeamList>
           </Box>
 
           <Box>

@@ -1,6 +1,7 @@
 import React, { useState , useEffect } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
+import { Pencil, Trash2 } from "lucide-react";
 
 const STATUS = ["Pending", "In Progress", "Completed"];
 
@@ -130,12 +131,13 @@ const Table = styled.table`
     border-radius: 6px;
     border: none;
     cursor: pointer;
-    color: white;
-    background: #ef4444;
+    color: black;
+   
   }
 
   td .editBtn {
-    background: #f59e0b;
+  color: black;
+   
     margin-right: 8px;
   }
 
@@ -371,9 +373,9 @@ export default function Tasks() {
               {/* ✅ Edit + Delete */}
               <td>
                 <button className="editBtn" onClick={() => openEdit(task)}>
-                  Edit
+                   <Pencil size={14} />
                 </button>
-                <button onClick={() => deleteTask(task.id)}>Delete</button>
+                <button onClick={() => deleteTask(task.id)}><Trash2 size={14} /></button>
               </td>
             </tr>
           ))}

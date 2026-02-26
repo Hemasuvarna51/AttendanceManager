@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import { useEmployeeStore } from "../../store/employee.store";
+import { Pencil, Trash2 } from "lucide-react";
 
 /* ===================== STYLED COMPONENTS ===================== */
 
@@ -109,6 +110,11 @@ const CancelButton = styled.button`
   }
 `;
 
+const TableWrapper = styled.div`
+  max-height: 500px;
+  overflow-y: auto;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -141,29 +147,31 @@ const ActionBox = styled.div`
 `;
 
 const EditBtn = styled.button`
-  background: #2563eb;
-  color: white;
+  
+  color: black;
   border: none;
   padding: 6px 10px;
   border-radius: 4px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 
-  &:hover {
-    background: #1e40af;
-  }
+  
 `;
 
 const DeleteBtn = styled.button`
-  background: #dc2626;
-  color: white;
+  
+  color: black;
   border: none;
   padding: 6px 10px;
   border-radius: 4px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 
-  &:hover {
-    background: #b91c1c;
-  }
+ 
 `;
 
 /* ===================== HELPERS ===================== */
@@ -191,6 +199,7 @@ export default function Employee() {
 
   const [showForm, setShowForm] = useState(false);
   const [editingEmp, setEditingEmp] = useState(null);
+  const tableWrapperRef = useRef(null);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -239,6 +248,13 @@ export default function Employee() {
       // ✅ sync after add
       const next = [...employees, formData];
       syncEmployeesToLocalStorage(next);
+
+      // ✅ scroll to bottom after adding
+      setTimeout(() => {
+        if (tableWrapperRef.current) {
+          tableWrapperRef.current.scrollTop = tableWrapperRef.current.scrollHeight;
+        }
+      }, 100);
     }
 
     resetForm();
@@ -341,6 +357,7 @@ export default function Employee() {
         </Overlay>
       )}
 
+      <TableWrapper ref={tableWrapperRef}>
       <Table>
         <thead>
           <tr>
@@ -365,9 +382,11 @@ export default function Employee() {
               </Td>
               <Td>
                 <ActionBox>
-                  <EditBtn onClick={() => handleEdit(emp)}>Edit</EditBtn>
+                  <EditBtn onClick={() => handleEdit(emp)}>
+                    <Pencil size={14} />
+                  </EditBtn>
                   <DeleteBtn onClick={() => handleDelete(emp.id)}>
-                    Delete
+                    <Trash2 size={14} />
                   </DeleteBtn>
                 </ActionBox>
               </Td>
@@ -375,6 +394,7 @@ export default function Employee() {
           ))}
         </tbody>
       </Table>
+      </TableWrapper>
     </Card>
   );
 }
