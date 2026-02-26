@@ -4,7 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
 import Login from "./pages/auth/Login";
-import SignUP from "./pages/auth/signUp";
+import SignUp from "./pages/auth/SignUp";
 import Unauthorized from "./pages/auth/Unauthorized";
 
 import AdminShell from "./layout/AdminShell";
@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
   { path: "/admin/login", element: <Login /> },
   { path: "/employee/login", element: <Login /> },
 
-  { path: "/signup", element: <SignUP /> },
+  { path: "/signup", element: <SignUp /> },
   { path: "/unauthorized", element: <Unauthorized /> },
 
   {
