@@ -19,8 +19,8 @@ const Page = styled.div`
 `;
 
 const Shell = styled.div`
-  width: min(1050px, 100%);
-  min-height: 620px;
+  width: min(800px, 80%);
+  min-height: 500px;
   border-radius: 24px;
   overflow: hidden;
   display: grid;

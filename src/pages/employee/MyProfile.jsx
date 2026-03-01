@@ -4,133 +4,127 @@ import { getRecords } from "../../utils/attendanceLocalDb";
 import { useAuthStore } from "../../store/auth.store";
 import { Mail, Phone, Building2, IdCard, Pencil, Save, X } from "lucide-react";
 
-/* ===================== STYLES ===================== */
+/* ===================== STYLES (UPDATED TO MATCH IMAGE) ===================== */
 
 const Page = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
+  padding: 22px 22px 40px;
+  background: #f3f6fb;
   min-height: calc(100vh - 60px);
 `;
 
 const Shell = styled.div`
   display: grid;
-  gap: 20px;
+  gap: 18px;
 `;
 
 const ProfileCard = styled.div`
-  background: ${({ $editing }) => ($editing ? "#f0f4f9" : "#ffffff")};
-  border: 1px solid #d1d8e0;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-  backdrop-filter: blur(2px);
+  background: #ffffff;
+  border: 1px solid #e6edf6;
+  border-radius: 18px;
+  padding: 22px 22px 0;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
 `;
 
 const TopRow = styled.div`
-  position: sticky;
-  top: 12px;
-  z-index: 5;
   display: flex;
-  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
 `;
 
 const IconAction = styled.button`
-  height: 40px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1px solid ${({ $danger }) => ($danger ? "#ef4444" : "#2563eb")};
-  background: #ffffff;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid ${({ $danger }) => ($danger ? "#fecaca" : "#d7e3f3")};
+  background: ${({ $danger }) => ($danger ? "#fff5f5" : "#f8fbff")};
+  color: ${({ $danger }) => ($danger ? "#b42318" : "#1d4ed8")};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 13px;
-  color: ${({ $danger }) => ($danger ? "#dc2626" : "#2563eb")};
-  transition: all 0.2s ease;
+  gap: 10px;
+  font-weight: 1000;
+  font-size: 15px;
 
   &:hover {
-    background: ${({ $danger }) => ($danger ? "#fee2e2" : "#dbeafe")};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
     transform: translateY(-1px);
   }
-
   &:active {
-    transform: translateY(0);
-  }
-
-  svg {
-    opacity: 0.9;
+    transform: translateY(0px);
   }
 `;
 
 const MainRow = styled.div`
   display: grid;
-  grid-template-columns: 140px 1fr 360px;
-  gap: 24px;
+  grid-template-columns: 190px 1fr 380px;
+  gap: 26px;
   align-items: center;
+  padding-bottom: 18px;
 
   @media (max-width: 980px) {
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: 170px 1fr;
   }
-
-  @media (max-width: 640px) {
+  @media (max-width: 720px) {
     grid-template-columns: 1fr;
   }
 `;
 
 const AvatarWrap = styled.div`
   display: grid;
+  justify-items: center;
+`;
+
+const AvatarFrame = styled.div`
+  width: 160px;
+  height: 160px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60%);
+  border: 1px solid #dbeafe;
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.12);
+  display: grid;
   place-items: center;
+  padding: 10px;
 `;
 
 const Avatar = styled.img`
-  width: 120px;
-  height: 120px;
-  border-radius: 16px;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
   object-fit: cover;
-  border: 2px solid #bfdbfe;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
 `;
 
 const AvatarPlaceholder = styled.div`
-  width: 120px;
-  height: 120px;
-  border-radius: 16px;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
   background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-  border: 2px solid #bfdbfe;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
   display: grid;
   place-items: center;
-  font-size: 48px;
-  font-weight: 700;
-  color: #0854a0;
+  font-size: 52px;
+  font-weight: 1000;
+  color: #1e40af;
 `;
 
 const AvatarUploadBtn = styled.label`
   margin-top: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #dbeafe;
-  color: #2563eb;
-  border: 1px solid #93c5fd;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f3f7ff;
+  color: #1d4ed8;
+  border: 1px solid #cfe0ff;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 12px;
-  transition: all 0.2s ease;
+  font-weight: 900;
+  font-size: 13px;
 
   &:hover {
-    background: #bfdbfe;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
+    filter: brightness(0.98);
   }
 
   input[type="file"] {
@@ -141,41 +135,85 @@ const AvatarUploadBtn = styled.label`
 const NameBlock = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  min-width: 0;
 `;
 
 const Name = styled.div`
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1.2;
-  letter-spacing: -0.3px;
+  font-size: 34px;
+  font-weight: 1000;
+  color: #0f172a;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
 `;
 
 const Meta = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 `;
 
 const Chip = styled.span`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #f1f5f9;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e6edf6;
+  color: #334155;
+  font-weight: 900;
+  font-size: 14px;
+`;
+const PillRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+`;
+
+const MiniPill = styled.button`
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #e6edf6;
+  background: #f8fafc;
   color: #0f172a;
-  border: 1px solid #cbd5e1;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.3px;
+  font-weight: 900;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    border-color: #d7e3f3;
+  }
+`;
+
+const RolePill = styled.div`
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #e6edf6;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 900;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  svg {
+    opacity: 0.75;
+  }
 `;
 
 const RightInfo = styled.div`
   display: grid;
-  gap: 16px;
-  align-items: start;
+  gap: 14px;
+  align-content: start;
 
   @media (max-width: 980px) {
     grid-column: 1 / -1;
@@ -184,49 +222,50 @@ const RightInfo = styled.div`
 
 const InfoRow = styled.div`
   display: grid;
-  grid-template-columns: 18px 92px 1fr;
+  grid-template-columns: 18px 120px 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 
   .k {
     color: #64748b;
-    font-size: 13px;
-    font-weight: 700;
-  }
-  .v {
-    font-weight: 600;
     font-size: 14px;
-    color: #1e293b;
+    font-weight: 800;
   }
+
+  .v {
+    font-weight: 900;
+    font-size: 14px;
+    color: #0f172a;
+  }
+
   svg {
     opacity: 0.75;
   }
+`;
 
-  input {
-    width: 100%;
-  }
+const Divider = styled.div`
+  height: 1px;
+  background: #eef2f7;
+  margin: 0 -22px;
 `;
 
 const Tabs = styled.div`
-  margin-top: 20px;
   display: flex;
-  gap: 20px;
+  gap: 26px;
   flex-wrap: wrap;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 16px;
+  padding: 14px 6px 0;
 `;
 
 const Tab = styled.button`
   border: 0;
   background: transparent;
   cursor: pointer;
-  padding: 10px 0;
-  font-weight: 700;
-  font-size: 14px;
-  color: ${({ $active }) => ($active ? "#2563eb" : "#64748b")};
-  border-bottom: 3px solid ${({ $active }) => ($active ? "#2563eb" : "transparent")};
-  transition: all 0.2s ease;
-  position: relative;
+  padding: 12px 0;
+  font-weight: 900;
+  font-size: 15px;
+  color: ${({ $active }) => ($active ? "#2563eb" : "#475569")};
+  border-bottom: 3px solid
+    ${({ $active }) => ($active ? "#2563eb" : "transparent")};
 
   &:hover {
     color: #2563eb;
@@ -236,40 +275,55 @@ const Tab = styled.button`
 const ContentGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 18px;
 
   @media (max-width: 980px) {
     grid-template-columns: 1fr;
   }
 `;
+const StatCard = styled.div`
+  background: #ffffff;
+  border: 1px solid #e6edf6;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+`;
+
+const StatValue = styled.div`
+  font-size: 34px;
+  font-weight: 1000;
+  line-height: 1;
+  margin-bottom: 8px;
+`;
+
+const StatLabel = styled.div`
+  font-size: 14px;
+  font-weight: 900;
+  opacity: 0.9;
+`;
 
 const Panel = styled.div`
   background: #ffffff;
-  border: 1px solid #d1d8e0;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e6edf6;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
   overflow: hidden;
-  transition: all 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
-  }
 `;
 
 const PanelHeader = styled.div`
   padding: 16px 18px;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 700;
-  font-size: 15px;
-  color: #1e293b;
-  background: linear-gradient(90deg, #f8fafc 0%, #ffffff 100%);
-  letter-spacing: 0.2px;
+  border-bottom: 1px solid #eef2f7;
+  font-weight: 1000;
+  font-size: 16px;
+  color: #0f172a;
+  background: #fbfdff;
 `;
 
 const PanelBody = styled.div`
   padding: 18px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
 `;
 
 const Field = styled.div`
@@ -279,181 +333,176 @@ const Field = styled.div`
   .label {
     font-size: 12px;
     color: #64748b;
-    font-weight: 700;
+    font-weight: 1000;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
   }
 
   .value {
-    font-size: 14px;
-    color: #1e293b;
-    font-weight: 600;
+    font-size: 15px;
+    color: #0f172a;
+    font-weight: 900;
   }
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d7e3f3;
   background: #ffffff;
-  font-weight: 500;
+  font-weight: 800;
   font-size: 14px;
-  color: #1e293b;
+  color: #0f172a;
   outline: none;
-  transition: all 0.2s ease;
 
   &:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.2);
-    background: #f8fafc;
-  }
-
-  &::placeholder {
-    color: #94a3b8;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
   }
 `;
 
 const Select = styled.select`
   width: 100%;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d7e3f3;
   background: #ffffff;
-  font-weight: 500;
+  font-weight: 800;
   font-size: 14px;
-  color: #1e293b;
+  color: #0f172a;
   outline: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
 
   &:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.2);
-  }
-
-  &:hover {
-    border-color: #94a3b8;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  min-height: 100px;
+  min-height: 110px;
   padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  border: 1px solid #d7e3f3;
   background: #ffffff;
-  font-weight: 500;
+  font-weight: 800;
   font-size: 14px;
-  color: #1e293b;
+  color: #0f172a;
   outline: none;
   resize: vertical;
-  transition: all 0.2s ease;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: inherit;
 
   &:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.2);
-    background: #f8fafc;
-  }
-
-  &::placeholder {
-    color: #94a3b8;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
   }
 `;
 
-const StatCard = styled.div`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 24px;
+const Hint = styled.div`
+  margin-top: 14px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 900;
+  background: #eff6ff;
+  border: 1px solid #cfe0ff;
   border-radius: 12px;
-  text-align: center;
-`;
-
-const StatValue = styled.div`
-  font-size: 36px;
-  font-weight: 700;
-  margin-bottom: 8px;
-`;
-
-const StatLabel = styled.div`
-  font-size: 14px;
-  opacity: 0.9;
-  font-weight: 600;
 `;
 
 const RecordList = styled.div`
-  max-height: 400px;
-  overflow-y: auto;
+  max-height: 420px;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+  padding-right: 4px;
+
+  /* nicer scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d7e3f3;
+    border-radius: 999px;
+  }
 `;
 
 const RecordItem = styled.div`
-  padding: 14px;
+  padding: 14px 14px;
   background: #f8fafc;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-radius: 12px;
+  border: 1px solid #e6edf6;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #e2e8f0;
+  gap: 12px;
+
+  &:hover {
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+    border-color: #d7e3f3;
+  }
 `;
 
-const RecordDate = styled.span`
-  font-weight: 600;
-  color: #1e293b;
+const RecordDate = styled.div`
+  font-weight: 1000;
+  color: #0f172a;
   font-size: 14px;
 `;
 
 const RecordStatus = styled.span`
-  padding: 6px 14px;
-  border-radius: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 1000;
+  border: 1px solid;
+
   background: ${({ $status }) =>
-    $status === "Approved" ? "#dcfce7" :
-      $status === "Rejected" ? "#fee2e2" : "#fef3c7"};
+    $status === "Approved"
+      ? "#dcfce7"
+      : $status === "Rejected"
+      ? "#fee2e2"
+      : "#fef3c7"};
+
   color: ${({ $status }) =>
-    $status === "Approved" ? "#166534" :
-      $status === "Rejected" ? "#991b1b" : "#92400e"};
+    $status === "Approved"
+      ? "#166534"
+      : $status === "Rejected"
+      ? "#991b1b"
+      : "#92400e"};
+
+  border-color: ${({ $status }) =>
+    $status === "Approved"
+      ? "#bbf7d0"
+      : $status === "Rejected"
+      ? "#fecaca"
+      : "#fde68a"};
 `;
 
 const UploadButton = styled.label`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 10px;
+  height: 44px;
+  padding: 0 16px;
   background: #2563eb;
   color: white;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 1000;
   font-size: 14px;
-  transition: all 0.2s ease;
-  margin-bottom: 16px;
+  border: 1px solid #1d4ed8;
 
   &:hover {
-    background: #1e40af;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22);
+    filter: brightness(0.98);
   }
 
   input[type="file"] {
     display: none;
   }
 `;
-
-const Hint = styled.div`
-  margin-top: 16px;
-  padding: 12px 14px;
-  font-size: 12px;
-  color: #0854a0;
-  font-weight: 700;
-  background: #dbeafe;
-  border-left: 3px solid #2563eb;
-  border-radius: 6px;
-  letter-spacing: 0.2px;
-`;
-
 /* ===================== COMPONENT ===================== */
 
 export default function MyProfile() {
@@ -755,8 +804,8 @@ export default function MyProfile() {
     <Page>
       <Shell>
 
-        <ProfileCard $editing={editing}>
-
+        <ProfileCard>
+          {/* Top right edit button like screenshot */}
           <TopRow>
             {!editing ? (
               <IconAction onClick={() => setEditing(true)}>
@@ -776,46 +825,39 @@ export default function MyProfile() {
 
           <MainRow>
             <AvatarWrap>
-              {form.profilePhoto ? (
-                <Avatar src={form.profilePhoto} alt={form.name} />
-              ) : (
-                <AvatarPlaceholder>{getInitials()}</AvatarPlaceholder>
-              )}
+              <AvatarFrame>
+                {form.profilePhoto ? (
+                  <Avatar src={form.profilePhoto} alt={form.name} />
+                ) : (
+                  <AvatarPlaceholder>{getInitials()}</AvatarPlaceholder>
+                )}
+              </AvatarFrame>
+
               {editing && (
                 <AvatarUploadBtn>
                   📷 Change Photo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                  />
+                  <input type="file" accept="image/*" onChange={handlePhotoUpload} />
                 </AvatarUploadBtn>
               )}
             </AvatarWrap>
 
             <NameBlock>
               <Name>{displayName}</Name>
-              <Meta>
-                <Chip>
+
+              <PillRow>
+                {/* left small icon pill (like screenshot) */}
+                <MiniPill type="button" title="Employee badge">
                   <IdCard size={16} /> {showVal(form.empId)}
-                </Chip>
-                <Chip>
+                </MiniPill>
+
+                {/* role pill (employee) */}
+                <RolePill>
                   <Building2 size={16} /> {role || "employee"}
-                </Chip>
-                {form.workType && (
-                  <Chip>
-                    💼 {form.workType}
-                  </Chip>
-                )}
-                {form.shift && (
-                  <Chip>
-                    🕐 {form.shift}
-                  </Chip>
-                )}
-              </Meta>
+                </RolePill>
+              </PillRow>
             </NameBlock>
 
-            {/* ✅ Right side becomes editable too */}
+            {/* Right side contact details like screenshot */}
             <RightInfo>
               <InfoRow>
                 <Mail size={16} />
@@ -879,12 +921,17 @@ export default function MyProfile() {
             </RightInfo>
           </MainRow>
 
+          <Divider />
+
+          {/* Tabs row inside the card like screenshot */}
           <Tabs>
-            {["About", "Work Type & Shift", "Attendance", "Leave", "Payroll", "Documents"].map((t) => (
-              <Tab key={t} $active={activeTab === t} onClick={() => setActiveTab(t)}>
-                {t}
-              </Tab>
-            ))}
+            {["About", "Work Type & Shift", "Attendance", "Leave", "Payroll", "Documents"].map(
+              (t) => (
+                <Tab key={t} $active={activeTab === t} onClick={() => setActiveTab(t)}>
+                  {t}
+                </Tab>
+              )
+            )}
           </Tabs>
 
           {editing && (
@@ -892,8 +939,9 @@ export default function MyProfile() {
               Editing mode ON — fill details and hit <b>Save</b>.
             </Hint>
           )}
-        </ProfileCard>
 
+          <div style={{ height: 18 }} />
+        </ProfileCard>
         {activeTab === "About" && (
           <ContentGrid>
             <Panel>

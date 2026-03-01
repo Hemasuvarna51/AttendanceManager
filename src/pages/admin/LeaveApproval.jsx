@@ -1,6 +1,4 @@
-import { useState } from "react";
 import styled from "styled-components";
-import { useEmployeeStore } from "../../store/employee.store";
 import { useLeaveStore } from "../../store/leave.store";
 
 /* ===================== STYLES ===================== */
@@ -13,22 +11,32 @@ const Container = styled.div`
   min-height: calc(100vh - 60px);
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
 const Title = styled.h2`
-  margin: 0;
+  margin: 0 0 16px;
 `;
 
-const TableWrapper = styled.div`
-  background: #fff
+const Section = styled.div`
+  margin-top: 16px;
+  background: #fff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+`;
+
+const SectionHeader = styled.div`
+  padding: 14px 16px;
+  background: #f3f4f6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+`;
+
+const Badge = styled.span`
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #e5e7eb;
 `;
 
 const Table = styled.table`
@@ -39,7 +47,7 @@ const Table = styled.table`
 const Th = styled.th`
   text-align: left;
   padding: 12px;
-  background: #f3f4f6;
+  background: #fafafa;
   border-bottom: 2px solid #e5e7eb;
 `;
 
@@ -78,14 +86,8 @@ const Button = styled.button`
   border: 1px solid #d1d5db;
   cursor: pointer;
   font-size: 13px;
-
-  background: ${(props) =>
-    props.approve ? "#16a34a" : "#dc2626"};
+  background: ${(props) => (props.approve ? "#16a34a" : "#dc2626")};
   color: white;
-
-  &:hover {
-    opacity: 0.9;
-  }
 
   &:disabled {
     opacity: 0.5;
@@ -95,79 +97,82 @@ const Button = styled.button`
 
 /* ===================== COMPONENT ===================== */
 
-export default function EmployeeLeaveRequests() {
-  const { employees } = useEmployeeStore();
+export default function AdminLeaveRequests() {
   const { leaves, updateLeaveStatus } = useLeaveStore();
-  
-  const updateStatus = (id, status) => {
-    updateLeaveStatus(id, status);
-  };
+
+  const grouped = leaves.reduce((acc, l) => {
+    const key = l.userId || "UNKNOWN_USER";
+    (acc[key] ||= []).push(l);
+    return acc;
+  }, {});
+
+  const userIds = Object.keys(grouped);
 
   return (
     <Container>
-      <Header>
-        <Title>Employee Leave Requests</Title>
-      </Header>
+      <Title>Admin - Leave Requests</Title>
 
-      <TableWrapper>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Employee</Th>
-              <Th>From</Th>
-              <Th>To</Th>
-              <Th>Type</Th>
-              <Th>Reason</Th>
-              <Th>Status</Th>
-              <Th>Action</Th>
-            </tr>
-          </thead>
+      {userIds.length === 0 ? (
+        <p style={{ textAlign: "center", color: "#666", marginTop: "20px" }}>
+          No leave requests
+        </p>
+      ) : (
+        userIds.map((userId) => (
+          <Section key={userId}>
+            <SectionHeader>
+              <div>User: {userId}</div>
+              <Badge>{grouped[userId].length} requests</Badge>
+            </SectionHeader>
 
-          <tbody>
-            {leaves.length > 0 ? (
-              leaves.map((leave) => (
-                <tr key={leave.id}>
-                  <Td>{leave.employee}</Td>
-                  <Td>{leave.from}</Td>
-                  <Td>{leave.to}</Td>
-                  <Td>{leave.type}</Td>
-                  <Td>{leave.reason}</Td>
-                  <Td>
-                    <Status status={leave.status}>
-                      {leave.status}
-                    </Status>
-                  </Td>
-                  <Td>
-                    <Actions>
-                      <Button
-                        approve
-                        disabled={leave.status !== "Pending"}
-                        onClick={() =>
-                          updateStatus(leave.id, "Approved")
-                        }
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        disabled={leave.status !== "Pending"}
-                        onClick={() =>
-                          updateStatus(leave.id, "Rejected")
-                        }
-                      >
-                        Reject
-                      </Button>
-                    </Actions>
-                  </Td>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Employee</Th>
+                  <Th>From</Th>
+                  <Th>To</Th>
+                  <Th>Type</Th>
+                  <Th>Reason</Th>
+                  <Th>Status</Th>
+                  <Th>Action</Th>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <Td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>No leave requests</Td>
-              </tr>
-            )}
-          </tbody>
-        </Table>
-      </TableWrapper>
+              </thead>
+              <tbody>
+                {grouped[userId].map((leave) => (
+                  <tr key={leave.id}>
+                    <Td>{leave.employee}</Td>
+                    <Td>{leave.from}</Td>
+                    <Td>{leave.to}</Td>
+                    <Td>{leave.type}</Td>
+                    <Td>{leave.reason}</Td>
+                    <Td>
+                      <Status status={leave.status || "Pending"}>
+                        {leave.status || "Pending"}
+                      </Status>
+                    </Td>
+                    <Td>
+                      <Actions>
+                        <Button
+                          approve
+                          disabled={(leave.status || "Pending") !== "Pending"}
+                          onClick={() => updateLeaveStatus(leave.id, "Approved")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          disabled={(leave.status || "Pending") !== "Pending"}
+                          onClick={() => updateLeaveStatus(leave.id, "Rejected")}
+                        >
+                          Reject
+                        </Button>
+                      </Actions>
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Section>
+        ))
+      )}
     </Container>
   );
 }

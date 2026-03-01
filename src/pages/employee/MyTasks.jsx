@@ -1,102 +1,161 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
 
+/* ===================== LAYOUT ===================== */
 
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
+const Page = styled.div`
+  padding: 26px 26px 40px;
+  background: #f4f6fb;
   min-height: calc(100vh - 60px);
 `;
 
-const TableWrap = styled.div`
+const Shell = styled.div`
+  max-width: 1180px;
+  margin: 0 auto;
+`;
+
+const TopBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+`;
+
+const Heading = styled.div`
+  h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.4px;
+    color: #0f172a;
+  }
+
+  p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #64748b;
+  }
+`;
+
+const PrimaryBtn = styled.button`
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.2);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`;
+
+/* ===================== STATS ===================== */
+
+const StatsRow = styled.div`
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 12px;
+
+  @media (max-width: 980px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
+const StatCard = styled.div`
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  border: 1px solid #e6e8ee;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.05);
+
+  .k {
+    font-size: 12px;
+    font-weight: 800;
+    color: #64748b;
+  }
+
+  .v {
+    margin-top: 6px;
+    font-size: 20px;
+    font-weight: 900;
+    color: ${({ color }) => color || "#0f172a"};
+  }
+`;
+
+/* ===================== PANEL ===================== */
+
+const Panel = styled.div`
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e6e8ee;
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.06);
   overflow: hidden;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-
-  th,
-  td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #eef2f7;
-    text-align: left;
-    vertical-align: top;
-    font-size: 14px;
-  }
-
-  th {
-    background: #f3f4f6;
-    font-weight: 700;
-    color: #111827;
-    border-bottom: 2px solid #e5e7eb;
-    
-  }
-
-  td {
-    color: #1f2937;
-    
-  }
-
-  tr:last-child td {
-    padding: 12px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  /* Make long text not destroy layout */
-  td:nth-child(1),
-  td:nth-child(2) {
-    word-break: break-word;
-    white-space: normal;
-  }
-
-  select {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    background: #fff;
-    outline: none;
-  }
-
-  select:focus {
-    border-color: #94a3b8;
-  }
-`;
-
-const PriorityBadge = styled.span`
-  display: inline-flex;
+const PanelHead = styled.div`
+  padding: 14px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  color: white;
-  background: ${({ priority }) =>
-    priority === "High"
-      ? "#ef4444"
-      : priority === "Medium"
-      ? "#f59e0b"
-      : "#10b981"};
 `;
 
-const DebugBox = styled.div`
-  margin-top: 16px;
-  padding: 12px 14px;
+const Tabs = styled.div`
+  display: flex;
+  gap: 8px;
   background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 12px;
-  color: #334155;
+  padding: 6px;
+  border-radius: 999px;
 `;
+
+const Tab = styled.button`
+  border: none;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  background: ${({ active }) => (active ? "#2563eb" : "transparent")};
+  color: ${({ active }) => (active ? "#fff" : "#0f172a")};
+`;
+
+const Dots = styled.div`
+  color: #94a3b8;
+  font-weight: 900;
+  letter-spacing: 2px;
+`;
+
+/* ===================== EMPTY STATE ===================== */
+
+const EmptyState = styled.div`
+  padding: 50px 20px;
+  text-align: center;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 60px;
+  margin-bottom: 10px;
+`;
+
+const EmptyTitle = styled.h3`
+  margin: 0;
+  font-size: 20px;
+`;
+
+const EmptyText = styled.p`
+  margin-top: 6px;
+  font-size: 14px;
+  color: #64748b;
+`;
+
+/* ===================== HELPERS ===================== */
 
 const safeParse = (key, fallback = []) => {
   try {
@@ -108,25 +167,16 @@ const safeParse = (key, fallback = []) => {
   }
 };
 
+/* ===================== COMPONENT ===================== */
+
 export default function EmployeeTasks() {
   const loggedInEmployee = useAuthStore((s) => s.user?.name);
-
   const [tasks, setTasks] = useState([]);
-  const [debugInfo, setDebugInfo] = useState({});
+  const [tab, setTab] = useState("All");
 
   useEffect(() => {
     const load = () => {
-      console.log("🔍 MyTasks loading for:", loggedInEmployee);
-
-      if (!loggedInEmployee) {
-        setTasks([]);
-        setDebugInfo({
-          loggedInEmployee: null,
-          totalTasks: 0,
-          myTasksCount: 0,
-        });
-        return;
-      }
+      if (!loggedInEmployee) return setTasks([]);
 
       const stored = safeParse("tasks", []);
       const myTasks = stored.filter(
@@ -136,12 +186,6 @@ export default function EmployeeTasks() {
       );
 
       setTasks(myTasks);
-
-      setDebugInfo({
-        loggedInEmployee,
-        totalTasks: stored.length,
-        myTasksCount: myTasks.length,
-      });
     };
 
     load();
@@ -154,98 +198,103 @@ export default function EmployeeTasks() {
     };
   }, [loggedInEmployee]);
 
-  const updateStatus = (id, newStatus) => {
-    const stored = safeParse("tasks", []);
+  /* ===== Stats ===== */
+  const stats = useMemo(() => {
+    return {
+      total: tasks.length,
+      inProgress: tasks.filter((t) => t.status === "In Progress").length,
+      completed: tasks.filter((t) => t.status === "Completed").length,
+      overdue: tasks.filter(
+        (t) =>
+          t.dueDate &&
+          new Date(t.dueDate) < new Date() &&
+          t.status !== "Completed"
+      ).length,
+    };
+  }, [tasks]);
 
-    const updated = stored.map((task) =>
-      task.id === id ? { ...task, status: newStatus } : task
-    );
-
-    localStorage.setItem("tasks", JSON.stringify(updated));
-    window.dispatchEvent(new Event("tasks_updated")); // ✅ refresh dashboard + this page
-
-    const myUpdated = updated.filter(
-      (task) =>
-        task.assignedTo &&
-        loggedInEmployee &&
-        task.assignedTo.toLowerCase() === loggedInEmployee.toLowerCase()
-    );
-
-    setTasks(myUpdated);
-  };
+  const filteredTasks =
+    tab === "All" ? tasks : tasks.filter((t) => t.status === tab);
 
   return (
-    <Container>
-      <h2>My Tasks</h2>
+    <Page>
+      <Shell>
+        <TopBar>
+          <Heading>
+            <h1>Task Management</h1>
+            <p>Organize, prioritize, and manage your tasks efficiently.</p>
+          </Heading>
 
-      <Table>
-        <thead>
-          <tr>
-            
-            <th>Title</th>
-            <th>Description</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Due Date</th>
-          </tr>
-        </thead>
+          <PrimaryBtn>+ New Task</PrimaryBtn>
+        </TopBar>
 
-        <tbody>
-          {tasks.length === 0 ? (
-            <tr>
-              <td colSpan="4" style={{ textAlign: "center", padding: "14px" }}>
-                No tasks assigned to you.
-              </td>
-            </tr>
+        <StatsRow>
+          <StatCard>
+            <div className="k">Total Tasks</div>
+            <div className="v">{stats.total}</div>
+          </StatCard>
+
+          <StatCard color="#16a34a">
+            <div className="k">In Progress</div>
+            <div className="v">{stats.inProgress}</div>
+          </StatCard>
+
+          <StatCard color="#2563eb">
+            <div className="k">Completed</div>
+            <div className="v">{stats.completed}</div>
+          </StatCard>
+
+          <StatCard color="#ef4444">
+            <div className="k">Overdue</div>
+            <div className="v">{stats.overdue}</div>
+          </StatCard>
+        </StatsRow>
+
+        <Panel>
+          <PanelHead>
+            <Tabs>
+              <Tab active={tab === "All"} onClick={() => setTab("All")}>
+                All
+              </Tab>
+              <Tab
+                active={tab === "Pending"}
+                onClick={() => setTab("Pending")}
+              >
+                Pending
+              </Tab>
+              <Tab
+                active={tab === "In Progress"}
+                onClick={() => setTab("In Progress")}
+              >
+                In Progress
+              </Tab>
+              <Tab
+                active={tab === "Completed"}
+                onClick={() => setTab("Completed")}
+              >
+                Completed
+              </Tab>
+            </Tabs>
+
+            <Dots>•••</Dots>
+          </PanelHead>
+
+          {filteredTasks.length === 0 ? (
+            <EmptyState>
+              <EmptyIcon>📋</EmptyIcon>
+              <EmptyTitle>No Tasks Assigned</EmptyTitle>
+              <EmptyText>
+                You currently have no tasks assigned to you.
+              </EmptyText>
+            </EmptyState>
           ) : (
-            tasks.map((task) => (
-              <tr key={task.id}>
-            
-                <td>{task.title}</td>
-                <td>{task.description}</td>
-
-
-                <td>
-                  <PriorityBadge priority={task.priority}>
-                    {task.priority}
-                  </PriorityBadge>
-                </td>
-
-                <td>
-                  <select
-                    value={task.status || "Pending"}
-                    onChange={(e) => updateStatus(task.id, e.target.value)}
-                  >
-                    <option>Pending</option>
-                    <option>In Progress</option>
-                    <option>Completed</option>
-                  </select>
-                </td>
-
-                <td>{task.dueDate || "--"}</td>
-              </tr>
-            ))
+            <EmptyState>
+              {/* You can replace this with full table if needed */}
+              <EmptyTitle>{filteredTasks.length} Tasks Found</EmptyTitle>
+            </EmptyState>
           )}
-        </tbody>
-      </Table>
-
-      {/* Debug Info */}
-      <div
-        style={{
-          marginTop: "20px",
-          padding: "10px",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "4px",
-          fontSize: "12px",
-        }}
-      >
-        <strong>Total</strong>
-       
-        <p>
-          📊 Total tasks: {debugInfo.totalTasks} | Your tasks:{" "}
-          {debugInfo.myTasksCount}
-        </p>
-      </div>
-    </Container>
+        </Panel>
+      </Shell>
+    </Page>
   );
 }

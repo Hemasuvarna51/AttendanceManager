@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { Clock, Sparkles, CalendarDays, ListTodo } from "lucide-react";
+import { Clock, Sparkles, CalendarDays, ListTodo, UserCheck } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { getAttendanceState, getUserRecords } from "../../utils/attendanceLocalDb";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar as RBar,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -130,33 +131,219 @@ const SubText = styled.p`
 
 const Pills = styled.div`
   display: flex;
-  gap: 10px;
+  gap: 20px;
   flex-wrap: wrap;
+  margin-bottom: 20px;
 `;
 
-const Pill = styled.div`
+const Pill1 = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  background: #ffffff;
+  gap: 10px;
+  padding: 30px 55px;
+  border-radius: 10px;
+  background:  #3FBE71;
   border: 1px solid #eef2f7;
-  color: #334155;
+  color: white;
   font-weight: 800;
   box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
-  font-size: 13px;
+  font-size: 16px;
+`;
+
+const Pill2 = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 60px;
+  border-radius: 10px;
+  background: #236BEC;
+  border: 1px solid #eef2f7;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
+  font-size: 16px;
+`;
+const Pill3 = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 55px;
+  border-radius: 10px;
+  background: #FD9010;
+  border: 1px solid #eef2f7;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
+  font-size: 16px;
+`;
+
+const Pill4 = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 55px;
+  border-radius: 10px;
+  background: #FD4238;
+  border: 1px solid #eef2f7;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
+  font-size: 16px;
 `;
 
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 18px;
+  margin-bottom: 20px;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 `;
+
+
+const AttTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+`;
+
+const AttTitle = styled.h3`
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+`;
+
+const ViewAll = styled.button`
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 900;
+  font-size: 13px;
+  cursor: pointer;
+`;
+
+const AttBody = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+`;
+
+const DateBadge = styled.div`
+  width: 92px;
+  min-width: 92px;
+  height: 92px;
+  border-radius: 16px;
+  border: 1px solid #eef2f7;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  text-align: center;
+
+  .month {
+    font-size: 12px;
+    font-weight: 900;
+    color: #2563eb;
+    letter-spacing: 0.06em;
+  }
+  .day {
+    font-size: 34px;
+    font-weight: 950;
+    color: #0f172a;
+    line-height: 1;
+  }
+`;
+
+const AttMeta = styled.div`
+  flex: 1;
+  min-width: 0;
+
+  .date {
+    font-size: 16px;
+    font-weight: 950;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+
+  .statusRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    color: #16a34a;
+  }
+
+  .dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #16a34a;
+    display: grid;
+    place-items: center;
+    color: white;
+    font-size: 12px;
+    line-height: 1;
+  }
+`;
+
+const MarkBtn = styled.button`
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  /* red like screenshot for Mark Out */
+  background: #ef4444;
+  color: white;
+`;
+
+const MiniChart = styled.div`
+  margin-top: 12px;
+  height: 200px;
+  padding: 10px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+`;
+
+const MiniHead = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1px;
+
+  .label {
+    font-size: 13px;
+    font-weight: 950;
+    color: #0f172a;
+  }
+
+  .more {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-weight: 900;
+    cursor: pointer;
+    font-size: 13px;
+  }
+`;
+
 
 const Card = styled.button.attrs({ type: "button" })`
   position: relative;
@@ -171,15 +358,18 @@ const Card = styled.button.attrs({ type: "button" })`
   text-align: left;
   cursor: ${({ $clickable }) => ($clickable ? "pointer" : "default")};
   font-family: inherit;
+  margin-top: 18px;
+  margin-bottom: 18px;
+  height: fit-content;
 
   &:hover {
     ${({ $clickable }) =>
-      $clickable
-        ? `
+    $clickable
+      ? `
       transform: translateY(-2px);
       box-shadow: 0 22px 50px rgba(2, 6, 23, 0.08);
     `
-        : ""}
+      : ""}
   }
 `;
 
@@ -289,53 +479,10 @@ const ChartWrap = styled.div`
   border-radius: 16px;
   background: #f8fafc;
   border: 1px solid #eef2f7;
+  height: 240px;
 `;
 
-const CircleWrap = styled.div`
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-`;
 
-const PerformanceCircle = styled.div`
-  width: 96px;
-  height: 96px;
-  border-radius: 999px;
-  background: conic-gradient(
-    #2563eb ${(props) => props.value}%,
-    #e2e8f0 ${(props) => props.value}% 100%
-  );
-  display: grid;
-  place-items: center;
-`;
-
-const CircleInner = styled.div`
-  width: 74px;
-  height: 74px;
-  border-radius: 999px;
-  background: #fff;
-  display: grid;
-  place-items: center;
-  font-weight: 950;
-  color: #0f172a;
-  border: 1px solid #eef2f7;
-`;
-
-const CircleMeta = styled.div`
-  .big {
-    font-size: 14px;
-    font-weight: 950;
-    color: #0f172a;
-    letter-spacing: -0.01em;
-  }
-  .small {
-    margin-top: 4px;
-    font-size: 12px;
-    font-weight: 800;
-    color: #64748b;
-  }
-`;
 
 const TaskItem = styled.div`
   padding: 12px 0;
@@ -447,8 +594,8 @@ export default function DashBoard() {
             t.status === "Completed"
               ? 100
               : t.status === "In Progress"
-              ? 50
-              : 0,
+                ? 50
+                : 0,
         }));
 
       setTasks(myTasks);
@@ -480,7 +627,31 @@ export default function DashBoard() {
   }, [att.checkedIn, todayTimes, tick]);
 
   const pendingTasks = tasks.filter((t) => Number(t.pct || 0) < 100).length;
+  const attendanceChart = useMemo(() => {
+    const now = new Date();
 
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (6 - i));
+      return startOfDay(d);
+    });
+
+    const recordDates = records
+      .map((r) => ({ ...r, _d: new Date(r.time) }))
+      .filter((r) => !Number.isNaN(r._d.getTime()));
+
+    return days.map((day) => {
+      const checkedIn = recordDates.some(
+        (r) => r.type === "CHECK_IN" && isSameDay(r._d, day)
+      );
+
+      return {
+        day: fmtDay(day),
+        value: checkedIn ? 100 : 0,
+        fill: checkedIn ? "#22c55e" : "#ef4444", // ✅ add this
+      };
+    });
+  }, [records]);
   // ✅ Chart data (attendance from THIS user)
   const chartData = useMemo(() => {
     const now = new Date();
@@ -521,11 +692,11 @@ export default function DashBoard() {
     const overallAvgPct =
       tasks.length > 0
         ? Math.round(
-            tasks.reduce(
-              (sum, t) => sum + Math.max(0, Math.min(100, Number(t.pct || 0))),
-              0
-            ) / tasks.length
-          )
+          tasks.reduce(
+            (sum, t) => sum + Math.max(0, Math.min(100, Number(t.pct || 0))),
+            0
+          ) / tasks.length
+        )
         : 0;
 
     return days.map((day, i) => {
@@ -564,61 +735,104 @@ export default function DashBoard() {
           <SubText>Welcome back, {userName} 👋</SubText>
         </TitleWrap>
 
-        <Pills>
-          <Pill>
-            <ListTodo size={16} /> Pending: {pendingTasks}
-          </Pill>
-          <Pill>
-            <CalendarDays size={16} /> Today: {new Date().toLocaleDateString()}
-          </Pill>
-          <Pill>
-            <Sparkles size={16} /> Score: {attendanceScore}%
-          </Pill>
-        </Pills>
       </Top>
+      <Pills>
+        <Pill1>
+          <UserCheck size={30} /> Present Status: {att.checkedIn ? "Checked In" : "Checked Out"}
+        </Pill1>
+        <Pill2>
+          <ListTodo size={30} /> Pending Tasks: {pendingTasks}
+        </Pill2>
+        <Pill3>
+          <CalendarDays size={30} /> Today: {new Date().toLocaleDateString()}
+        </Pill3>
+        <Pill4>
+          <Sparkles size={30} /> Notifications: {reminders.length + schedule.length}
+        </Pill4>
+      </Pills>
 
       <Grid>
         {/* Attendance */}
-        <Card>
-          <CardHead>
-            <CardTitle>Live Attendance</CardTitle>
-            <Hint>{att.checkedIn ? "LIVE" : "OFF"}</Hint>
-          </CardHead>
+        {/* Attendance (NEW like screenshot) */}
+        <Card as="div">
+          <AttTop>
+            <AttTitle>Attendance</AttTitle>
+            <ViewAll type="button" onClick={() => navigate("/employee/my-attendance")}>
+              View All →
+            </ViewAll>
+          </AttTop>
 
-          {att.checkedIn ? (
-            <Chip>
-              <Clock size={14} />
-              Working: {formatHMS(liveMs)}
-            </Chip>
-          ) : (
-            <EmptyState>
-              Not checked in yet. Your live timer starts after check-in.
-            </EmptyState>
-          )}
+          <AttBody>
+            <DateBadge>
+              <div className="month">
+                {new Date()
+                  .toLocaleString(undefined, { month: "short" })
+                  .toUpperCase()}
+              </div>
+              <div className="day">{new Date().getDate()}</div>
+            </DateBadge>
 
-          <StatGrid>
-            <Stat onClick={() => navigate("/employee/checkin")}>
-              <div className="label">Check-in</div>
-              <div className="value">{todayTimes.clockIn}</div>
-            </Stat>
-            <Stat onClick={() => navigate("/employee/checkout")}>
-              <div className="label">Check-out</div>
-              <div className="value">{todayTimes.clockOut}</div>
-            </Stat>
-          </StatGrid>
+            <AttMeta>
+              <div className="date">
+                {new Date().toLocaleDateString(undefined, {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </div>
 
-          <CircleWrap>
-            <PerformanceCircle value={attendanceScore}>
-              <CircleInner>{attendanceScore}%</CircleInner>
-            </PerformanceCircle>
+              <div
+                className="statusRow"
+                style={{ color: att.checkedIn ? "#16a34a" : "#ef4444" }}
+              >
+                <span
+                  className="dot"
+                  style={{ background: att.checkedIn ? "#16a34a" : "#ef4444" }}
+                >
+                  ✓
+                </span>
+                {att.checkedIn ? "Present" : "Absent"}
+              </div>
+            </AttMeta>
 
-            <CircleMeta>
-              <div className="big">Attendance health</div>
-              <div className="small">Last 7 days check-ins consistency</div>
-            </CircleMeta>
-          </CircleWrap>
+            <MarkBtn
+              type="button"
+              onClick={() =>
+                navigate(att.checkedIn ? "/employee/checkout" : "/employee/checkin")
+              }
+              style={{ background: att.checkedIn ? "#ef4444" : "#16a34a" }}
+            >
+              {att.checkedIn ? "Mark Out" : "Mark In"}
+            </MarkBtn>
+          </AttBody>
+
+          <MiniChart>
+            <MiniHead>
+              <div className="label">Status: Attendance</div>
+              <button
+                type="button"
+                className="more"
+                onClick={() => navigate("/employee/my-attendance")}
+              >
+                View More
+              </button>
+            </MiniHead>
+
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={attendanceChart} barSize={40}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="day" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} width={28} />
+                <Tooltip formatter={(v) => [`${v}%`, "Attendance"]} />
+                <RBar dataKey="value" radius={[10, 10, 10, 10]}>
+                  {attendanceChart.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </RBar>
+              </BarChart>
+            </ResponsiveContainer>
+          </MiniChart>
         </Card>
-
         {/* Productivity */}
         <Card>
           <CardHead>
@@ -640,14 +854,14 @@ export default function DashBoard() {
                     boxShadow: "0 16px 32px rgba(2,6,23,0.10)",
                   }}
                   labelStyle={{ fontWeight: 900, color: "#0f172a" }}
-                  formatter={(val) => [val, "Productivity"]}
-                  labelFormatter={(label, payload) => {
-                    const p = payload?.[0]?.payload;
-                    if (!p) return label;
-                    return `${label} • Attendance: ${p.attendance}% • Tasks: ${p.taskScore}%`;
-                  }}
+                  formatter={(val) => [val, "Task Productivity"]}
+                  labelFormatter={(label) => `${label} • Task Progress`}
                 />
-                <RBar dataKey="value" radius={[10, 10, 10, 10]} fill="#2563eb" />
+                <RBar
+                  dataKey="value"
+                  radius={[10, 10, 10, 10]}
+                  fill="#25eb3cd0"
+                />
               </BarChart>
             </ResponsiveContainer>
           </ChartWrap>
@@ -660,10 +874,9 @@ export default function DashBoard() {
               fontWeight: 800,
             }}
           >
-            Productivity = 60% attendance + 40% task progress
+            Productivity = 100% task progress
           </div>
         </Card>
-
         {/* Tasks */}
         <Card $highlight $clickable onClick={() => navigate("/employee/tasks")}>
           <CardHead>

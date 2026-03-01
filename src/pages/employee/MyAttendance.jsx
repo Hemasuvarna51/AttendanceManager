@@ -1,231 +1,315 @@
-// ✅ UPDATED: MyAttendance.jsx
+// ✅ UPDATED: MyAttendance.jsx (UI matched to the screenshot)
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { clearRecords, getUserRecords } from "../../utils/attendanceLocalDb";
 import { useAuthStore } from "../../store/auth.store";
 
+/* ===================== STYLES ===================== */
+
 const Page = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
+  padding: 26px 26px 40px;
+  background: #f4f6fb;
   min-height: calc(100vh - 60px);
 `;
 
-const Surface = styled.div`
-  background: linear-gradient(180deg, #fafafa 0%, #ffffff 40%, #fafafa 100%);
-  border: 1px solid #f1f1f1;
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+const Shell = styled.div`
+  max-width: 1180px;
+  margin: 0 auto;
 `;
 
-const TitleRow = styled.div`
+const TopBar = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+`;
 
-  h2 {
+const Heading = styled.div`
+  h1 {
     margin: 0;
     font-size: 28px;
     letter-spacing: -0.4px;
-    color: #0b0b0f;
+    color: #0f172a;
   }
-
   p {
     margin: 6px 0 0;
-    color: #6b7280;
     font-size: 14px;
+    color: #64748b;
     line-height: 1.4;
   }
 `;
 
-const Actions = styled.div`
-  margin-top: 16px;
+const ActionRow = styled.div`
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 `;
 
 const Btn = styled.button`
-  padding: 10px 14px;
+  height: 40px;
+  padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid ${({ $danger }) => ($danger ? "#fecaca" : "#e7e7e7")};
-  background: ${({ $danger }) => ($danger ? "#fff5f5" : "#fff")};
-  color: ${({ $danger }) => ($danger ? "#b42318" : "#111")};
-  cursor: pointer;
-  font-weight: 600;
+  border: 1px solid ${({ $variant }) =>
+    $variant === "danger" ? "#fecaca" : $variant === "primary" ? "#cfe2ff" : "#e6e8ee"};
+  background: ${({ $variant }) =>
+    $variant === "danger" ? "#fff5f5" : $variant === "primary" ? "#f3f8ff" : "#fff"};
+  color: ${({ $variant }) =>
+    $variant === "danger" ? "#b42318" : $variant === "primary" ? "#1d4ed8" : "#0f172a"};
+  font-weight: 700;
   font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   transition: transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 
   &:hover {
-    border-color: ${({ $danger }) => ($danger ? "#fca5a5" : "#111")};
-    box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+    border-color: ${({ $variant }) =>
+      $variant === "danger" ? "#fca5a5" : $variant === "primary" ? "#93c5fd" : "#0f172a"};
+    box-shadow: 0 10px 20px rgba(2, 6, 23, 0.08);
     transform: translateY(-1px);
   }
 
   &:active {
-    transform: translateY(0px);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(2, 6, 23, 0.06);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.12);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
   }
 `;
 
-const Toolbar = styled.div`
+const CardGrid = styled.div`
   margin-top: 18px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
   gap: 14px;
-  flex-wrap: wrap;
-  padding-top: 14px;
-  border-top: 1px solid #f2f2f2;
+
+  @media (max-width: 980px) {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const Segments = styled.div`
-  display: inline-flex;
-  border: 1px solid #eaeaea;
-  border-radius: 999px;
-  overflow: hidden;
+const StatCard = styled.div`
   background: #fff;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
-`;
-
-const SegBtn = styled.button`
-  border: 0;
-  padding: 9px 14px;
-  cursor: pointer;
-  background: ${({ $active }) => ($active ? "#111" : "transparent")};
-  color: ${({ $active }) => ($active ? "#fff" : "#111")};
-  font-size: 13px;
-  font-weight: 700;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    background: ${({ $active }) => ($active ? "#111" : "#f6f6f6")};
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 2px rgba(17,17,17,0.35);
-  }
-`;
-
-const Stats = styled.div`
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-`;
-
-const Stat = styled.div`
-  border: 1px solid #ededed;
+  border: 1px solid #e6e8ee;
   border-radius: 16px;
-  padding: 12px 14px;
-  background: #fff;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.04);
-  min-width: 140px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.06);
+  min-height: 84px;
 
   .k {
-    font-size: 12px;
-    color: #6b7280;
-    font-weight: 600;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
   }
 
   .v {
-    font-size: 18px;
-    font-weight: 800;
-    margin-top: 4px;
-    color: #0b0b0f;
+    font-size: 22px;
+    font-weight: 900;
+    color: #0f172a;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+`;
+
+const StatusPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #e6e8ee;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: ${({ $state }) =>
+      $state === "CHECKED_IN" ? "#22c55e" : $state === "CHECKED_OUT" ? "#3b82f6" : "#94a3b8"};
+    box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.18);
+  }
+`;
+
+const Panel = styled.div`
+  margin-top: 14px;
+  background: #fff;
+  border: 1px solid #e6e8ee;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.06);
+  overflow: hidden;
+`;
+
+const PanelHead = styled.div`
+  padding: 14px 16px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+const Tabs = styled.div`
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid #e6e8ee;
+`;
+
+const Tab = styled.button`
+  border: 0;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  color: ${({ $active }) => ($active ? "#fff" : "#0f172a")};
+  background: ${({ $active }) => ($active ? "#2563eb" : "transparent")};
+  transition: background 0.15s ease, color 0.15s ease, transform 0.08s ease;
+
+  &:hover {
+    background: ${({ $active }) => ($active ? "#2563eb" : "#e9eef9")};
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+  }
+`;
+
+const PanelBody = styled.div`
+  padding: 20px 16px 22px;
+`;
+
+const EmptyState = styled.div`
+  min-height: 320px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #eef2f7;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+`;
+
+const EmptyInner = styled.div`
+  text-align: center;
+  max-width: 520px;
+
+  h3 {
+    margin: 14px 0 6px;
+    font-size: 22px;
     letter-spacing: -0.2px;
+    color: #0f172a;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+  }
+`;
+
+const EmptyIcon = styled.div`
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  background: radial-gradient(circle at 30% 30%, #dbeafe, #f8fafc);
+  border: 1px solid #e6e8ee;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.08);
+
+  svg {
+    width: 44px;
+    height: 44px;
+    opacity: 0.85;
   }
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: 16px;
+  overflow: hidden;
 
-  th, td {
-    padding: 12px 14px;
-    border: 1px solid #e7e7e7;
+  th,
+  td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #eef2f7;
     text-align: left;
+    font-size: 14px;
+    color: #0f172a;
   }
 
   th {
-    background: #f3f4f6;
-    font-weight: 700;
-    color: #111;
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.35px;
+    color: #64748b;
+    background: #f8fafc;
   }
 
-  td {
-    font-size: 14px;
-    color: #111;
-  }
-
-  tbody tr {
-    transition: background-color 0.12s ease;
-
-    &:hover {
-      background-color: #fafafa;
-    }
-  }
-
-  tbody tr:nth-child(even) {
-    background: #f9f9f9;
+  tbody tr:hover {
+    background: #fbfdff;
   }
 `;
 
-const TypeBadge = styled.span`
+const Badge = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: 999px;
+  font-weight: 900;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  border: 1px solid ${({ $type }) => ($type === "CHECK_IN" ? "#b7ebc6" : "#cfe2ff")};
-  background: ${({ $type }) => ($type === "CHECK_IN" ? "#f0fff4" : "#f3f8ff")};
-  color: ${({ $type }) => ($type === "CHECK_IN" ? "#11643a" : "#1e4ea8")};
+  border: 1px solid ${({ $type }) => ($type === "CHECK_IN" ? "#bbf7d0" : "#bfdbfe")};
+  background: ${({ $type }) => ($type === "CHECK_IN" ? "#f0fdf4" : "#eff6ff")};
+  color: ${({ $type }) => ($type === "CHECK_IN" ? "#166534" : "#1d4ed8")};
 `;
 
 const Selfie = styled.img`
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e7e7e7;
+  border-radius: 10px;
+  border: 1px solid #e6e8ee;
   cursor: zoom-in;
   transition: transform 0.12s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: scale(1.08);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    transform: scale(1.06);
+    box-shadow: 0 10px 22px rgba(2, 6, 23, 0.18);
   }
-`;
-
-const Empty = styled.div`
-  margin-top: 18px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 18px;
-  padding: 18px;
-  color: #6b7280;
-  background: #fafafa;
 `;
 
 const ZoomOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 12, 0.72);
+  background: rgba(2, 6, 23, 0.72);
   display: grid;
   place-items: center;
   padding: 18px;
@@ -235,17 +319,15 @@ const ZoomOverlay = styled.div`
 `;
 
 const ZoomImg = styled.img`
-  max-width: min(900px, 95vw);
-  max-height: 85vh;
+  max-width: min(920px, 96vw);
+  max-height: 86vh;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: #fff;
-  box-shadow: 0 30px 70px rgba(0,0,0,0.35);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
 `;
 
-/* =========================
-   Helpers
-   ========================= */
+/* ===================== HELPERS ===================== */
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
@@ -258,7 +340,7 @@ const formatDuration = (ms) => {
   const totalMinutes = Math.floor(ms / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  return `${hours}h ${minutes}m`;
+  return `${hours}h ${String(minutes).padStart(2, "0")}m`;
 };
 
 const computeTodaySummary = (records) => {
@@ -291,13 +373,35 @@ const computeTodaySummary = (records) => {
     if (last.type === "CHECK_OUT") todayStatus = "CHECKED_OUT";
   }
 
-  return {
-    todayStatus,
-    totalWorkedMs,
-    openSessionSince,
-    todayCount: today.length,
-  };
+  return { todayStatus, totalWorkedMs, openSessionSince, todayCount: today.length };
 };
+
+const downloadCSV = (rows, filename = "attendance_report.csv") => {
+  const headers = ["date", "type", "time", "has_selfie"];
+  const csv = [
+    headers.join(","),
+    ...rows.map((r) => {
+      const t = new Date(r.time);
+      const date = t.toLocaleDateString();
+      const time = t.toLocaleTimeString();
+      const hasSelfie = r.selfie ? "yes" : "no";
+      const safe = (v) => `"${String(v).replaceAll('"', '""')}"`;
+      return [safe(date), safe(r.type), safe(time), safe(hasSelfie)].join(",");
+    }),
+  ].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
+/* ===================== COMPONENT ===================== */
 
 export default function MyAttendance() {
   const user = useAuthStore((s) => s.user);
@@ -310,7 +414,6 @@ export default function MyAttendance() {
 
   const refresh = () => setRecords(getUserRecords(userId));
 
-  // ✅ Load + listen for check-in/out updates
   useEffect(() => {
     if (!userId) return;
 
@@ -356,183 +459,210 @@ export default function MyAttendance() {
     return base.slice().sort((a, b) => new Date(b.time) - new Date(a.time));
   }, [records, filter]);
 
-  // ✅ Daily view (keeps latest check-in/out for each day)
+  // Daily aggregation (latest check-in/out per day)
   const dailyRecords = useMemo(() => {
     const grouped = {};
-
     visibleRecords.forEach((r) => {
       const d = new Date(r.time);
       const key = startOfDay(d).toISOString();
-      if (!grouped[key]) {
-        grouped[key] = { date: startOfDay(d), checkIn: null, checkOut: null };
-      }
+      if (!grouped[key]) grouped[key] = { date: startOfDay(d), checkIn: null, checkOut: null };
       if (r.type === "CHECK_IN") grouped[key].checkIn = r;
       if (r.type === "CHECK_OUT") grouped[key].checkOut = r;
     });
-
     return Object.values(grouped).sort((a, b) => b.date - a.date);
   }, [visibleRecords]);
+
+  const todayStatusLabel =
+    today.todayStatus === "CHECKED_IN"
+      ? "CHECKED IN"
+      : today.todayStatus === "CHECKED_OUT"
+      ? "CHECKED OUT"
+      : "NOT STARTED";
 
   if (!userId) {
     return (
       <Page>
-        <Surface>
-          <h2 style={{ margin: 0 }}>My Attendance</h2>
-          <p style={{ marginTop: 8, color: "#6b7280" }}>
-            ⚠️ Please login to view your attendance.
-          </p>
-        </Surface>
+        <Shell>
+          <TopBar>
+            <Heading>
+              <h1>Attendance Overview</h1>
+              <p>⚠️ Please login to view your attendance.</p>
+            </Heading>
+          </TopBar>
+        </Shell>
       </Page>
     );
   }
 
   return (
     <Page>
-      <Surface>
-        <TitleRow>
-          <div>
-            <h2>My Attendance</h2>
-            <p>Local records stored in your browser (frontend-only).</p>
-          </div>
+      <Shell>
+        <TopBar>
+          <Heading>
+            <h1>Attendance Overview</h1>
+            <p>Monitor your daily attendance status and check-in/check-out records.</p>
+          </Heading>
 
-          <Stats>
-            <Stat>
-              <div className="k">Today Status</div>
-              <div className="v">
-                {today.todayStatus === "PENDING" && "⏳ Pending"}
-                {today.todayStatus === "CHECKED_IN" && "✅ Checked In"}
-                {today.todayStatus === "CHECKED_OUT" && "🏁 Checked Out"}
-              </div>
-            </Stat>
+          <ActionRow>
+            <Btn
+              $variant="primary"
+              onClick={() => downloadCSV(visibleRecords, "attendance_report.csv")}
+              title="Download as CSV"
+            >
+              ⬇️ Download Report
+            </Btn>
 
-            <Stat>
-              <div className="k">Work Hours (Today)</div>
-              <div className="v">{formatDuration(liveWorkedMs)}</div>
-            </Stat>
+            <Btn onClick={refresh}>↻ Refresh</Btn>
 
-            <Stat>
-              <div className="k">Today Records</div>
-              <div className="v">{today.todayCount}</div>
-            </Stat>
-          </Stats>
-        </TitleRow>
+            <Btn
+              $variant="danger"
+              onClick={() => {
+                // NOTE: current util clears ALL local records.
+                // If you want "clear only this user", share your localStorage key format and I'll patch attendanceLocalDb.
+                clearRecords();
+                setRecords([]);
+                setZoomSrc("");
+              }}
+            >
+              🗑️ Clear Records
+            </Btn>
+          </ActionRow>
+        </TopBar>
 
-        <Actions>
-          <Btn onClick={refresh}>Refresh</Btn>
+        <CardGrid>
+          <StatCard>
+            <div className="k">Today Status</div>
+            <div className="v">
+              <StatusPill $state={today.todayStatus}>
+                <span className="dot" />
+                {todayStatusLabel}
+              </StatusPill>
+            </div>
+          </StatCard>
 
-          <Btn
-            $danger
-            onClick={() => {
-              // ✅ clear ONLY this user's data? (current util clears all)
-              // If you want per-user clear, tell me and I’ll update localDb helpers.
-              clearRecords();
-              setRecords([]);
-              setZoomSrc("");
-            }}
-          >
-            Clear All (local)
-          </Btn>
-        </Actions>
+          <StatCard>
+            <div className="k">Work Hours Today</div>
+            <div className="v">{formatDuration(liveWorkedMs)}</div>
+          </StatCard>
 
-        <Toolbar>
-          <Segments>
-            <SegBtn $active={filter === "ALL"} onClick={() => setFilter("ALL")}>
-              All
-            </SegBtn>
-            <SegBtn $active={filter === "CHECK_IN"} onClick={() => setFilter("CHECK_IN")}>
-              Check-Ins
-            </SegBtn>
-            <SegBtn $active={filter === "CHECK_OUT"} onClick={() => setFilter("CHECK_OUT")}>
-              Check-Outs
-            </SegBtn>
-          </Segments>
+          <StatCard>
+            <div className="k">Total Records</div>
+            <div className="v">{stats.total}</div>
+          </StatCard>
 
-          <Stats>
-            <Stat>
-              <div className="k">Total</div>
-              <div className="v">{stats.total}</div>
-            </Stat>
-            <Stat>
-              <div className="k">Check-Ins</div>
-              <div className="v">{stats.ins}</div>
-            </Stat>
-            <Stat>
-              <div className="k">Check-Outs</div>
-              <div className="v">{stats.outs}</div>
-            </Stat>
-          </Stats>
-        </Toolbar>
+          <StatCard>
+            <div className="k">Check-Ins</div>
+            <div className="v">{stats.ins}</div>
+          </StatCard>
+        </CardGrid>
 
-        {visibleRecords.length === 0 ? (
-          <Empty>No local attendance records yet for this filter.</Empty>
-        ) : (
-          <Table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Check-In</th>
-                <th>Check-Out</th>
-                <th>Selfie</th>
-              </tr>
-            </thead>
+        <Panel>
+          <PanelHead>
+            <Tabs>
+              <Tab $active={filter === "ALL"} onClick={() => setFilter("ALL")}>
+                All
+              </Tab>
+              <Tab $active={filter === "CHECK_IN"} onClick={() => setFilter("CHECK_IN")}>
+                Check-Ins
+              </Tab>
+              <Tab $active={filter === "CHECK_OUT"} onClick={() => setFilter("CHECK_OUT")}>
+                Check-Outs
+              </Tab>
+            </Tabs>
 
-            <tbody>
-              {dailyRecords.map((day, idx) => (
-                <tr key={idx}>
-                  <td>
-                    {day.date.toLocaleDateString(undefined, {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </td>
+            {/* right side "..." like screenshot (pure UI) */}
+            <div style={{ color: "#94a3b8", fontWeight: 900, letterSpacing: "2px" }}>•••</div>
+          </PanelHead>
 
-                  <td>
-                    {day.checkIn ? (
-                      <TypeBadge $type="CHECK_IN">
-                        ✅ {new Date(day.checkIn.time).toLocaleTimeString()}
-                      </TypeBadge>
-                    ) : (
-                      <span style={{ color: "#9ca3af" }}>—</span>
-                    )}
-                  </td>
-
-                  <td>
-                    {day.checkOut ? (
-                      <TypeBadge $type="CHECK_OUT">
-                        🏁 {new Date(day.checkOut.time).toLocaleTimeString()}
-                      </TypeBadge>
-                    ) : (
-                      <span style={{ color: "#9ca3af" }}>—</span>
-                    )}
-                  </td>
-
-                  {/* ✅ FIX: selfie field name is "selfie" (from your CheckIn addRecord) */}
-                  <td>
-                    {day.checkIn?.selfie ? (
-                      <Selfie
-                        src={day.checkIn.selfie}
-                        alt="check-in selfie"
-                        onClick={() => setZoomSrc(day.checkIn.selfie)}
-                        title="Check-In Selfie - Click to enlarge"
+          <PanelBody>
+            {visibleRecords.length === 0 ? (
+              <EmptyState>
+                <EmptyInner>
+                  <EmptyIcon aria-hidden="true">
+                    {/* simple clock-ish svg */}
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M12 7v6l4 2"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
-                    ) : (
-                      <span style={{ color: "#9ca3af" }}>—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+                      <path
+                        d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                      />
+                    </svg>
+                  </EmptyIcon>
+                  <h3>No Records Found</h3>
+                  <p>Your attendance activity will appear here after check-in.</p>
+                </EmptyInner>
+              </EmptyState>
+            ) : (
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Selfie</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dailyRecords.map((day, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        {day.date.toLocaleDateString(undefined, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+
+                      <td>
+                        {day.checkIn ? (
+                          <Badge $type="CHECK_IN">✅ {new Date(day.checkIn.time).toLocaleTimeString()}</Badge>
+                        ) : (
+                          <span style={{ color: "#94a3b8", fontWeight: 700 }}>—</span>
+                        )}
+                      </td>
+
+                      <td>
+                        {day.checkOut ? (
+                          <Badge $type="CHECK_OUT">🏁 {new Date(day.checkOut.time).toLocaleTimeString()}</Badge>
+                        ) : (
+                          <span style={{ color: "#94a3b8", fontWeight: 700 }}>—</span>
+                        )}
+                      </td>
+
+                      <td>
+                        {day.checkIn?.selfie ? (
+                          <Selfie
+                            src={day.checkIn.selfie}
+                            alt="check-in selfie"
+                            onClick={() => setZoomSrc(day.checkIn.selfie)}
+                            title="Check-In Selfie - Click to enlarge"
+                          />
+                        ) : (
+                          <span style={{ color: "#94a3b8", fontWeight: 700 }}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            )}
+          </PanelBody>
+        </Panel>
 
         {zoomSrc && (
           <ZoomOverlay onClick={() => setZoomSrc("")}>
             <ZoomImg src={zoomSrc} alt="Zoomed selfie" />
           </ZoomOverlay>
         )}
-      </Surface>
+      </Shell>
     </Page>
   );
 }

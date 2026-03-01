@@ -36,7 +36,7 @@ const Aside = styled.aside`
   height: 100vh;
   padding: 16px 14px;
   color: #fff;
-  background: linear-gradient(135deg, #6849d9, #205eda, #3b82f6);
+  background: #20315B;
 
   position: fixed;
   top: 0;
