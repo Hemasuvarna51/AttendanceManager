@@ -499,15 +499,19 @@ export default function RequestLeave() {
       return;
     }
 
-    addLeave({
+    const leaveData = {
       userId,
-      employee: formData.empName,
-      empId: formData.empId,
+      employee: formData.empName || user?.name,
+      empId: formData.empId || user?.empId,
+      email: user?.email,
       from: formData.fromDate,
       to: formData.toDate,
       type: formData.leaveType,
       reason: formData.reason,
-    });
+    };
+
+    console.log('LeaveRequest - Submitting leave:', leaveData);
+    addLeave(leaveData);
 
     setShowForm(false);
     setFormData(initialFormData);

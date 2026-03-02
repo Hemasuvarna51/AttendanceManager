@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useEmployeeStore } from "../../../store/employee.store";
+import { usePayrollStore } from "../../../store/payroll.store";
 
 const Container = styled.div`
   padding: 30px;
@@ -156,6 +157,7 @@ const ProcessButton = styled.button`
 export default function RunPayroll() {
   const navigate = useNavigate();
   const { employees: employeeList } = useEmployeeStore();
+  const { addPayrollRecords } = usePayrollStore();
   const [payFrom, setPayFrom] = useState("");
   const [payTo, setPayTo] = useState("");
   const [employees, setEmployees] = useState([]);
@@ -194,6 +196,25 @@ export default function RunPayroll() {
       grossPay: calculateGrossPay(emp.hours, emp.rate),
       netPay: calculateNetPay(calculateGrossPay(emp.hours, emp.rate), emp.deductions, emp.taxes)
     }));
+
+    // Save payroll records to the store for each employee
+    const payrollRecords = payrollData.map(emp => ({
+      employeeId: emp.id,
+      employeeName: emp.name,
+      payPeriodFrom: payFrom,
+      payPeriodTo: payTo,
+      hours: emp.hours,
+      rate: emp.rate,
+      grossPay: emp.grossPay,
+      deductions: emp.deductions,
+      taxes: emp.taxes,
+      netPay: emp.netPay,
+      status: "processed"
+    }));
+
+    console.log('RunPayroll - Saving payroll records:', payrollRecords);
+    addPayrollRecords(payrollRecords);
+    console.log('RunPayroll - Payroll records saved successfully');
 
     navigate("/admin/payroll", { state: { payrollData, payFrom, payTo } });
   };
