@@ -45,12 +45,15 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 `;
 
 const Title = styled.h2`
-  font-size: 24px;
-  font-weight: bold;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #0f172a;
 `;
 
 const HeaderActions = styled.div`
@@ -60,7 +63,7 @@ const HeaderActions = styled.div`
 `;
 
 const AddButton = styled.button`
-  background: #77809f;
+  background: #4769e6;
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 14px;
@@ -78,11 +81,11 @@ const CardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 `;
 
 const Card = styled.button`
-  padding: 20px;
+  padding: 15px;
   border-radius: 16px;
   background: ${(props) => (props.highlight ? "#77809f" : "#f9fafb")};
   color: ${(props) => (props.highlight ? "#ffffff" : "#000000")};
@@ -108,7 +111,7 @@ const CardTitle = styled.p`
 `;
 
 const CardValue = styled.h3`
-  font-size: 30px;
+  font-size: 20px;
   margin-top: 8px;
 `;
 
@@ -124,6 +127,7 @@ const Box = styled.div`
   background: #f9fafb;
   padding: 24px;
   border-radius: 16px;
+  
 `;
 
 const BoxTitle = styled.h3`
@@ -134,7 +138,7 @@ const BoxTitle = styled.h3`
 const ReminderText = styled.p`
   font-size: 14px;
   color: #6b7280;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 `;
 
 const FullButton = styled.button`
@@ -154,16 +158,18 @@ const BottomGrid = styled.div`
   grid-template-columns: 2fr 1fr;
   gap: 24px;
   margin-top: 24px;
+  
 `;
 
 const TeamList = styled.div`
   max-height: 300px;
   overflow-y: auto;
+  
 `;
 
 const EmployeeItem = styled.div`
   padding: 12px;
-  background: #ffffff;
+  background: #e3e3ec;
   border-radius: 8px;
   margin-bottom: 8px;
   display: flex;
@@ -345,7 +351,7 @@ export default function Dashboard() {
 
   return (
     <Page>
-      <Main>
+     
         <Header>
           <Title>Dashboard</Title>
           <HeaderActions>
@@ -356,27 +362,27 @@ export default function Dashboard() {
         </Header>
 
         <CardGrid>
-          <Card highlight clickable onClick={() => handleProjectClick()}>
+          <Card highlight clickable onClick={() => handleProjectClick()} style={{background: "#FD9111"}}>
             <CardTitle>Total Projects</CardTitle>
             <CardValue>{projectStats.total}</CardValue>
           </Card>
 
-          <Card clickable onClick={() => handleProjectClick("Ended")}>
+          <Card clickable onClick={() => handleProjectClick("Ended")} style={{background: "#3182ce", color: "#ffffff"}}>
             <CardTitle>Ended Projects</CardTitle>
             <CardValue>{projectStats.ended}</CardValue>
           </Card>
 
-          <Card clickable onClick={() => handleProjectClick("Running")}>
+          <Card clickable onClick={() => handleProjectClick("Running")} style={{background: "#4CAF50", color: "#ffffff"}}>
             <CardTitle>Running Projects</CardTitle>
             <CardValue>{projectStats.running}</CardValue>
           </Card>
 
-          <Card clickable onClick={() => handleProjectClick("Pending")}>
+          <Card clickable onClick={() => handleProjectClick("Pending")} style={{background: "#e53e3e", color: "#ffffff"}}>
             <CardTitle>Pending Projects</CardTitle>
             <CardValue>{projectStats.pending}</CardValue>
           </Card>
 
-          <Card highlight clickable onClick={() => navigate("/admin/employees")}>
+          <Card highlight clickable onClick={() => navigate("/admin/employees")} style={{background: "#77809f", color: "#ffffff"}}>
             <CardTitle>Total Employees</CardTitle>
             <CardValue>{totalEmployees}</CardValue>
           </Card>
@@ -406,7 +412,7 @@ export default function Dashboard() {
                   </div>
                 ))}
 
-                <FullButton onClick={() => navigate("/admin/meetings")}>
+                <FullButton onClick={() => navigate("/admin/meetings")} style={{ background: "#51b5ce" }}>
                   View All Meetings
                 </FullButton>
               </>
@@ -418,7 +424,7 @@ export default function Dashboard() {
             <ReminderText>
               Present: {presentToday} / {totalEmployees}
             </ReminderText>
-            <FullButton onClick={() => navigate("/admin/attendance")}>
+            <FullButton onClick={() => navigate("/admin/attendance")} style={{ background: "#9c51ce" }}>
               View Attendance
             </FullButton>
           </Box>
@@ -462,12 +468,12 @@ export default function Dashboard() {
                 />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="present" fill=" #77809f" name="Employees Present" />
+                <Bar dataKey="present" fill=" #13d782" name="Employees Present" />
               </BarChart>
             </ResponsiveContainer>
           </Box>
         </BottomGrid>
-      </Main>
+    
     </Page>
   );
 }

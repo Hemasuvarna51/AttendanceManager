@@ -369,7 +369,7 @@ export default function MyMeetings() {
 
   return (
     <Page>
-      <Panel>
+   
         <Header>
           <HeaderLeft>
             <h2>Meeting Scheduler</h2>
@@ -454,7 +454,7 @@ export default function MyMeetings() {
         )}
 
         <FooterHint>Showing {myMeetings.length} meeting(s)</FooterHint>
-      </Panel>
+     
     </Page>
   );
 }

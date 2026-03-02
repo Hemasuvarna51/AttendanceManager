@@ -329,7 +329,7 @@ export default function Meetings() {
 
   return (
     <Page>
-      <Surface>
+   
         <TitleRow>
           <div>
             <h2>Meetings</h2>
@@ -455,7 +455,7 @@ export default function Meetings() {
             )}
           </Card>
         </Grid>
-      </Surface>
+     
     </Page>
   );
 }
