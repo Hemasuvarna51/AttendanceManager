@@ -419,7 +419,7 @@ export default function Meetings() {
 
           {/* RIGHT: List */}
           <Card>
-            <CardTitle>Scheduled Meetings</CardTitle>
+            <CardTitle>View All Meetings</CardTitle>
 
             {sorted.length === 0 ? (
               <Empty>No meetings created yet.</Empty>
