@@ -412,7 +412,7 @@ export default function Dashboard() {
                   </div>
                 ))}
 
-                <FullButton onClick={() => navigate("/admin/meetings")} style={{ background: "#51b5ce" }}>
+                <FullButton onClick={() => navigate("/admin/meetings")} style={{ background: "#3196d0" }}>
                   View All Meetings
                 </FullButton>
               </>
