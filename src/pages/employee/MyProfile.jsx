@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { getRecords } from "../../utils/attendanceLocalDb";
 import { useAuthStore } from "../../store/auth.store";
+import { usePayrollStore } from "../../store/payroll.store";
+import { useEmployeeStore } from "../../store/employee.store";
 import { Mail, Phone, Building2, IdCard, Pencil, Save, X } from "lucide-react";
 
 /* ===================== STYLES (UPDATED TO MATCH IMAGE) ===================== */
@@ -285,22 +287,22 @@ const StatCard = styled.div`
   background: #ffffff;
   border: 1px solid #e6edf6;
   border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
-  color: #0f172a;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  color: #ffffff;
 `;
 
 const StatValue = styled.div`
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 1000;
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 `;
 
 const StatLabel = styled.div`
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 900;
-  opacity: 0.9;
+  opacity: 0.95;
 `;
 
 const Panel = styled.div`
@@ -503,6 +505,94 @@ const UploadButton = styled.label`
     display: none;
   }
 `;
+
+/* ===================== PAYROLL RECORDS COMPONENT ===================== */
+
+function PayrollRecordsContent({ userId, userEmail, userName }) {
+  const { payrollRecords } = usePayrollStore();
+  const { employees } = useEmployeeStore();
+  
+  // Debug: Log what we're working with
+  console.log('PayrollRecordsContent - userId:', userId);
+  console.log('PayrollRecordsContent - userEmail:', userEmail);
+  console.log('PayrollRecordsContent - userName:', userName);
+  console.log('PayrollRecordsContent - all payroll records:', payrollRecords);
+  console.log('PayrollRecordsContent - all employees:', employees);
+  
+  // Find the current employee from employee store using email or name
+  const currentEmployee = employees.find(emp => 
+    emp.email?.toLowerCase() === userEmail?.toLowerCase() ||
+    emp.name?.toLowerCase() === userName?.toLowerCase() ||
+    emp.id === userId
+  );
+  
+  console.log('PayrollRecordsContent - matched employee:', currentEmployee);
+  
+  if (!userId && !userEmail && !userName) {
+    return (
+      <div style={{ color: "#9ca3af", textAlign: "center", padding: "20px" }}>
+        Unable to load payroll records - user not identified
+      </div>
+    );
+  }
+  
+  // Filter payroll records for the current employee
+  const employeePayroll = payrollRecords.filter(record => {
+    // Match by multiple criteria: employeeId, employee name, or email
+    const matchesId = record.employeeId === userId || record.employeeId === currentEmployee?.id;
+    const matchesName = record.employeeName?.toLowerCase() === userName?.toLowerCase() || 
+                       record.employeeName?.toLowerCase() === currentEmployee?.name?.toLowerCase();
+    const match = matchesId || matchesName;
+    console.log(`Checking record with employeeId: ${record.employeeId}, name: ${record.employeeName} - Match: ${match}`);
+    return match;
+  });
+
+  console.log('PayrollRecordsContent - filtered payroll for this employee:', employeePayroll);
+
+  // Sort by date descending (most recent first)
+  const sortedPayroll = [...employeePayroll].sort((a, b) => {
+    const dateA = new Date(a.payPeriodTo || a.createdAt || 0);
+    const dateB = new Date(b.payPeriodTo || b.createdAt || 0);
+    return dateB - dateA;
+  });
+
+  if (sortedPayroll.length === 0) {
+    return (
+      <div style={{ color: "#6b7280", textAlign: "center", padding: "20px" }}>
+        No payroll records found
+      </div>
+    );
+  }
+
+  return (
+    <RecordList>
+      {sortedPayroll.map((record, idx) => (
+        <RecordItem key={idx}>
+          <div>
+            <RecordDate>
+              {new Date(record.payPeriodTo || record.createdAt).toLocaleDateString()}
+            </RecordDate>
+            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
+              Pay Period: {new Date(record.payPeriodFrom).toLocaleDateString()} - {new Date(record.payPeriodTo).toLocaleDateString()}
+            </div>
+            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+              {record.hours} hours @ ${record.rate}/hr
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontWeight: "700", fontSize: "14px", color: "#27ae60" }}>
+              ${Number(record.netPay || 0).toFixed(2)}
+            </div>
+            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
+              Gross: ${Number(record.grossPay || 0).toFixed(2)}
+            </div>
+          </div>
+        </RecordItem>
+      ))}
+    </RecordList>
+  );
+}
+
 /* ===================== COMPONENT ===================== */
 
 export default function MyProfile() {
@@ -530,18 +620,35 @@ export default function MyProfile() {
       try {
         const leavePersisted = JSON.parse(localStorage.getItem("leave-storage") || "{}");
         const allLeaves = leavePersisted?.state?.leaves || [];
-        const userLeaves = allLeaves.filter(l =>
-          l.employee === user?.name ||
-          l.employeeId === user?.empId ||
-          l.employeeId === user?.employeeId
-        );
+        
+        // Filter leaves by current user using multiple criteria
+        const userLeaves = allLeaves.filter(l => {
+          // Match by employee name (case-insensitive)
+          if (l.employee && user?.name && l.employee.toLowerCase() === user.name.toLowerCase()) {
+            return true;
+          }
+          // Match by employee ID
+          if (l.employeeId && (l.employeeId === user?.id || l.employeeId === user?.empId || l.employeeId === user?.employeeId)) {
+            return true;
+          }
+          // Match by email
+          if (l.email && user?.email && l.email.toLowerCase() === user.email.toLowerCase()) {
+            return true;
+          }
+          return false;
+        });
 
         const approved = userLeaves.filter(l => l.status === "Approved").length;
         const rejected = userLeaves.filter(l => l.status === "Rejected").length;
         const pending = userLeaves.filter(l => l.status === "Pending").length;
 
+        console.log('Leave Data - Current User:', { id: user?.id, name: user?.name, email: user?.email });
+        console.log('Leave Data - All Leaves:', allLeaves);
+        console.log('Leave Data - Filtered User Leaves:', userLeaves);
+
         setLeaveData({ approved, rejected, pending, records: userLeaves });
-      } catch {
+      } catch (error) {
+        console.error('Error loading leave data:', error);
         setLeaveData({ approved: 0, rejected: 0, pending: 0, records: [] });
       }
     };
@@ -554,7 +661,7 @@ export default function MyProfile() {
       window.removeEventListener("storage", loadLeaves);
       window.removeEventListener("leaves_updated", loadLeaves);
     };
-  }, [user?.empId, user?.employeeId, user?.name]);
+  }, [user?.id, user?.empId, user?.employeeId, user?.name, user?.email]);
 
   // ✅ Load documents
   useEffect(() => {
@@ -1133,7 +1240,7 @@ export default function MyProfile() {
             <Panel>
               <PanelHeader>Leave Summary</PanelHeader>
               <PanelBody>
-                <StatCard style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
                   <StatValue>{leaveData.approved}</StatValue>
                   <StatLabel>Approved Leaves</StatLabel>
                 </StatCard>
@@ -1141,7 +1248,7 @@ export default function MyProfile() {
                   <StatValue>{leaveData.rejected}</StatValue>
                   <StatLabel>Rejected Leaves</StatLabel>
                 </StatCard>
-                <StatCard style={{ background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
                   <StatValue>{leaveData.pending}</StatValue>
                   <StatLabel>Pending Leaves</StatLabel>
                 </StatCard>
@@ -1250,6 +1357,16 @@ export default function MyProfile() {
           </ContentGrid>
         )}
 
+        {activeTab === "Payroll" && (
+          <ContentGrid>
+            <Panel>
+              <PanelHeader>Payroll Records</PanelHeader>
+              <PanelBody>
+                <PayrollRecordsContent userId={user?.id} userEmail={user?.email} userName={user?.name} />
+              </PanelBody>
+            </Panel>
+          </ContentGrid>
+        )}
 
         {activeTab === "Work Type & Shift" && (
           <ContentGrid>

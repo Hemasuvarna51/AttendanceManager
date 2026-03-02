@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { useEffect, useState } from "react";
 import { useLeaveStore } from "../../store/leave.store";
 
 /* ===================== STYLES ===================== */
@@ -65,14 +66,14 @@ const Status = styled.span`
     props.status === "Approved"
       ? "#166534"
       : props.status === "Rejected"
-      ? "#991b1b"
-      : "#92400e"};
+        ? "#991b1b"
+        : "#92400e"};
   background: ${(props) =>
     props.status === "Approved"
       ? "#dcfce7"
       : props.status === "Rejected"
-      ? "#fee2e2"
-      : "#fef3c7"};
+        ? "#fee2e2"
+        : "#fef3c7"};
 `;
 
 const Actions = styled.div`
@@ -99,79 +100,105 @@ const Button = styled.button`
 
 export default function AdminLeaveRequests() {
   const { leaves, updateLeaveStatus } = useLeaveStore();
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const grouped = leaves.reduce((acc, l) => {
-    const key = l.userId || "UNKNOWN_USER";
+  // Listen for leave updates from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log('Leave storage updated, refreshing...');
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('leaves_updated', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('leaves_updated', handleStorageChange);
+    };
+  }, []);
+
+  console.log('LeaveApproval - All Leaves:', leaves);
+
+  const grouped = (leaves || []).reduce((acc, l) => {
+    const key = l.userId || l.employee || "UNKNOWN_USER";
     (acc[key] ||= []).push(l);
     return acc;
   }, {});
 
   const userIds = Object.keys(grouped);
 
+  console.log('LeaveApproval - Grouped Leaves:', grouped);
+  console.log('LeaveApproval - User IDs:', userIds);
+
   return (
-    <Container>
+    <Container key={refreshKey}>
       <Title>Admin - Leave Requests</Title>
 
       {userIds.length === 0 ? (
         <p style={{ textAlign: "center", color: "#666", marginTop: "20px" }}>
-          No leave requests
+          No leave requests found. Employees need to submit leave requests first.
         </p>
       ) : (
-        userIds.map((userId) => (
-          <Section key={userId}>
-            <SectionHeader>
-              <div>User: {userId}</div>
-              <Badge>{grouped[userId].length} requests</Badge>
-            </SectionHeader>
+        userIds.map((userId) => {
+          const first = grouped[userId][0] || {};
+          const name = first.employee || first.name || userId;
+          return (
+            <Section key={userId}>
+              <SectionHeader>
+                <div>Employee: {name}</div>
+                <Badge>{grouped[userId].length} requests</Badge>
+              </SectionHeader>
 
-            <Table>
-              <thead>
-                <tr>
-                  <Th>Employee</Th>
-                  <Th>From</Th>
-                  <Th>To</Th>
-                  <Th>Type</Th>
-                  <Th>Reason</Th>
-                  <Th>Status</Th>
-                  <Th>Action</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {grouped[userId].map((leave) => (
-                  <tr key={leave.id}>
-                    <Td>{leave.employee}</Td>
-                    <Td>{leave.from}</Td>
-                    <Td>{leave.to}</Td>
-                    <Td>{leave.type}</Td>
-                    <Td>{leave.reason}</Td>
-                    <Td>
-                      <Status status={leave.status || "Pending"}>
-                        {leave.status || "Pending"}
-                      </Status>
-                    </Td>
-                    <Td>
-                      <Actions>
-                        <Button
-                          approve
-                          disabled={(leave.status || "Pending") !== "Pending"}
-                          onClick={() => updateLeaveStatus(leave.id, "Approved")}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          disabled={(leave.status || "Pending") !== "Pending"}
-                          onClick={() => updateLeaveStatus(leave.id, "Rejected")}
-                        >
-                          Reject
-                        </Button>
-                      </Actions>
-                    </Td>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Employee</Th>
+                    <Th>From</Th>
+                    <Th>To</Th>
+                    <Th>Type</Th>
+                    <Th>Reason</Th>
+                    <Th>Status</Th>
+                    <Th>Action</Th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Section>
-        ))
+                </thead>
+                <tbody>
+                  {grouped[userId].map((leave) => (
+                    <tr key={leave.id}>
+                      <Td>{leave.employee}</Td>
+                      <Td>{leave.from}</Td>
+                      <Td>{leave.to}</Td>
+                      <Td>{leave.type}</Td>
+                      <Td>{leave.reason}</Td>
+                      <Td>
+                        <Status status={leave.status || "Pending"}>
+                          {leave.status || "Pending"}
+                        </Status>
+                      </Td>
+                      <Td>
+                        <Actions>
+                          <Button
+                            approve
+                            disabled={(leave.status || "Pending") !== "Pending"}
+                            onClick={() => updateLeaveStatus(leave.id, "Approved")}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            disabled={(leave.status || "Pending") !== "Pending"}
+                            onClick={() => updateLeaveStatus(leave.id, "Rejected")}
+                          >
+                            Reject
+                          </Button>
+                        </Actions>
+                      </Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Section>
+          );
+        })
       )}
     </Container>
   );
