@@ -28,6 +28,7 @@ import CheckIn from "./pages/employee/CheckIn";
 import CheckOut from "./pages/employee/CheckOut";
 import LeaveRequest from "./pages/employee/LeaveRequest";
 import MyAttendance from "./pages/employee/MyAttendance";
+import MyPayroll from "./pages/employee/MyPayroll";
 import MyTasks from "./pages/employee/MyTasks";
 import MyProfile from "./pages/employee/MyProfile";
 import MyMeetings from "./pages/employee/MyMeetings";
@@ -103,6 +104,7 @@ export const router = createBrowserRouter([
       { path: "checkout", element: <CheckOut /> },
       { path: "leave", element: <LeaveRequest /> },
       { path: "my-attendance", element: <MyAttendance /> },
+      { path: "my-payroll", element: <MyPayroll /> },
       { path: "tasks", element: <MyTasks /> },
       { path: "my-profile", element: <MyProfile /> },
       { path: "my-meetings", element: <MyMeetings /> },

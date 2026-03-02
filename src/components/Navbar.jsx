@@ -21,6 +21,7 @@ const formatHMS = (ms) => {
 
 
 const SIDEBAR_W = 200;
+const SIDEBAR_COLLAPSED = 80;
 
 const Header = styled.header`
   height: 64px;
@@ -37,7 +38,8 @@ const Header = styled.header`
   right: 0;
   
 
-  padding-left: calc(24px + ${SIDEBAR_W}px);
+  padding-left: ${({ collapsed }) =>
+    `calc(44px + ${collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_W}px)`};
 
   z-index: 3000; /* ✅ lower than sidebar */
 
@@ -72,9 +74,6 @@ const MenuBtn = styled.button`
     background: #f6f6f6;
   }
 
-  @media (min-width: 980px) {
-    display: none;
-  }
 `;
 
 const Brand = styled.div`
@@ -151,7 +150,7 @@ const Dot = styled.span`
   height: 9px;
   background: #ff3b30;
   border-radius: 999px;
-  box-shadow: 0 0 0 2px #fff;
+  box-shado-------+*************w: 0 0 0 2px #fff;
 `;
 
 /* ===== Profile dropdown styles ===== */

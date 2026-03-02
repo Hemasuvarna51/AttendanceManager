@@ -4,27 +4,43 @@ import LocationGate from "../../components/LocationGate";
 import { addRecord, canCheckIn } from "../../utils/attendanceLocalDb";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
+import { MapPin, Camera } from "lucide-react";
+
 
 const Page = styled.div`
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 18px;
+  padding: 32px 22px;
+  min-height: 100vh;
+
+  background: linear-gradient(
+    135deg,
+    #f8fafc 0%,
+    #eef2ff 50%,
+    #f8fafc 100%
+  );
+
 `;
 
 const TitleRow = styled.div`
-  display: flex;
-  align-items: baseline;
+ display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
+  margin-bottom: 20px;
 
   h2 {
     margin: 0;
-    font-size: 28px;
+    font-size: 30px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #111827, #374151);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   p {
-    margin: 0;
-    color: #666;
+    margin: 4px 0 0 0;
+    color: #6b7280;
     font-size: 14px;
   }
 `;
@@ -32,7 +48,7 @@ const TitleRow = styled.div`
 const Alert = styled.div`
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid ${({ $type }) => ($type === "error" ? "#ffd2d2" : "#c8f0d6")};
+  border: 1px solid ${({ $type }) => ($type === "error" ? "#d82424ff" : "#0b6029ff")};
   background: ${({ $type }) => ($type === "error" ? "#fff5f5" : "#f3fff7")};
   color: ${({ $type }) => ($type === "error" ? "#b42318" : "#11643a")};
 `;
@@ -49,27 +65,40 @@ const Grid = styled.div`
 `;
 
 const Card = styled.div`
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 16px;
-  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: 0.25s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 16px 35px rgba(0, 0, 0, 0.08),
+      0 4px 12px rgba(0, 0, 0, 0.05);
+  }
 `;
 
 const CardHead = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 
   h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
   }
 
   span {
-    font-size: 12px;
-    color: #666;
+    font-size: 13px;
+    color: #6b7280;
   }
 `;
 
@@ -77,15 +106,28 @@ const Chip = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 7px 16px;
   border-radius: 999px;
-  border: 1px solid ${({ $ok }) => ($ok ? "#b7ebc6" : "#eee")};
-  background: ${({ $ok }) => ($ok ? "#f0fff4" : "#fafafa")};
-  color: ${({ $ok }) => ($ok ? "#11643a" : "#666")};
   font-size: 12px;
-  white-space: nowrap;
-`;
+  font-weight: 600;
 
+  background: ${({ $ok }) =>
+    $ok
+      ? "linear-gradient(135deg, #22c55e, #16a34a)"
+      : "#f3f4f6"};
+
+  color: ${({ $ok }) => ($ok ? "#fff" : "#6b7280")};
+
+  box-shadow: ${({ $ok }) =>
+    $ok
+      ? "0 6px 18px rgba(34, 197, 94, 0.4)"
+      : "none"};
+
+  border: ${({ $ok }) =>
+    $ok
+      ? "1px solid rgba(255,255,255,0.2)"
+      : "1px solid #e5e7eb"};
+`;
 const FooterBar = styled.div`
   margin-top: 18px;
   display: flex;
@@ -101,15 +143,37 @@ const FooterBar = styled.div`
 `;
 
 const PrimaryBtn = styled.button`
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 14px 20px;
+  border-radius: 14px;
   border: 0;
   font-weight: 600;
-  min-width: 220px;
+  font-size: 14px;
+  min-width: 230px;
+  transition: 0.25s ease;
 
-  background: ${({ disabled }) => (disabled ? "#9aa0a6" : "#111")};
+  background: ${({ disabled }) =>
+    disabled
+      ? "#9ca3af"
+      : "linear-gradient(90deg, #111827, #374151)"};
+
   color: #fff;
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
+  cursor: ${({ disabled }) =>
+    disabled ? "not-allowed" : "pointer"};
+
+  box-shadow: ${({ disabled }) =>
+    disabled
+      ? "none"
+      : "0 8px 18px rgba(17, 24, 39, 0.25)"};
+
+  &:hover {
+    transform: ${({ disabled }) =>
+      disabled ? "none" : "translateY(-2px)"};
+  }
+
+  &:active {
+    transform: ${({ disabled }) =>
+      disabled ? "none" : "scale(0.98)"};
+  }
 `;
 
 const Meta = styled.div`
@@ -218,7 +282,7 @@ export default function CheckIn() {
         <Card>
           <CardHead>
             <div>
-              <h3>📍 Location Verification</h3>
+              <h3><MapPin /> Location Verification</h3>
               <span>Confirm you are inside office radius</span>
             </div>
           </CardHead>
@@ -228,7 +292,7 @@ export default function CheckIn() {
         <Card>
           <CardHead>
             <div>
-              <h3>📸 Selfie Verification</h3>
+              <h3><Camera /> Selfie Verification </h3>
               <span>Upload or capture a selfie</span>
             </div>
           </CardHead>

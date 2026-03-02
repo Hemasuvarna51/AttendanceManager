@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
 const SIDEBAR_W = 200;
+const SIDEBAR_COLLAPSED = 80;
 const NAV_H = 64;
 
 const Shell = styled.div`
@@ -13,8 +14,9 @@ const Shell = styled.div`
 `;
 
 const ContentArea = styled.div`
-  margin-left: ${SIDEBAR_W}px;
+  margin-left: ${({ $collapsed }) => ($collapsed ? `${SIDEBAR_COLLAPSED}px` : `${SIDEBAR_W}px`)};
   padding-top: ${NAV_H}px;
+    transition: margin-left 0.2s ease;
 
   @media (max-width: 979px) {
     margin-left: 0;
@@ -27,13 +29,23 @@ const Main = styled.main`
 
 export default function EmployeeShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <Shell>
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Navbar onMenu={() => setSidebarOpen(true)} />
+      <Sidebar open={sidebarOpen} collapsed={collapsed} onClose={() => setSidebarOpen(false)} />
+      <Navbar
+        collapsed={collapsed}
+        onMenu={() => {
+          if (window.innerWidth >= 980) {
+            setCollapsed((c) => !c);
+          } else {
+            setSidebarOpen(true);
+          }
+        }}
+      />
 
-      <ContentArea>
+      <ContentArea $collapsed={collapsed}>
         <Main>
           <Outlet />
         </Main>

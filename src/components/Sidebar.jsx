@@ -12,6 +12,7 @@ import {
   FileText,
   Plane,
   ListTodo,
+  Wallet,
   X,
 } from "lucide-react";
 
@@ -32,7 +33,7 @@ const Overlay = styled.div`
 `;
 
 const Aside = styled.aside`
-  width: ${SIDEBAR_W}px;
+  width: ${({ $collapsed }) => ($collapsed ? "80px" : `${SIDEBAR_W}px`)};
   height: 100vh;
   padding: 16px 14px;
   color: #fff;
@@ -47,6 +48,7 @@ const Aside = styled.aside`
   transform: translateX(0);
   transition: transform 0.22s ease;
   will-change: transform;
+  transition: width 0.2s ease;
 
   @media (max-width: 979px) {
     transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
@@ -59,6 +61,7 @@ const Brand = styled.div`
   padding: 10px 10px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 12px;
+  ${({ $collapsed }) => $collapsed && `justify-content: center;`}
 `;
 
 const Logo = styled.div`
@@ -74,6 +77,9 @@ const Logo = styled.div`
 
 const BrandText = styled.div`
   line-height: 1.1;
+  transition: opacity 0.2s ease, width 0.2s ease;
+  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
+  width: ${({ $collapsed }) => ($collapsed ? 0 : "auto")};
 
   div:first-child {
     font-weight: 700;
@@ -107,6 +113,16 @@ const SectionLabel = styled.div`
   text-transform: uppercase;
   opacity: 0.6;
   padding: 10px 10px 6px;
+  transition: opacity 0.2s ease, height 0.2s ease;
+  ${({ $collapsed }) =>
+    $collapsed &&
+    `
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  `}
 `;
 
 const Nav = styled.nav`
@@ -125,6 +141,7 @@ const Item = styled(NavLink)`
   border-radius: 14px;
   color: rgba(255, 255, 255, 0.86);
   text-decoration: none;
+  transition: padding 0.2s ease;
 
   svg {
     width: 18px;
@@ -142,12 +159,27 @@ const Item = styled(NavLink)`
     color: #fff;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
+
+  /* hide label when collapsed */
+  ${({ $collapsed }) =>
+    $collapsed &&
+    `
+    justify-content: center;
+    gap: 0;
+    padding: 12px 0;
+    svg { margin: 0; }
+  `}
 `;
 
 const Footer = styled.div`
   margin-top: auto;
   padding: 10px 6px 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  ${({ $collapsed }) =>
+    $collapsed &&
+    `
+    padding: 10px 0 4px;
+  `}
 `;
 
 const FooterBtn = styled.button`
@@ -172,7 +204,8 @@ const FooterBtn = styled.button`
   }
 `;
 
-export default function Sidebar({ open = false, onClose = () => {} }) {
+// added collapsed prop to allow desktop collapse behaviour
+export default function Sidebar({ open = false, collapsed = false, onClose = () => { } }) {
   const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
 
@@ -187,10 +220,10 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
   return (
     <>
       <Overlay $open={open} onClick={onClose} />
-      <Aside $open={open}>
-        <Brand>
+      <Aside $open={open} $collapsed={collapsed}>
+        <Brand $collapsed={collapsed}>
           <Logo>GZ</Logo>
-          <BrandText>
+          <BrandText $collapsed={collapsed}>
             <div>Genzix</div>
             <div>My Company</div>
           </BrandText>
@@ -202,25 +235,28 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
 
         {role === "employee" && (
           <>
-            <SectionLabel>Employee</SectionLabel>
+            <SectionLabel $collapsed={collapsed}>Employee</SectionLabel>
             <Nav>
-              <Item to="/employee/dashboard">
-                <LayoutDashboard /> DashBoard
+              <Item $collapsed={collapsed} to="/employee/dashboard">
+                <LayoutDashboard /> {!collapsed && "DashBoard"}
               </Item>
-              <Item to="/employee/my-profile">
-                <ClipboardCheck /> My Profile
+              <Item $collapsed={collapsed} to="/employee/my-profile">
+                <ClipboardCheck /> {!collapsed && "My Profile"}
               </Item>
-              <Item to="/employee/leave">
-                <Plane /> Leave Request
+              <Item $collapsed={collapsed} to="/employee/leave">
+                <Plane /> {!collapsed && "Leave Request"}
               </Item>
-              <Item to="/employee/my-attendance">
-                <FileText /> My Attendance
+              <Item $collapsed={collapsed} to="/employee/my-attendance">
+                <FileText /> {!collapsed && "My Attendance"}
               </Item>
-              <Item to="/employee/tasks">
-                <ListTodo /> My Tasks
+              <Item $collapsed={collapsed} to="/employee/my-payroll">
+                <Wallet /> {!collapsed && "Payroll"}
               </Item>
-              <Item to="/employee/my-meetings">
-                <Calendar /> My Meetings
+              <Item $collapsed={collapsed} to="/employee/tasks">
+                <ListTodo /> {!collapsed && "My Tasks"}
+              </Item>
+              <Item $collapsed={collapsed} to="/employee/my-meetings">
+                <Calendar /> {!collapsed && "My Meetings"}
               </Item>
             </Nav>
           </>
@@ -228,41 +264,41 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
 
         {role === "admin" && (
           <>
-            <SectionLabel>Admin</SectionLabel>
+            <SectionLabel $collapsed={collapsed}>Admin</SectionLabel>
             <Nav>
-              <Item to="/admin/dashboard">
-                <LayoutDashboard /> Dashboard
+              <Item $collapsed={collapsed} to="/admin/dashboard">
+                <LayoutDashboard /> {!collapsed && "Dashboard"}
               </Item>
-              <Item to="/admin/employees">
-                <Users /> Employees
+              <Item $collapsed={collapsed} to="/admin/employees">
+                <Users /> {!collapsed && "Employees"}
               </Item>
-              <Item to="/admin/leave-approval">
-                <CalendarCheck2 /> Leave Approval
+              <Item $collapsed={collapsed} to="/admin/leave-approval">
+                <CalendarCheck2 /> {!collapsed && "Leave Approval"}
               </Item>
-              <Item to="/admin/tasks">
-                <ListTodo /> All Tasks
+              <Item $collapsed={collapsed} to="/admin/tasks">
+                <ListTodo /> {!collapsed && "All Tasks"}
               </Item>
-              <Item to="/admin/payroll">
-                <FileText /> Payroll
+              <Item $collapsed={collapsed} to="/admin/payroll">
+                <FileText /> {!collapsed && "Payroll"}
               </Item>
-              <Item to="/admin/meetings">
-                <Calendar /> Meetings
+              <Item $collapsed={collapsed} to="/admin/meetings">
+                <Calendar /> {!collapsed && "Meetings"}
               </Item>
-              <Item to="/admin/reports">
-                <FileText /> Reports
+              <Item $collapsed={collapsed} to="/admin/reports">
+                <FileText /> {!collapsed && "Reports"}
               </Item>
             </Nav>
           </>
         )}
 
-        <Footer>
+        <Footer $collapsed={collapsed}>
           <FooterBtn
             onClick={() => {
               onClose();
               logout?.();
             }}
           >
-            <LogOut /> Logout
+            <LogOut /> {!collapsed && "Logout"}
           </FooterBtn>
         </Footer>
       </Aside>
