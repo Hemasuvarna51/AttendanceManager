@@ -3,18 +3,10 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useEmployeeStore } from "../../../store/employee.store";
 import { usePayrollStore } from "../../../store/payroll.store";
+import Page from "../../../layout/Page";
+import PageHeader from "../../../components/Ui/PageHeader";
 
-const Container = styled.div`
-  padding: 30px;
-  background: #f6f7fb;
-  min-height: 100vh;
-`;
 
-const Title = styled.h2`
-  margin-bottom: 20px;
-  font-size: 26px;
-  font-weight: 600;
-`;
 
 const Form = styled.div`
   background: white;
@@ -220,8 +212,8 @@ export default function RunPayroll() {
   };
 
   return (
-    <Container>
-      <Title>Run Payroll</Title>
+    <Page>
+      <PageHeader title="Run Payroll" />
 
       <Form>
         <Field>
@@ -302,6 +294,6 @@ export default function RunPayroll() {
         <CancelButton onClick={() => navigate("/admin/payroll")}>Cancel</CancelButton>
         <ProcessButton onClick={handleProcess}>Process Payroll</ProcessButton>
       </Actions>
-    </Container>
+    </Page>
   );
 }

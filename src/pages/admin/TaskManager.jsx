@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import Page from "../../layout/Page";
 
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
 
 const Header = styled.div`
   display: flex;
@@ -69,7 +63,7 @@ export default function TaskManager() {
   };
 
   return (
-    <Container>
+    <Page>
       <Header>
         <h2>Admin – Task Manager</h2>
         <Button onClick={() => navigate("/admin/tasks/add")}>
@@ -127,6 +121,6 @@ export default function TaskManager() {
           ))}
         </tbody>
       </Table>
-    </Container>
+    </Page>
   );
 }

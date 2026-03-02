@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useEmployeeStore } from "../../store/employee.store";
-
+import Page from "../../layout/Page";
 /* ===================== STORAGE HELPERS ===================== */
 
 const MEETINGS_KEY = "meetings";
@@ -31,22 +31,6 @@ const uid = () => {
 };
 
 /* ===================== STYLES ===================== */
-
-const Page = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
-
-const Surface = styled.div`
-  background: #fff;
-  border: 1px solid #eef2f7;
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: 0 18px 46px rgba(2, 6, 23, 0.06);
-`;
 
 const TitleRow = styled.div`
   display: flex;

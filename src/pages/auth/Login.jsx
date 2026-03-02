@@ -4,6 +4,14 @@ import { useAuthStore } from "../../store/auth.store";
 import styled from "styled-components";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase";
+import {
+  Lock,
+  Mail,
+  KeyRound,
+  Eye,
+  EyeOff,
+  ArrowRight,
+} from "lucide-react";
 
 /* =========================
    LAYOUT
@@ -11,7 +19,12 @@ import { auth, googleProvider } from "../../firebase";
 
 const Page = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #7c68c7, #6f92d6, #3b82f6);
+  background: radial-gradient(
+      1200px 600px at 20% 10%,
+      rgba(255, 255, 255, 0.45),
+      rgba(255, 255, 255, 0) 60%
+    ),
+    linear-gradient(135deg, #cfd8ff, #b9c7ff, #9fb9ff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,21 +32,16 @@ const Page = styled.div`
 `;
 
 const Shell = styled.div`
-  width: min(800px, 80%);
-  min-height: 500px;
-  border-radius: 24px;
+  width: min(1100px, 94%);
+  min-height: 650px;
+  border-radius: 32px;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  grid-template-columns: 1.05fr 0.95fr;
+  background: rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(18px);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
-
-  @media (max-width: 940px) {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
+  box-shadow: 0 60px 140px rgba(2, 6, 23, 0.25);
 `;
 
 /* =========================
@@ -43,103 +51,298 @@ const Shell = styled.div`
 const Left = styled.div`
   position: relative;
   overflow: hidden;
-  background: #4f46e5;
+  background: #0b1020;
 
-  @media (max-width: 940px) {
+  @media (max-width: 980px) {
     display: none;
   }
 `;
 
 const Illustration = styled.img`
   position: absolute;
-  inset: 0;          /* top:0 right:0 bottom:0 left:0 */
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: saturate(1.05) contrast(1.05);
+  transform: scale(1.02);
 `;
-const LeftCard = styled.div`
+
+const DarkOverlay = styled.div`
   position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(2, 6, 23, 0.92) 0%,
+    rgba(2, 6, 23, 0.55) 55%,
+    rgba(2, 6, 23, 0.25) 100%
+  );
+`;
 
-  border-radius: 18px;
-  padding: 20px;
+const GlowWave = styled.div`
+  position: absolute;
+  left: -15%;
+  bottom: -10%;
+  width: 140%;
+  height: 240px;
+  background: radial-gradient(
+      600px 180px at 35% 45%,
+      rgba(59, 130, 246, 0.55),
+      rgba(59, 130, 246, 0) 70%
+    ),
+    radial-gradient(
+      420px 140px at 70% 55%,
+      rgba(0, 210, 255, 0.35),
+      rgba(0, 210, 255, 0) 70%
+    );
+  filter: blur(0.2px);
+`;
 
-  background: rgba(35, 48, 130, 0.55);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
+const LeftTop = styled.div`
+  position: relative;
+  z-index: 2;
+  padding: 34px 34px 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
   color: white;
 `;
-const LeftTitle = styled.h3`
-  margin: 0 0 10px;
-  font-size: 28px;
-  line-height: 1.2;
-  color: #ffffff;
+
+const BrandMark = styled.div`
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6, #22d3ee);
+  box-shadow: 0 18px 40px rgba(34, 211, 238, 0.2);
+`;
+
+const BrandText = styled.div`
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+`;
+
+const BrandName = styled.div`
+  font-weight: 900;
   letter-spacing: 0.2px;
+  font-size: 18px;
+`;
+
+const BrandSub = styled.div`
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+`;
+
+const LeftBody = styled.div`
+  position: relative;
+  z-index: 2;
+  padding: 64px 34px 0;
+`;
+
+const LeftWelcome = styled.div`
+  font-size: 34px;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 6px;
+`;
+
+const LeftPortal = styled.div`
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  margin-bottom: 10px;
+
+  span {
+    color: #4cc3ff;
+  }
+  color: #fff;
+`;
+
+const LeftUnderline = styled.div`
+  width: 78px;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.65);
+  margin: 14px 0 18px;
 `;
 
 const LeftText = styled.p`
   margin: 0;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
+  max-width: 420px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.65;
   font-size: 14.5px;
 `;
 
+const LeftList = styled.div`
+  margin-top: 26px;
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+`;
+
+const LeftItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 650;
+  font-size: 13.5px; /* slightly smaller */
+
+  .icon {
+    width: 40px;      /* was 42 */
+    height: 40px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.06); /* lighter */
+    border: 1px solid rgba(255, 255, 255, 0.10);
+  }
+`;
 /* =========================
    RIGHT PANEL
 ========================= */
 
 const Right = styled.div`
-  background: rgba(255, 255, 255, 0.92);
-  padding: 44px 52px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 50px 56px;        /* was 60+ */
   display: flex;
   align-items: center;
+  border-left: 1px solid #e8edf6;
 
-  @media (max-width: 940px) {
+  @media (max-width: 980px) {
     padding: 34px 22px;
   }
 `;
 
 const Form = styled.div`
   width: 100%;
-  max-width: 420px;
+  max-width: 410px;
   margin: 0 auto;
 `;
 
-const Brand = styled.div`
-  text-align: center;
-  margin-bottom: 16px;
-`;
-
-const BrandName = styled.div`
+const PortalChip = styled.div`
+  width: fit-content;
+  margin: 0 auto 14px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: #eef2ff;
+  border: 1px solid #dbeafe;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #1e3a8a;
   font-weight: 800;
-  letter-spacing: 0.2px;
-  color: #111827;
+  font-size: 13px;
 `;
 
-const Welcome = styled.h2`
-  margin: 10px 0 6px;
+const Headline = styled.h2`
+  margin: 0;
   text-align: center;
-  font-size: 30px;
-  color: #0f172a;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  color: #0b1220;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
 `;
 
 const Sub = styled.p`
-  margin: 0 0 18px;
+  margin: 8px 0 22px;
   text-align: center;
-  color: #6b7280;
+  color: #64748b;
   font-size: 14px;
+`;
+
+const Field = styled.div`
+  margin-top: 14px;
+`;
+
+const Label = styled.label`
+  display: block;
+  font-size: 13px;
+  color: #0f172a;
+  font-weight: 800;
+  margin-bottom: 8px;
+`;
+
+const InputWrap = styled.div`
+  position: relative;
+`;
+
+const LeftIcon = styled.div`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 16px 46px 16px 56px;
+  border-radius: 16px;
+  border: 1px solid #e6ebf5;
+  background: #f8fafc;
+  font-size: 14px;
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.04); /* ✅ add */
+
+  &:focus {
+    background: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  }
+`;
+
+const EyeBtn = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+`;
+
+const ForgotRow = styled.div`
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const MutedLink = styled(Link)`
+  font-size: 13px;
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const GoogleBtn = styled.button`
   width: 100%;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  border: 1px solid #e6ebf5;
   background: #ffffff;
   padding: 12px 14px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -149,11 +352,11 @@ const GoogleBtn = styled.button`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 14px 26px rgba(2, 6, 23, 0.08);
   }
 `;
 
-const GIcon = styled.div`
+const GoogleLogo = styled.div`
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -171,121 +374,57 @@ const DividerRow = styled.div`
   align-items: center;
   gap: 14px;
   margin: 16px 0 14px;
-  color: #9ca3af;
+  color: #94a3b8;
   font-size: 13px;
 `;
 
 const DividerLine = styled.div`
   flex: 1;
   height: 1px;
-  background: #e5e7eb;
-`;
-
-const Field = styled.div`
-  margin-top: 14px;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 13px;
-  color: #111827;
-  font-weight: 700;
-  margin-bottom: 6px;
-`;
-
-const InputWrap = styled.div`
-  position: relative;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 44px 12px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  outline: none;
-  font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-  &::placeholder {
-    color: #9ca3af;
-  }
-
-  &:focus {
-    border-color: #6d7df0;
-    box-shadow: 0 0 0 4px rgba(109, 125, 240, 0.18);
-  }
-`;
-
-const EyeBtn = styled.button`
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  color: #6b7280;
-
-  &:hover {
-    background: #f3f4f6;
-  }
-`;
-
-const Row = styled.div`
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-`;
-
-const MutedLink = styled(Link)`
-  font-size: 13px;
-  color: #475569;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  background: #e6ebf5;
 `;
 
 const LoginBtn = styled.button`
   width: 100%;
-  margin-top: 16px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 999px;
   border: none;
-  background: linear-gradient(90deg, #7b61ff, #5b86ff);
+  background: linear-gradient(90deg, #0b2a5c, #0a3e8c);
   color: #ffffff;
-  font-weight: 800;
-  font-size: 15px;
+  font-weight: 900;
+  font-size: 16px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
 
   &:hover {
+    box-shadow: 0 20px 36px rgba(10, 62, 140, 0.35);
     transform: translateY(-2px);
-    box-shadow: 0 18px 30px rgba(91, 134, 255, 0.28);
   }
+`;
 
-  &:active {
-    transform: translateY(0px);
-  }
+const BtnArrow = styled.div`
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.16);
 `;
 
 const Bottom = styled.p`
   margin: 14px 0 0;
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
 
   a {
-    color: #4f46e5;
-    font-weight: 700;
+    color: #1d4ed8;
+    font-weight: 800;
     text-decoration: none;
   }
 
@@ -295,42 +434,32 @@ const Bottom = styled.p`
 `;
 
 const Footer = styled.div`
-  margin-top: 26px;
+  margin-top: 18px;
   text-align: center;
-  color: #9ca3af;
+  color: #94a3b8;
   font-size: 12px;
+  display: grid;
+  gap: 8px;
 `;
 
-const Eye = ({ open }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <path
-      d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"
-      stroke="currentColor"
-      strokeWidth="1.7"
-    />
-    {!open && (
-      <path
-        d="M4 4l16 16"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    )}
-  </svg>
-);
+const SecureLine = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-weight: 700;
+`;
+
+/* =========================
+   COMPONENT
+========================= */
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const login = useAuthStore((s) => s.login);
 
-  // ✅ detect panel from URL
   const panel = location.pathname.startsWith("/admin") ? "admin" : "employee";
 
   const [email, setEmail] = useState("");
@@ -342,63 +471,56 @@ export default function Login() {
   const copy = useMemo(() => {
     if (panel === "admin") {
       return {
-        brand: "Admin Portal",
-        leftTitle: "Made for Company Owner and Admins",
+        chip: "Admin Portal",
+        leftWelcome: "Welcome to the",
+        leftPortal: "Admin Portal",
         leftText:
-          "Manage employees, meetings, attendance, and payroll in one place. Keep everything organized with secure access.",
+          "Manage employees, meetings, attendance, and payroll — all in one place with secure access.",
         leftImg:
-          "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=700&q=80",
+          "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
       };
     }
     return {
-      brand: "Employee Portal",
-      leftTitle: "Made for Employees",
+      chip: "Employee Portal",
+      leftWelcome: "Welcome to the",
+      leftPortal: "Employee Portal",
       leftText:
-        "Check attendance, view meetings, manage tasks and requests easily. Simple and secure experience.",
+        "Manage your attendance, meetings, tasks, and leave requests — all in one place.",
       leftImg:
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=700&q=80",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
     };
   }, [panel]);
 
   const handleGoogleLogin = async () => {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const fbUser = result.user;
-    const idToken = await fbUser.getIdToken();
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const fbUser = result.user;
+      const idToken = await fbUser.getIdToken();
 
-    // 🔐 TEMP role logic (until backend exists)
-    // Later this will come from backend response
-    const ADMIN_EMAILS = ["admin@gmail.com"]; // change later to DB lookup
+      const ADMIN_EMAILS = ["admin@gmail.com"]; // TODO: later from DB
+      const role = ADMIN_EMAILS.includes((fbUser.email || "").toLowerCase())
+        ? "admin"
+        : "employee";
 
-    const role = ADMIN_EMAILS.includes(
-      (fbUser.email || "").toLowerCase()
-    )
-      ? "admin"
-      : "employee";
+      login({
+        user: {
+          email: fbUser.email || "",
+          username: fbUser.displayName || "",
+          name: fbUser.displayName || "",
+          photoURL: fbUser.photoURL || "",
+        },
+        token: idToken,
+        role,
+      });
 
-    login({
-      user: {
-        email: fbUser.email || "",
-        username: fbUser.displayName || "",
-        name: fbUser.displayName || "",
-        photoURL: fbUser.photoURL || "",
-      },
-      token: idToken,
-      role,
-    });
-
-    // ✅ correct redirect
-    navigate(
-      role === "admin"
-        ? "/admin/dashboard"
-        : "/employee/dashboard",
-      { replace: true }
-    );
-  } catch (e) {
-  console.error("Google login error:", e);
-  alert(`${e.code || "error"}: ${e.message || "Google login failed"}`);
-}
-};
+      navigate(role === "admin" ? "/admin/dashboard" : "/employee/dashboard", {
+        replace: true,
+      });
+    } catch (e) {
+      console.error("Google login error:", e);
+      alert(`${e.code || "error"}: ${e.message || "Google login failed"}`);
+    }
+  };
 
   const handleLogin = () => {
     if (!email || !password) {
@@ -409,7 +531,6 @@ export default function Login() {
     const registeredUsers =
       JSON.parse(localStorage.getItem("registered_users")) || [];
 
-    // ✅ Seed one admin for demo
     const adminUser = {
       email: "admin@gmail.com",
       password: "admin123",
@@ -433,7 +554,6 @@ export default function Login() {
       return;
     }
 
-    // 🚫 prevent wrong panel login
     if (found.role !== panel) {
       alert(`You are not allowed to login as ${panel}`);
       navigate(found.role === "admin" ? "/admin/login" : "/employee/login", {
@@ -444,7 +564,7 @@ export default function Login() {
 
     login({
       user: {
-        id: found.email.toLowerCase(), 
+        id: found.email.toLowerCase(),
         email: found.email,
         username: found.username || "",
         name: found.name || "",
@@ -453,13 +573,11 @@ export default function Login() {
       role: found.role,
     });
 
-    if (from) {
-      navigate(from, { replace: true });
-    } else {
+    if (from) navigate(from, { replace: true });
+    else
       navigate(found.role === "admin" ? "/admin/dashboard" : "/employee/dashboard", {
         replace: true,
       });
-    }
   };
 
   return (
@@ -467,40 +585,70 @@ export default function Login() {
       <Shell>
         {/* LEFT */}
         <Left>
-          <Illustration src={copy.leftImg} alt="Signup Illustration" />
+          <Illustration src={copy.leftImg} alt="Cover" />
+          <DarkOverlay />
+          <GlowWave />
 
-          <LeftCard>
-            <LeftTitle>{copy.leftTitle}</LeftTitle>
+          <LeftTop>
+            <BrandMark />
+            <BrandText>
+              <BrandName>Genzix</BrandName>
+              <BrandSub>My Company</BrandSub>
+            </BrandText>
+          </LeftTop>
+
+          <LeftBody>
+            <LeftWelcome>{copy.leftWelcome}</LeftWelcome>
+            <LeftPortal>
+              <span>{copy.leftPortal.split(" ")[0]}</span>{" "}
+              {copy.leftPortal.split(" ").slice(1).join(" ")}
+            </LeftPortal>
+            <LeftUnderline />
             <LeftText>{copy.leftText}</LeftText>
-          </LeftCard>
+
+            <LeftList>
+              <LeftItem>
+                <div className="icon">
+                  <Lock size={18} />
+                </div>
+                Secure Login
+              </LeftItem>
+              <LeftItem>
+                <div className="icon">
+                  <ArrowRight size={18} />
+                </div>
+                Quick Access
+              </LeftItem>
+              <LeftItem>
+                <div className="icon">
+                  <KeyRound size={18} />
+                </div>
+                24/7 Support
+              </LeftItem>
+            </LeftList>
+          </LeftBody>
         </Left>
 
         {/* RIGHT */}
         <Right>
           <Form>
-            <Brand>
-              <BrandName>{copy.brand}</BrandName>
-              <Welcome>Welcome back!</Welcome>
-              <Sub>Please provide your details to log into your account.</Sub>
-            </Brand>
+            <PortalChip>
+              <Lock size={16} />
+              {copy.chip}
+            </PortalChip>
 
-            <GoogleBtn type="button" onClick={handleGoogleLogin}>
-              <GIcon />
-              Continue with Google
-            </GoogleBtn>
-
-            <DividerRow>
-              <DividerLine />
-              <span>Or with</span>
-              <DividerLine />
-            </DividerRow>
+            <Headline>Sign in to your account</Headline>
+            <Sub>Enter your credentials to continue</Sub>
 
             <Field>
-              <Label>Email*</Label>
+              <Label>Email Address</Label>
               <InputWrap>
+                <LeftIcon>
+                  <Mail size={16} />
+                </LeftIcon>
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="admin@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -508,11 +656,14 @@ export default function Login() {
             </Field>
 
             <Field>
-              <Label>Password*</Label>
+              <Label>Password</Label>
               <InputWrap>
+                <LeftIcon>
+                  <KeyRound size={16} />
+                </LeftIcon>
                 <Input
                   type={showPass ? "text" : "password"}
-                  placeholder="Enter Password"
+                  placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -521,29 +672,47 @@ export default function Login() {
                   aria-label={showPass ? "Hide password" : "Show password"}
                   onClick={() => setShowPass((v) => !v)}
                 >
-                  <Eye open={showPass} />
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </EyeBtn>
               </InputWrap>
             </Field>
 
-            {panel === "employee" && panel !== "admin" && (
-
-            <Row>
-              <MutedLink to="#">Forgot password?</MutedLink>
-            </Row>
+            {panel === "employee" && (
+              <ForgotRow>
+                <MutedLink to="#">Forgot Password?</MutedLink>
+              </ForgotRow>
             )}
 
+            <GoogleBtn type="button" onClick={handleGoogleLogin}>
+              <GoogleLogo />
+              Continue with Google
+            </GoogleBtn>
+
+            <DividerRow>
+              <DividerLine />
+              <span>OR</span>
+              <DividerLine />
+            </DividerRow>
+
             <LoginBtn type="button" onClick={handleLogin}>
-              Login
+              Sign In
+              <BtnArrow>
+                <ArrowRight size={18} />
+              </BtnArrow>
             </LoginBtn>
 
-            {panel === "employee" && panel !== "admin" && (
+            {panel === "employee" && (
               <Bottom>
-                Don&apos;t have an account? <Link to="/signup">Register</Link>
+                Don&apos;t have an account? <Link to="/signup">Register here</Link> →
               </Bottom>
             )}
 
-            <Footer>© {new Date().getFullYear()} Stark</Footer>
+            <Footer>
+              <SecureLine>
+                <Lock size={14} /> Secure &amp; Encrypted Login
+              </SecureLine>
+              © {new Date().getFullYear()} Genzix. All rights reserved.
+            </Footer>
           </Form>
         </Right>
       </Shell>

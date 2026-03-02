@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useLeaveStore } from "../../store/leave.store";
 import { getRecords } from "../../utils/attendanceLocalDb";
+import StatCard from "../../components/stats/StatCard";
+import StatCardGrid from "../../components/stats/StatCardGrid";
+import Page from "../../layout/Page";
 import {
   Users,
   XCircle,
@@ -14,14 +17,6 @@ import {
 } from "lucide-react";
 
 /* ================= THEME ================= */
-
-const Page = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 26px 22px 44px;
-  background: #f6f8fc;
-  min-height: calc(100vh - 60px);
-`;
 
 const Header = styled.div`
   display: flex;
@@ -42,88 +37,9 @@ const Subtle = styled.div`
   color: #64748b;
 `;
 
-const CardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  margin-bottom: 18px;
 
-  @media (max-width: 980px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (max-width: 540px) {
-    grid-template-columns: 1fr;
-  }
-`;
 
-const StatCard = styled.div`
-  border-radius: 18px;
-  padding: 18px 18px 16px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  color: #fff;
 
-  background: ${({ variant }) => {
-    if (variant === "blue")
-      return "linear-gradient(135deg, #2f6dff 0%, #5aa1ff 100%)";
-    if (variant === "red")
-      return "linear-gradient(135deg, #e34c4c 0%, #ff7a7a 100%)";
-    if (variant === "green")
-      return "linear-gradient(135deg, #2e8b78 0%, #6fc3a5 100%)";
-    return "linear-gradient(135deg, #f49b36 0%, #ffc06a 100%)";
-  }};
-
-  &:after {
-    content: "";
-    position: absolute;
-    inset: -40px -60px auto auto;
-    width: 180px;
-    height: 180px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.15);
-    filter: blur(0.2px);
-  }
-`;
-
-const StatTop = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  position: relative;
-  z-index: 1;
-`;
-
-const StatLabel = styled.div`
-  font-size: 13px;
-  opacity: 0.92;
-  font-weight: 600;
-  letter-spacing: 0.1px;
-`;
-
-const StatValue = styled.div`
-  margin-top: 10px;
-  font-size: 34px;
-  font-weight: 900;
-  letter-spacing: -0.6px;
-  position: relative;
-  z-index: 1;
-`;
-
-const IconChip = styled.div`
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  position: relative;
-  z-index: 1;
-`;
 
 const SectionGrid = styled.div`
   display: grid;
@@ -264,15 +180,15 @@ const StatusBadge = styled.span`
     status === "Approved"
       ? "#dcfce7"
       : status === "Rejected"
-      ? "#fee2e2"
-      : "#ffedd5"};
+        ? "#fee2e2"
+        : "#ffedd5"};
 
   border-color: ${({ status }) =>
     status === "Approved"
       ? "#86efac"
       : status === "Rejected"
-      ? "#fca5a5"
-      : "#fdba74"};
+        ? "#fca5a5"
+        : "#fdba74"};
 `;
 
 const Chevron = styled.div`
@@ -435,47 +351,38 @@ export default function AdminDashboard() {
       </Header>
 
       {/* STAT CARDS */}
-      <CardGrid>
-        <StatCard variant="blue">
-          <StatTop>
-            <StatLabel>Total Employee</StatLabel>
-            <IconChip>
-              <Users size={18} />
-            </IconChip>
-          </StatTop>
-          <StatValue>{totalEmployeesCheckedIn}</StatValue>
-        </StatCard>
 
-        <StatCard variant="red">
-          <StatTop>
-            <StatLabel>Total Rejected</StatLabel>
-            <IconChip>
-              <XCircle size={18} />
-            </IconChip>
-          </StatTop>
-          <StatValue>{rejectedLeaves}</StatValue>
-        </StatCard>
+      {/* STAT CARDS */}
+      <StatCardGrid $cols={4}>
+        <StatCard
+          variant="blue"
+          label="Total Employee"
+          value={totalEmployeesCheckedIn}
+          icon={<Users size={18} />}
+        />
 
-        <StatCard variant="green">
-          <StatTop>
-            <StatLabel>Total Approved</StatLabel>
-            <IconChip>
-              <CheckCircle2 size={18} />
-            </IconChip>
-          </StatTop>
-          <StatValue>{approvedLeaves}</StatValue>
-        </StatCard>
+        <StatCard
+          variant="red"
+          label="Total Rejected"
+          value={rejectedLeaves}
+          icon={<XCircle size={18} />}
+        />
 
-        <StatCard variant="orange">
-          <StatTop>
-            <StatLabel>Total Leave</StatLabel>
-            <IconChip>
-              <ClipboardList size={18} />
-            </IconChip>
-          </StatTop>
-          <StatValue>{totalLeaves}</StatValue>
-        </StatCard>
-      </CardGrid>
+        <StatCard
+          variant="green"
+          label="Total Approved"
+          value={approvedLeaves}
+          icon={<CheckCircle2 size={18} />}
+        />
+
+        <StatCard
+          variant="orange"
+          label="Total Leave"
+          value={totalLeaves}
+          icon={<ClipboardList size={18} />}
+        />
+      </StatCardGrid >
+
 
       {/* ATTENDANCE + LEAVE */}
       <SectionGrid>

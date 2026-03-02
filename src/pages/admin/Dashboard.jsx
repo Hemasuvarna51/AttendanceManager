@@ -4,6 +4,10 @@ import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getRecords } from "../../utils/attendanceLocalDb";
+import Page from "../../layout/Page";
+import StatCard from "../../components/stats/StatCard";
+import StatCardGrid from "../../components/stats/StatCardGrid5";
+import PageHeader from "../../components/Ui/PageHeader";
 
 /* ================== HELPERS ================== */
 
@@ -20,100 +24,8 @@ const saveJSON = (key, value) => {
   localStorage.setItem(key, JSON.stringify(value));
 };
 
-/* ================== LAYOUT ================== */
 
-const Page = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
 
-const Main = styled.main`
-  flex: 1;
-  margin-left: 24px;
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-`;
-
-/* ================== HEADER ================== */
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #0f172a;
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const AddButton = styled.button`
-  background: #4769e6;
-  color: #ffffff;
-  padding: 10px 16px;
-  border-radius: 14px;
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  cursor: pointer;
-`;
-
-/* ================== CARDS ================== */
-
-const CardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-  margin-bottom: 10px;
-`;
-
-const Card = styled.button`
-  padding: 15px;
-  border-radius: 16px;
-  background: ${(props) => (props.highlight ? "#77809f" : "#f9fafb")};
-  color: ${(props) => (props.highlight ? "#ffffff" : "#000000")};
-  cursor: ${(props) => (props.clickable ? "pointer" : "default")};
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: none;
-  text-align: left;
-  font-family: inherit;
-  font-size: inherit;
-
-  &:hover {
-    ${(props) =>
-    props.clickable &&
-    `
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    `}
-  }
-`;
-
-const CardTitle = styled.p`
-  font-size: 14px;
-`;
-
-const CardValue = styled.h3`
-  font-size: 20px;
-  margin-top: 8px;
-`;
 
 /* ================== SECTIONS ================== */
 
@@ -121,18 +33,50 @@ const SectionGrid = styled.div`
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
+
+  
 `;
 
 const Box = styled.div`
   background: #f9fafb;
   padding: 24px;
   border-radius: 16px;
-  
+  position: relative;
+  overflow: hidden;
+
+  transition: transform 250ms ease, box-shadow 250ms ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  /* animated background fill */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    opacity: 0;
+    transition: opacity 300ms ease;
+    z-index: 0;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  /* keep content above overlay */
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
 `;
 
 const BoxTitle = styled.h3`
   font-weight: 600;
   margin-bottom: 16px;
+
 `;
 
 const ReminderText = styled.p`
@@ -168,13 +112,31 @@ const TeamList = styled.div`
 `;
 
 const EmployeeItem = styled.div`
-  padding: 12px;
-  background: #e3e3ec;
-  border-radius: 8px;
-  margin-bottom: 8px;
+  padding: 12px 16px;
+  background: #fafafd;
+  border-radius: 10px;
+  margin-bottom: 10px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  transition: 
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    background 220ms ease;
+
+  cursor: pointer;
+
+  &:hover {
+  transform: translateY(-3px);
+  background: #b8cfe8;
+  box-shadow: 0 14px 30px rgba(71, 105, 230, 0.15);
+}
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 const EmployeeName = styled.span`
@@ -351,129 +313,142 @@ export default function Dashboard() {
 
   return (
     <Page>
-     
-        <Header>
-          <Title>Dashboard</Title>
-          <HeaderActions>
-            <AddButton onClick={() => handleProjectClick()}>
-              <Plus size={16} /> Add Project
-            </AddButton>
-          </HeaderActions>
-        </Header>
 
-        <CardGrid>
-          <Card highlight clickable onClick={() => handleProjectClick()} style={{background: "#FD9111"}}>
-            <CardTitle>Total Projects</CardTitle>
-            <CardValue>{projectStats.total}</CardValue>
-          </Card>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Project overview"
+        buttonLabel="Add Project"
+        buttonIcon={<Plus size={16} />}
+        onButtonClick={() => handleProjectClick()}
+      />
 
-          <Card clickable onClick={() => handleProjectClick("Ended")} style={{background: "#3182ce", color: "#ffffff"}}>
-            <CardTitle>Ended Projects</CardTitle>
-            <CardValue>{projectStats.ended}</CardValue>
-          </Card>
+      <StatCardGrid $cols={5}>
+        <StatCard
+          label="Total Projects"
+          value={projectStats.total}
+          icon={<Plus size={18} />}
+          bg="linear-gradient(135deg, #FD9111 0%, #FFC06A 100%)"
+          onClick={() => handleProjectClick()}
+        />
 
-          <Card clickable onClick={() => handleProjectClick("Running")} style={{background: "#4CAF50", color: "#ffffff"}}>
-            <CardTitle>Running Projects</CardTitle>
-            <CardValue>{projectStats.running}</CardValue>
-          </Card>
+        <StatCard
+          label="Ended Projects"
+          value={projectStats.ended}
+          icon={<Plus size={18} />}
+          bg="linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)"
+          onClick={() => handleProjectClick("Ended")}
+        />
 
-          <Card clickable onClick={() => handleProjectClick("Pending")} style={{background: "#e53e3e", color: "#ffffff"}}>
-            <CardTitle>Pending Projects</CardTitle>
-            <CardValue>{projectStats.pending}</CardValue>
-          </Card>
+        <StatCard
+          label="Running Projects"
+          value={projectStats.running}
+          icon={<Plus size={18} />}
+          bg="linear-gradient(135deg, #22c55e 0%, #86efac 100%)"
+          onClick={() => handleProjectClick("Running")}
+        />
 
-          <Card highlight clickable onClick={() => navigate("/admin/employees")} style={{background: "#77809f", color: "#ffffff"}}>
-            <CardTitle>Total Employees</CardTitle>
-            <CardValue>{totalEmployees}</CardValue>
-          </Card>
-        </CardGrid>
+        <StatCard
+          label="Pending Projects"
+          value={projectStats.pending}
+          icon={<Plus size={18} />}
+          bg="linear-gradient(135deg, #ef4444 0%, #fca5a5 100%)"
+          onClick={() => handleProjectClick("Pending")}
+        />
 
-        <SectionGrid>
-          <Box>
-            <BoxTitle>Reminders</BoxTitle>
+        <StatCard
+          label="Total Employees"
+          value={totalEmployees}
+          icon={<Plus size={18} />}
+          bg="linear-gradient(135deg, #77809f 0%, #a7b0c4 100%)"
+          onClick={() => navigate("/admin/employees")}
+        />
+      </StatCardGrid>
+      <SectionGrid>
+        <Box>
+          <BoxTitle>Reminders</BoxTitle>
 
-            {meetings.length === 0 ? (
-              <>
-                <ReminderText>No meetings scheduled.</ReminderText>
-                <FullButton onClick={() => navigate("/admin/meetings")}>
-                  Schedule Meeting
-                </FullButton>
-              </>
+          {meetings.length === 0 ? (
+            <>
+              <ReminderText>No meetings scheduled.</ReminderText>
+              <FullButton onClick={() => navigate("/admin/meetings")}>
+                Schedule Meeting
+              </FullButton>
+            </>
+          ) : (
+            <>
+              {meetings.slice(0, 2).map((meeting, index) => (
+                <div key={index} style={{ marginBottom: 12 }}>
+                  <p style={{ fontWeight: 600, margin: 0 }}>
+                    {meeting?.title || "Meeting"}
+                  </p>
+                  <ReminderText style={{ marginTop: 6 }}>
+                    {meeting?.time || "Time not set"}
+                  </ReminderText>
+                </div>
+              ))}
+
+              <FullButton onClick={() => navigate("/admin/meetings")} style={{ background: "#3182ce" }}>
+                View All Meetings
+              </FullButton>
+            </>
+          )}
+        </Box>
+
+        <Box>
+          <BoxTitle>Today's Attendance</BoxTitle>
+          <ReminderText>
+            Present: {presentToday} / {totalEmployees}
+          </ReminderText>
+          <FullButton onClick={() => navigate("/admin/attendance")} style={{ background: "#9c51ce" }}>
+            View Attendance
+          </FullButton>
+        </Box>
+      </SectionGrid>
+
+      <BottomGrid>
+        <Box>
+          <BoxTitle>Total Employee Details</BoxTitle>
+          <TeamList>
+            {employeesList.length === 0 ? (
+              <ReminderText>No employees added yet.</ReminderText>
             ) : (
-              <>
-                {meetings.slice(0, 2).map((meeting, index) => (
-                  <div key={index} style={{ marginBottom: 12 }}>
-                    <p style={{ fontWeight: 600, margin: 0 }}>
-                      {meeting?.title || "Meeting"}
-                    </p>
-                    <ReminderText style={{ marginTop: 6 }}>
-                      {meeting?.time || "Time not set"}
-                    </ReminderText>
+              employeesList.map((emp) => (
+                <EmployeeItem key={emp.id}>
+                  <div>
+                    <EmployeeName>{emp.name}</EmployeeName>
+                    <br />
+                    <EmployeeEmail>{emp.email}</EmployeeEmail>
                   </div>
-                ))}
-
-                <FullButton onClick={() => navigate("/admin/meetings")} style={{ background: "#3196d0" }}>
-                  View All Meetings
-                </FullButton>
-              </>
+                  <EmployeeEmail>ID: {emp.id}</EmployeeEmail>
+                </EmployeeItem>
+              ))
             )}
-          </Box>
+          </TeamList>
+        </Box>
 
-          <Box>
-            <BoxTitle>Today's Attendance</BoxTitle>
-            <ReminderText>
-              Present: {presentToday} / {totalEmployees}
-            </ReminderText>
-            <FullButton onClick={() => navigate("/admin/attendance")} style={{ background: "#9c51ce" }}>
-              View Attendance
-            </FullButton>
-          </Box>
-        </SectionGrid>
+        <Box>
+          <BoxTitle>Daily Attendance Statistic (Last 7 Days)</BoxTitle>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={dailyAttendanceData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="date" />
+              <YAxis
+                domain={[0, 'dataMax + 2']}
+                allowDecimals={false}
+                label={{
+                  value: "Employees Count",
+                  angle: -90,
+                  position: "insideLeft",
+                }}
+              />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="present" fill=" #13d782" name="Employees Present" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      </BottomGrid>
 
-        <BottomGrid>
-          <Box>
-            <BoxTitle>Total Employee Details</BoxTitle>
-            <TeamList>
-              {employeesList.length === 0 ? (
-                <ReminderText>No employees added yet.</ReminderText>
-              ) : (
-                employeesList.map((emp) => (
-                  <EmployeeItem key={emp.id}>
-                    <div>
-                      <EmployeeName>{emp.name}</EmployeeName>
-                      <br />
-                      <EmployeeEmail>{emp.email}</EmployeeEmail>
-                    </div>
-                    <EmployeeEmail>ID: {emp.id}</EmployeeEmail>
-                  </EmployeeItem>
-                ))
-              )}
-            </TeamList>
-          </Box>
-
-          <Box>
-            <BoxTitle>Daily Attendance Statistic (Last 7 Days)</BoxTitle>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dailyAttendanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="date" />
-                <YAxis
-                  domain={[0, 'dataMax + 2']}
-                  allowDecimals={false}
-                  label={{
-                    value: "Employees Count",
-                    angle: -90,
-                    position: "insideLeft",
-                  }}
-                />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="present" fill=" #13d782" name="Employees Present" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
-        </BottomGrid>
-    
     </Page>
   );
 }

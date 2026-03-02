@@ -2,16 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import { useEmployeeStore } from "../../store/employee.store";
 import { Pencil, Trash2 } from "lucide-react";
-
+import Page from "../../layout/Page";
 /* ===================== STYLED COMPONENTS ===================== */
 
-const Card = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
 
 const Header = styled.div`
   display: flex;
@@ -289,7 +282,7 @@ export default function Employee() {
   };
 
   return (
-    <Card>
+    <Page>
       <Header>
         <Title>Employee List</Title>
         <AddButton onClick={() => setShowForm(true)}>
@@ -395,6 +388,6 @@ export default function Employee() {
         </tbody>
       </Table>
       </TableWrapper>
-    </Card>
+    </Page>
   );
 }

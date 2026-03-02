@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Edit2, Trash2, Plus, ChevronDown } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-
+import Page from "../../layout/Page"; 
 /* ================== HELPERS ================== */
 
 const safeParse = (key, fallback) => {
@@ -20,13 +20,6 @@ const saveJSON = (key, value) => {
 
 /* ================== STYLES ================== */
 
-const Page = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
 
 const Main = styled.main`
   flex: 1;

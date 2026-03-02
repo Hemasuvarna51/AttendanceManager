@@ -2,16 +2,10 @@ import React, { useState , useEffect } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
 import { Pencil, Trash2 } from "lucide-react";
-
+import Page from "../../layout/Page";
 const STATUS = ["Pending", "In Progress", "Completed"];
 
-const Hero = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
+
 
 const HeaderRow = styled.div`
   display: flex;
@@ -244,7 +238,7 @@ export default function Tasks() {
   };
 
   return (
-    <Hero>
+    <Page>
       <HeaderRow>
         <h2>Admin – Task Manager</h2>
         <button onClick={openCreate}>Add New Task</button>
@@ -381,6 +375,6 @@ export default function Tasks() {
           ))}
         </tbody>
       </Table>
-    </Hero>
+    </Page>
   );
 }

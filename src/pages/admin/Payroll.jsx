@@ -1,16 +1,10 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
-
+import Page from "../../layout/Page";
 /* ================= Styled Components ================= */
 
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
+
 
 const Title = styled.h2`
   margin : 0 0 20px;
@@ -196,7 +190,7 @@ export default function Payroll() {
   const totalNet = employees.reduce((sum, emp) => sum + emp.netPay, 0);
 
   return (
-    <Container>
+    <Page>
       <Title>Payroll Summary</Title>
 
       <TopSection>
@@ -311,6 +305,6 @@ export default function Payroll() {
         <CancelButton>Cancel</CancelButton>
         <ApproveButton onClick={() => navigate("/admin/payroll/approved")}>Approve Payroll</ApproveButton>
       </Actions>
-    </Container>
+    </Page>
   );
 }
