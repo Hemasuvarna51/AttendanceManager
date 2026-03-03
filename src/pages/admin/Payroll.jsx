@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 import Page from "../../layout/Page";
+import { usePayrollStore } from "../../store/payroll.store";
 /* ================= Styled Components ================= */
 
-
+const GreenText = styled.span`
+  color: #0a0a0aff;
+  font-weight: 600;
+`;
 
 const Title = styled.h2`
   margin : 0 0 20px;
@@ -68,41 +72,25 @@ const SummaryCards = styled.div`
 
 const Card = styled.div`
   background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  border-top: 5px solid ${(props) => props.color || "#ddd"};
 
   p {
-    color: #777;
+    margin: 0;
     font-size: 14px;
+    color: #6c757d;
+    font-weight: 500;
   }
 
   h3 {
-    margin-top: 8px;
+    margin: 15px 0 0;
+    font-size: 32px;
+    font-weight: 600;
   }
 `;
 
-const GreenText = styled.span`
-  color: #27ae60;
-`;
-
-const Status = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Progress = styled.div`
-  height: 8px;
-  background: #ddd;
-  border-radius: 10px;
-  margin-top: 8px;
-  overflow: hidden;
-`;
-
-const ProgressBar = styled.div`
-  width: 40%;
-  height: 100%;
-  background: #2f80ed;
-`;
 
 const TableSection = styled.div`
   background: white;
@@ -175,13 +163,45 @@ export default function Payroll() {
   const [payDate, setPayDate] = useState("");
   const [employees, setEmployees] = useState([]);
 
+  const { payrollRecords } = usePayrollStore((state) => state.payrollRecords);
+
   useEffect(() => {
     if (location.state?.payrollData) {
       setEmployees(location.state.payrollData);
       setPayFrom(location.state.payFrom || "");
       setPayTo(location.state.payTo || "");
+      return;
     }
-  }, [location.state]);
+
+    // fallback: build from persisted payroll records (e.g. on refresh)
+    if (payrollRecords && payrollRecords.length > 0) {
+      // pick the most recent pay period
+      const sorted = [...payrollRecords].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      const latest = sorted[0];
+      const from = latest.payPeriodFrom || "";
+      const to = latest.payPeriodTo || "";
+
+      const samePeriod = payrollRecords.filter(
+        (r) => r.payPeriodFrom === from && r.payPeriodTo === to
+      );
+
+      const data = samePeriod.map((r) => ({
+        id: r.employeeId,
+        name: r.employeeName,
+        hours: r.hours,
+        grossPay: r.grossPay,
+        deductions: r.deductions,
+        taxes: r.taxes,
+        netPay: r.netPay,
+      }));
+
+      setEmployees(data);
+      setPayFrom(from);
+      setPayTo(to);
+    }
+  }, [location.state, payrollRecords]);
 
   const totalHours = employees.reduce((sum, emp) => sum + emp.hours, 0);
   const totalGross = employees.reduce((sum, emp) => sum + emp.grossPay, 0);
@@ -195,65 +215,34 @@ export default function Payroll() {
 
       <TopSection>
         <Filters>
-          <Field>
-            <label>Pay Period (From)</label>
-            <input
-              type="date"
-              value={payFrom}
-              onChange={(e) => setPayFrom(e.target.value)}
-            />
-
-          </Field>
-
-
-          <Field>
-            <label>Pay Period (To)</label>
-            <input
-              type="date"
-              value={payTo}
-              onChange={(e) => setPayTo(e.target.value)}
-            />
-
-          </Field>
-          <Field>
-            <label>Pay Date</label>
-            <select>
-              <option>Jan 15, 2022</option>
-            </select>
-          </Field>
         </Filters>
 
         <RunButton onClick={() => navigate("/admin/payroll/run")}>+ Run Payroll</RunButton>
       </TopSection>
 
       <SummaryCards>
-        <Card>
+        <Card color="#4e73df">
           <p>Total Employees</p>
           <h3>{employees.length}</h3>
         </Card>
 
-        <Card>
+        <Card color="#36b9cc">
           <p>Total Payroll Cost</p>
-          <h3>${totalGross.toFixed(2)}</h3>
+          <h3>{totalGross.toFixed(2)}</h3>
         </Card>
 
-        <Card>
+        <Card color="#f6c23e">
           <p>Taxes & Deductions</p>
-          <h3>${(totalDeductions + totalTaxes).toFixed(2)}</h3>
+          <h3>{(totalDeductions + totalTaxes).toFixed(2)}</h3>
         </Card>
 
-        <Card>
+        <Card color="#1cc88a">
           <p>Net Pay</p>
-          <h3><GreenText>${totalNet.toFixed(2)}</GreenText></h3>
+          <h3>{totalNet.toFixed(2)}</h3>
         </Card>
       </SummaryCards>
 
-      <Status>
-        <span>Payroll Status: <b>Processing</b></span>
-        <Progress>
-          <ProgressBar />
-        </Progress>
-      </Status>
+      
 
       <TableSection>
         <h3>Employee Payroll Overview</h3>

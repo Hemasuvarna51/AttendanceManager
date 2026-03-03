@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { getRecords } from "../../utils/attendanceLocalDb";
 import { useAuthStore } from "../../store/auth.store";
-import { usePayrollStore } from "../../store/payroll.store";
+// payroll store handled by dedicated component; keep employee store for other parts
 import { useEmployeeStore } from "../../store/employee.store";
+import PayrollRecords from "../../components/PayrollRecords";
 import { Mail, Phone, Building2, IdCard, Pencil, Save, X } from "lucide-react";
 
 /* ===================== STYLES (UPDATED TO MATCH IMAGE) ===================== */
@@ -506,92 +507,7 @@ const UploadButton = styled.label`
   }
 `;
 
-/* ===================== PAYROLL RECORDS COMPONENT ===================== */
-
-function PayrollRecordsContent({ userId, userEmail, userName }) {
-  const { payrollRecords } = usePayrollStore();
-  const { employees } = useEmployeeStore();
-  
-  // Debug: Log what we're working with
-  console.log('PayrollRecordsContent - userId:', userId);
-  console.log('PayrollRecordsContent - userEmail:', userEmail);
-  console.log('PayrollRecordsContent - userName:', userName);
-  console.log('PayrollRecordsContent - all payroll records:', payrollRecords);
-  console.log('PayrollRecordsContent - all employees:', employees);
-  
-  // Find the current employee from employee store using email or name
-  const currentEmployee = employees.find(emp => 
-    emp.email?.toLowerCase() === userEmail?.toLowerCase() ||
-    emp.name?.toLowerCase() === userName?.toLowerCase() ||
-    emp.id === userId
-  );
-  
-  console.log('PayrollRecordsContent - matched employee:', currentEmployee);
-  
-  if (!userId && !userEmail && !userName) {
-    return (
-      <div style={{ color: "#9ca3af", textAlign: "center", padding: "20px" }}>
-        Unable to load payroll records - user not identified
-      </div>
-    );
-  }
-  
-  // Filter payroll records for the current employee
-  const employeePayroll = payrollRecords.filter(record => {
-    // Match by multiple criteria: employeeId, employee name, or email
-    const matchesId = record.employeeId === userId || record.employeeId === currentEmployee?.id;
-    const matchesName = record.employeeName?.toLowerCase() === userName?.toLowerCase() || 
-                       record.employeeName?.toLowerCase() === currentEmployee?.name?.toLowerCase();
-    const match = matchesId || matchesName;
-    console.log(`Checking record with employeeId: ${record.employeeId}, name: ${record.employeeName} - Match: ${match}`);
-    return match;
-  });
-
-  console.log('PayrollRecordsContent - filtered payroll for this employee:', employeePayroll);
-
-  // Sort by date descending (most recent first)
-  const sortedPayroll = [...employeePayroll].sort((a, b) => {
-    const dateA = new Date(a.payPeriodTo || a.createdAt || 0);
-    const dateB = new Date(b.payPeriodTo || b.createdAt || 0);
-    return dateB - dateA;
-  });
-
-  if (sortedPayroll.length === 0) {
-    return (
-      <div style={{ color: "#6b7280", textAlign: "center", padding: "20px" }}>
-        No payroll records found
-      </div>
-    );
-  }
-
-  return (
-    <RecordList>
-      {sortedPayroll.map((record, idx) => (
-        <RecordItem key={idx}>
-          <div>
-            <RecordDate>
-              {new Date(record.payPeriodTo || record.createdAt).toLocaleDateString()}
-            </RecordDate>
-            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
-              Pay Period: {new Date(record.payPeriodFrom).toLocaleDateString()} - {new Date(record.payPeriodTo).toLocaleDateString()}
-            </div>
-            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
-              {record.hours} hours @ ${record.rate}/hr
-            </div>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontWeight: "700", fontSize: "14px", color: "#27ae60" }}>
-              ${Number(record.netPay || 0).toFixed(2)}
-            </div>
-            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
-              Gross: ${Number(record.grossPay || 0).toFixed(2)}
-            </div>
-          </div>
-        </RecordItem>
-      ))}
-    </RecordList>
-  );
-}
+// payroll list component moved to src/components/PayrollRecords.jsx
 
 /* ===================== COMPONENT ===================== */
 
@@ -1362,7 +1278,7 @@ export default function MyProfile() {
             <Panel>
               <PanelHeader>Payroll Records</PanelHeader>
               <PanelBody>
-                <PayrollRecordsContent userId={user?.id} userEmail={user?.email} userName={user?.name} />
+                <PayrollRecords userId={user?.id} userEmail={user?.email} userName={user?.name} />
               </PanelBody>
             </Panel>
           </ContentGrid>

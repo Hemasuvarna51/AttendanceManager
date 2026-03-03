@@ -1,40 +1,133 @@
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { useEmployeeStore } from "../../store/employee.store";
 import { Pencil, Trash2 } from "lucide-react";
-import Page from "../../layout/Page";
-/* ===================== STYLED COMPONENTS ===================== */
+/* ================= Styled Components ================= */
 
+
+const ActionBox = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+const PageContainer = styled.div`
+  padding: 30px;
+  background: #f4f6f9;
+  min-height: 100vh;
+`;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 `;
 
 const Title = styled.h2`
   margin: 0;
-  
 `;
 
 const AddButton = styled.button`
-  padding: 10px 16px;
-  background-color: #2563eb;
+  background: #2f80ed;
   color: white;
   border: none;
-  border-radius: 6px;
+  padding: 10px 18px;
+  border-radius: 8px;
   cursor: pointer;
 
   &:hover {
-    background-color: #1e4ed8;
+    background: #1f6ed4;
   }
+`;
+
+const SummaryCards = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 25px;
+`;
+
+const Card = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+  h3 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  p {
+    margin: 5px 0 0;
+    color: #777;
+  }
+`;
+
+const Controls = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+`;
+
+const SearchInput = styled.input`
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 250px;
+`;
+
+const FilterSelect = styled.select`
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+`;
+
+const TableContainer = styled.div`
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+
+  th {
+    background: #f9fafc;
+  }
+`;
+
+const StatusBadge = styled.span`
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: ${(props) =>
+    props.status === "Active" ? "#d4edda" : "#f8d7da"};
+  color: ${(props) =>
+    props.status === "Active" ? "#155724" : "#721c24"};
+`;
+
+const ActionButton = styled.button`
+  border: none;
+  padding: 6px 10px;
+  margin-right: 8px;
+  border-radius: 6px;
+  cursor: pointer;
 `;
 
 const Overlay = styled.div`
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -42,352 +135,256 @@ const Overlay = styled.div`
 `;
 
 const Modal = styled.div`
-  background: #fff;
-  width: 560px;
-  padding: 22px;
+  background: white;
+  width: 500px;
+  padding: 30px;
   border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 `;
 
-const Form = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 16px;
-  margin-top: 14px;
-
-  h4 {
-    grid-column: 1 / -1;
-  }
+const ModalTitle = styled.h3`
+  margin-top: 0;
 `;
 
-const Input = styled.input`
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-`;
-
-const Select = styled.select`
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-`;
-
-const FormActions = styled.div`
+const ModalButtons = styled.div`
   display: flex;
   gap: 10px;
-  grid-column: 1 / -1;
+  margin-top: 20px;
 `;
 
-const SaveButton = styled.button`
-  padding: 10px 16px;
-  background: #16a34a;
+const CreateButton = styled.button`
+  background: #28a745;
   color: white;
   border: none;
+  padding: 8px 18px;
   border-radius: 6px;
   cursor: pointer;
-
-  &:hover {
-    background: #15803d;
-  }
 `;
 
 const CancelButton = styled.button`
-  padding: 10px 16px;
-  background: #dc2626;
+  background: #dc3545;
   color: white;
   border: none;
+  padding: 8px 18px;
   border-radius: 6px;
   cursor: pointer;
-
-  &:hover {
-    background: #b91c1c;
-  }
 `;
 
-const TableWrapper = styled.div`
-  max-height: 500px;
-  overflow-y: auto;
+const EditButton = styled(ActionButton)`
+  background: #ffeeba;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
+const DeleteButton = styled(ActionButton)`
+  background: #f8d7da;
 `;
 
-const Th = styled.th`
-  text-align: left;
-  padding: 12px;
-  background: #f3f4f6;
-  border-bottom: 2px solid #e5e7eb;
-`;
 
-const Td = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
-`;
 
-const Status = styled.span`
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  color: ${(props) => (props.active ? "#166534" : "#991b1b")};
-  background: ${(props) => (props.active ? "#dcfce7" : "#fee2e2")};
-`;
+/* ================= Component ================= */
 
-const ActionBox = styled.div`
-  display: flex;
-  gap: 10px;
-`;
+export default function EmployeeList() {
+  const [employees, setEmployees] = useState([
 
-const EditBtn = styled.button`
-  
-  color: black;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  ]);
 
-  
-`;
-
-const DeleteBtn = styled.button`
-  
-  color: black;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
- 
-`;
-
-/* ===================== HELPERS ===================== */
-
-const safeParse = (key, fallback = []) => {
-  try {
-    const raw = localStorage.getItem(key);
-    const parsed = raw ? JSON.parse(raw) : fallback;
-    return Array.isArray(parsed) ? parsed : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
-const syncEmployeesToLocalStorage = (employees) => {
-  localStorage.setItem("employees", JSON.stringify(employees));
-  window.dispatchEvent(new Event("employees_updated")); // ✅ same-tab updates
-};
-
-/* ===================== COMPONENT ===================== */
-
-export default function Employee() {
-  const { employees, addEmployee, updateEmployee, deleteEmployee, setEmployees } =
-    useEmployeeStore();
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingEmp, setEditingEmp] = useState(null);
-  const tableWrapperRef = useRef(null);
-
-  const [formData, setFormData] = useState({
-    id: "",
+  const [editMode, setEditMode] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newEmployee, setNewEmployee] = useState({
     name: "",
+    id: "",
     email: "",
-    joined: "",
-    status: "Active",
+    joiningDate: "",
+    status: "Active"
   });
 
-  // ✅ On first load: hydrate store from localStorage if store is empty
-  useEffect(() => {
-    // only hydrate if store doesn't already have data
-    if (employees && employees.length > 0) return;
-
-    const stored = safeParse("employees", []);
-    if (stored.length > 0 && typeof setEmployees === "function") {
-      setEmployees(stored);
+  const handleAddEmployee = () => {
+    if (!newEmployee.name || !newEmployee.id) return;
+    
+    if (editMode) {
+      setEmployees(employees.map(emp => emp.id === newEmployee.id ? newEmployee : emp));
+      
+    }else {
+      setEmployees([...employees, newEmployee]);
     }
-  }, []); // intentionally one-time
+    
 
-  /* ===================== CRUD LOGIC ===================== */
-
-  const handleSubmit = () => {
-    if (!formData.id || !formData.name || !formData.email) {
-      alert("Please fill all required fields");
-      return;
-    }
-
-    if (editingEmp) {
-      updateEmployee(editingEmp.id, formData);
-
-      // ✅ sync after update
-      const next = employees.map((e) =>
-        e.id === editingEmp.id ? { ...formData } : e
-      );
-      syncEmployeesToLocalStorage(next);
-    } else {
-      // block duplicates
-      if (employees.some((e) => e.id === formData.id)) {
-        alert("Employee ID already exists!");
-        return;
-      }
-
-      addEmployee(formData);
-
-      // ✅ sync after add
-      const next = [...employees, formData];
-      syncEmployeesToLocalStorage(next);
-
-      // ✅ scroll to bottom after adding
-      setTimeout(() => {
-        if (tableWrapperRef.current) {
-          tableWrapperRef.current.scrollTop = tableWrapperRef.current.scrollHeight;
-        }
-      }, 100);
-    }
-
-    resetForm();
+    setNewEmployee({
+      name: "",
+      id: "",
+      email: "",
+      joiningDate: "",
+      status: "Active"
+    });
+    
+    setEditMode(false);
+    setShowModal(false);
   };
 
   const handleEdit = (emp) => {
-    setEditingEmp(emp);
-    setFormData(emp);
-    setShowForm(true);
-  };
+  setNewEmployee(emp);        // fill modal with employee data
+  setEditMode(true);          // enable edit mode
+  setShowModal(true);         // open modal
+};
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+
+  const filteredEmployees = employees.filter(emp =>
+    emp.name.toLowerCase().includes(search.toLowerCase()) &&
+    (filterStatus === "All" || emp.status === filterStatus)
+  );
+
+  const totalEmployees = employees.length;
+  const activeEmployees = employees.filter(emp => emp.status === "Active").length;
+  const inactiveEmployees = employees.filter(emp => emp.status === "Inactive").length;
 
   const handleDelete = (id) => {
-    if (!window.confirm("Delete this employee?")) return;
-
-    deleteEmployee(id);
-
-    // ✅ sync after delete
-    const next = employees.filter((e) => e.id !== id);
-    syncEmployeesToLocalStorage(next);
-  };
-
-  const resetForm = () => {
-    setShowForm(false);
-    setEditingEmp(null);
-    setFormData({
-      id: "",
-      name: "",
-      email: "",
-      joined: "",
-      status: "Active",
-    });
+    setEmployees(employees.filter(emp => emp.id !== id));
   };
 
   return (
-    <Page>
+    <PageContainer>
       <Header>
-        <Title>Employee List</Title>
-        <AddButton onClick={() => setShowForm(true)}>
-          + Add New Employee
-        </AddButton>
+        <Title>Employees</Title>
+        <AddButton onClick={() => setShowModal(true)}>+ Add New Employee</AddButton>
       </Header>
+      {showModal && (
+        <Overlay>
+          <Modal>
+            <ModalTitle>Add Employee</ModalTitle>
 
-      {showForm && (
-        <Overlay onClick={resetForm}>
-          <Modal onClick={(e) => e.stopPropagation()}>
-            <h4>{editingEmp ? "Update Employee" : "Add Employee"}</h4>
-
-            <Form>
-              <Input
+            <Controls>
+              <SearchInput
                 placeholder="Employee ID"
-                value={formData.id}
-                disabled={!!editingEmp}
+                value={newEmployee.id}
                 onChange={(e) =>
-                  setFormData({ ...formData, id: e.target.value })
+                  setNewEmployee({ ...newEmployee, id: e.target.value })
                 }
               />
 
-              <Input
+              <SearchInput
                 placeholder="Name"
-                value={formData.name}
+                value={newEmployee.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setNewEmployee({ ...newEmployee, name: e.target.value })
                 }
               />
+            </Controls>
 
-              <Input
+            <Controls>
+              <SearchInput
                 placeholder="Email"
-                value={formData.email}
+                value={newEmployee.email}
                 onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
+                  setNewEmployee({ ...newEmployee, email: e.target.value })
                 }
               />
 
-              <Input
+              <SearchInput
                 type="date"
-                value={formData.joined}
+                value={newEmployee.joiningDate}
                 onChange={(e) =>
-                  setFormData({ ...formData, joined: e.target.value })
+                  setNewEmployee({ ...newEmployee, joiningDate: e.target.value })
                 }
               />
+            </Controls>
 
-              <Select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-              >
-                <option>Active</option>
-                <option>Inactive</option>
-              </Select>
+            <FilterSelect
+              value={newEmployee.status}
+              onChange={(e) =>
+                setNewEmployee({ ...newEmployee, status: e.target.value })
+              }
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </FilterSelect>
 
-              <FormActions>
-                <SaveButton onClick={handleSubmit}>
-                  {editingEmp ? "Update" : "Create"}
-                </SaveButton>
-                <CancelButton onClick={resetForm}>Cancel</CancelButton>
-              </FormActions>
-            </Form>
+            <ModalButtons>
+              <CreateButton onClick={() => {
+                handleAddEmployee();
+                setShowModal(false);
+              }}>
+                Create
+              </CreateButton>
+
+              <CancelButton onClick={() => setShowModal(false)}>
+                Cancel
+              </CancelButton>
+            </ModalButtons>
           </Modal>
         </Overlay>
       )}
+      <SummaryCards>
+        <Card>
+          <h3>{totalEmployees}</h3>
+          <p>Total Employees</p>
+        </Card>
+        <Card>
+          <h3>{activeEmployees}</h3>
+          <p>Active Employees</p>
+        </Card>
+        <Card>
+          <h3>{inactiveEmployees}</h3>
+          <p>Inactive Employees</p>
+        </Card>
+      </SummaryCards>
 
-      <TableWrapper ref={tableWrapperRef}>
-      <Table>
-        <thead>
-          <tr>
-            <Th>Name</Th>
-            <Th>ID</Th>
-            <Th>Email</Th>
-            <Th>Joining Date</Th>
-            <Th>Status</Th>
-            <Th>Action</Th>
-          </tr>
-        </thead>
+      <Controls>
+        <SearchInput
+          placeholder="Search employee..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-        <tbody>
-          {employees.map((emp) => (
-            <tr key={emp.id}>
-              <Td>{emp.name}</Td>
-              <Td>{emp.id}</Td>
-              <Td>{emp.email}</Td>
-              <Td>{emp.joined}</Td>
-              <Td>
-                <Status active={emp.status === "Active"}>{emp.status}</Status>
-              </Td>
-              <Td>
-                <ActionBox>
-                  <EditBtn onClick={() => handleEdit(emp)}>
-                    <Pencil size={14} />
-                  </EditBtn>
-                  <DeleteBtn onClick={() => handleDelete(emp.id)}>
-                    <Trash2 size={14} />
-                  </DeleteBtn>
-                </ActionBox>
-              </Td>
+        <FilterSelect
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+        >
+          <option value="All">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </FilterSelect>
+      </Controls>
+
+      <TableContainer>
+        <Table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Joining Date</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-      </TableWrapper>
-    </Page>
+          </thead>
+
+          <tbody>
+            {filteredEmployees.map(emp => (
+              <tr key={emp.id}>
+                <td>{emp.name}</td>
+                <td>{emp.id}</td>
+                <td>{emp.email}</td>
+                <td>{emp.joiningDate}</td>
+                <td>
+                  <StatusBadge status={emp.status}>
+                    {emp.status}
+                  </StatusBadge>
+                </td>
+                <td>
+                  <ActionBox>
+                    <EditButton onClick={() => handleEdit(emp)}>
+                      <Pencil size={14} />
+                    </EditButton>
+                    <DeleteButton onClick={() => handleDelete(emp.id)}>
+                      <Trash2 size={14} />
+                    </DeleteButton>
+                  </ActionBox>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </TableContainer>
+    </PageContainer>
   );
 }

@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 export const usePayrollStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       payrollRecords: [],
       
       // Add a new payroll record
@@ -29,8 +29,13 @@ export const usePayrollStore = create(
       }),
       
       // Get payroll records for a specific employee
-      getEmployeePayroll: (employeeId) => (state) => 
-        state.payrollRecords.filter(record => record.employeeId === employeeId || record.id === employeeId),
+      // note: uses `get` to read current state
+      getEmployeePayroll: (employeeId) => {
+        const { payrollRecords } = get();
+        return payrollRecords.filter(
+          record => record.employeeId === employeeId || record.id === employeeId
+        );
+      },
       
       // Update a payroll record
       updatePayrollRecord: (recordId, updates) => set((state) => ({
