@@ -4,7 +4,7 @@ const Page = styled.div`
   max-width: ${({ $maxWidth }) => $maxWidth || "1200px"};
   margin: 0 auto;
   padding: ${({ $padding }) => $padding || "28px 22px 40px"};
-  background: ${({ $bg }) => $bg || "#f8fafc"};
+  background: transparent;
   min-height: ${({ $minHeight }) => $minHeight || "calc(100vh - 60px)"};
 `;
 

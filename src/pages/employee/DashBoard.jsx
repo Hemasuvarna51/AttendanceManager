@@ -5,15 +5,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { Clock, Sparkles, CalendarDays, ListTodo, UserCheck } from "lucide-react";
+import { Clock, Sparkles, CalendarDays, ListTodo, UserCheck, Bell } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { getAttendanceState, getUserRecords } from "../../utils/attendanceLocalDb";
 import { useNavigate } from "react-router-dom";
+import StatCard from "../../components/stats/StatCard";
+import StatCardGrid from "../../components/stats/StatCardGrid";
+import Page from "../../layout/Page";
 
 // ✅ Recharts
 import {
   ResponsiveContainer,
   BarChart,
+  
   Bar as RBar,
   Cell,
   XAxis,
@@ -96,13 +100,6 @@ const findTodayTimes = (records) => {
 
 /* ===================== STYLES (unchanged) ===================== */
 
-const Page = styled.div`
-  width: 100%;
-  margin: 0;
-  padding: 28px 22px 40px;
-  background: #f8fafc;
-  min-height: calc(100vh - 60px);
-`;
 
 const Top = styled.div`
   display: flex;
@@ -129,67 +126,7 @@ const SubText = styled.p`
   font-weight: 700;
 `;
 
-const Pills = styled.div`
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-`;
 
-const Pill1 = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 30px 55px;
-  border-radius: 10px;
-  background:  #3FBE71;
-  border: 1px solid #eef2f7;
-  color: white;
-  font-weight: 800;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
-  font-size: 16px;
-`;
-
-const Pill2 = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 30px 60px;
-  border-radius: 10px;
-  background: #236BEC;
-  border: 1px solid #eef2f7;
-  color: white;
-  font-weight: 800;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
-  font-size: 16px;
-`;
-const Pill3 = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 30px 55px;
-  border-radius: 10px;
-  background: #FD9010;
-  border: 1px solid #eef2f7;
-  color: white;
-  font-weight: 800;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
-  font-size: 16px;
-`;
-
-const Pill4 = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 30px 55px;
-  border-radius: 10px;
-  background: #FD4238;
-  border: 1px solid #eef2f7;
-  color: white;
-  font-weight: 800;
-  box-shadow: 0 12px 22px rgba(2, 6, 23, 0.04);
-  font-size: 16px;
-`;
 
 const Grid = styled.div`
   display: grid;
@@ -399,39 +336,9 @@ const Hint = styled.div`
   border-radius: 999px;
 `;
 
-const StatGrid = styled.div`
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
 
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-`;
 
-const Stat = styled.button.attrs({ type: "button" })`
-  border: 1px solid #eef2f7;
-  background: #f8fafc;
-  border-radius: 14px;
-  padding: 12px;
-  text-align: left;
-  cursor: pointer;
 
-  .label {
-    font-size: 12px;
-    color: #64748b;
-    font-weight: 800;
-  }
-
-  .value {
-    margin-top: 6px;
-    font-size: 15px;
-    font-weight: 950;
-    color: #0f172a;
-    letter-spacing: -0.01em;
-  }
-`;
 
 const EmptyState = styled.div`
   border: 1px dashed #e2e8f0;
@@ -443,19 +350,6 @@ const EmptyState = styled.div`
   font-size: 13px;
 `;
 
-const Chip = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-size: 13px;
-  font-weight: 900;
-  border: 1px solid #dbeafe;
-`;
 
 const ProgressBar = styled.div`
   height: 8px;
@@ -736,20 +630,41 @@ export default function DashBoard() {
         </TitleWrap>
 
       </Top>
-      <Pills>
-        <Pill1>
-          <UserCheck size={30} /> Present Status: {att.checkedIn ? "Checked In" : "Checked Out"}
-        </Pill1>
-        <Pill2>
-          <ListTodo size={30} /> Pending Tasks: {pendingTasks}
-        </Pill2>
-        <Pill3>
-          <CalendarDays size={30} /> Today: {new Date().toLocaleDateString()}
-        </Pill3>
-        <Pill4>
-          <Sparkles size={30} /> Notifications: {reminders.length + schedule.length}
-        </Pill4>
-      </Pills>
+      <StatCardGrid>
+        <StatCard
+          icon={<UserCheck size={18} />}
+          label="Present Status"
+          value={att.checkedIn ? "Checked In" : "Checked Out"}
+          variant={att.checkedIn ? "green" : "red"}
+          onClick={() => navigate(att.checkedIn ? "/employee/checkout" : "/employee/checkin")}
+        />
+
+        <StatCard
+          icon={<ListTodo size={18} />}
+          label="Pending Tasks"
+          value={pendingTasks}
+          variant="blue"
+          onClick={() => navigate("/employee/tasks")}
+        />
+
+        <StatCard
+          icon={<CalendarDays size={18} />}
+          label="Today"
+          value={new Date().toLocaleDateString()}
+          // orange is your default, so you can skip variant OR add variant="orange"
+          variant="orange"
+          onClick={() => navigate("/employee/my-attendance")}
+        />
+
+        <StatCard
+          icon={<Bell size={18} />}
+          label="Notifications"
+          value={0}
+          bg = "linear-gradient(135deg, #77809f 0%, #a7b0c4 100%)"
+          onClick={() => navigate("/employee/notifications")}
+        />
+      </StatCardGrid>
+
 
       <Grid>
         {/* Attendance */}

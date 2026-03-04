@@ -11,6 +11,7 @@ const NAV_H = 64;
 const Shell = styled.div`
   min-height: 100vh;
   background: #f3f4f8;
+  overflow-x: hidden;
 `;
 
 const ContentArea = styled.div`

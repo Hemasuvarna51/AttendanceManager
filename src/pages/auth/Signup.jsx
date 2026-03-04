@@ -1,34 +1,50 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import styled from "styled-components";
+import { Mail, KeyRound, User, Eye, EyeOff, Lock, Zap, Headphones } from "lucide-react";
 
 /* =========================
-   LAYOUT (same as Login)
+   LAYOUT (matches Login)
 ========================= */
 
 const Page = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #7c68c7, #6f92d6, #3b82f6);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 26px;
+  padding: 24px;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+    background: url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80");
+    background-size: cover;
+    background-position: center;
+    filter: blur(16px) brightness(0.9);
+    z-index: 0;
+  }
 `;
 
 const Shell = styled.div`
-  width: min(800px, 80%);
-  min-height: 400px;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 640px;
+  background: white;
   border-radius: 24px;
-  overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 40px 100px -20px rgba(195, 168, 72, 0.2);
 
-  @media (max-width: 940px) {
+  @media (max-width: 920px) {
     grid-template-columns: 1fr;
+    max-width: 480px;
     min-height: auto;
   }
 `;
@@ -40,180 +56,268 @@ const Shell = styled.div`
 const Left = styled.div`
   position: relative;
   overflow: hidden;
-  background: #4f46e5;
+  background: #0b1020;
 
-  @media (max-width: 940px) {
+  @media (max-width: 920px) {
     display: none;
   }
 `;
 
 const Illustration = styled.img`
   position: absolute;
-  inset: 0;          /* top:0 right:0 bottom:0 left:0 */
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0.65;
 `;
 
-const LeftCard = styled.div`
+const DarkOverlay = styled.div`
   position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(17, 19, 25, 0.92) 0%,
+    rgba(30, 58, 138, 0.4) 100%
+  );
+`;
 
-  border-radius: 18px;
-  padding: 20px;
-
-  background: rgba(35, 48, 130, 0.55);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
+const LeftInner = styled.div`
+  position: relative;
+  z-index: 2;
+  padding: 48px;
   color: white;
 `;
-const LeftTitle = styled.h3`
-  margin: 0 0 10px;
-  font-size: 28px;
-  line-height: 1.2;
-  color: #ffffff;
-  letter-spacing: 0.2px;
+
+const Brand = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 80px;
+`;
+
+const BrandIcon = styled.div`
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: white;
+  color: #1e40af;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+`;
+
+const LeftTitle = styled.h1`
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+
+  span {
+    display: block;
+    font-size: 44px;
+    font-weight: 900;
+    color: #60a5fa;
+    letter-spacing: -0.6px;
+  }
 `;
 
 const LeftText = styled.p`
-  margin: 0;
+  margin: 18px 0 0;
+  max-width: 360px;
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
   font-size: 14.5px;
 `;
 
+const FeatureList = styled.div`
+  margin-top: 40px;
+  display: grid;
+  gap: 18px;
+`;
+
+const FeatureItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+`;
+
+const GlowWave = styled.div`
+  position: absolute;
+  bottom: -120px;
+  left: -80px;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(96,165,250,0.35) 0%, transparent 70%);
+  filter: blur(60px);
+  z-index: 1;
+`;
 /* =========================
    RIGHT PANEL
 ========================= */
 
 const Right = styled.div`
-  background: rgba(255, 255, 255, 0.92);
-  padding: 44px 52px;
+  padding: 60px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  background: white;
 
-  @media (max-width: 940px) {
-    padding: 34px 22px;
+  @media (max-width: 520px) {
+    padding: 32px 22px;
   }
 `;
 
 const Form = styled.div`
   width: 100%;
-  max-width: 420px;
+  max-width: 360px;
   margin: 0 auto;
+
+  /* ✅ control field width (like login) */
+  --fieldW: 260px;
+
+  @media (max-width: 520px) {
+    --fieldW: 100%;
+  }
 `;
 
-const Brand = styled.div`
-  text-align: center;
-  margin-bottom: 16px;
-`;
-
-const BrandName = styled.div`
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  color: #111827;
+const PortalChip = styled.div`
+  background: #2563eb;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  width: fit-content;
+  margin: 0 auto 18px;
 `;
 
 const Title = styled.h2`
-  margin: 10px 0 6px;
+  margin: 0 0 8px;
   text-align: center;
-  font-size: 30px;
+  font-size: 28px;
+  font-weight: 900;
   color: #0f172a;
 `;
 
 const Sub = styled.p`
-  margin: 0 0 18px;
+  margin: 0 0 22px;
   text-align: center;
-  color: #6b7280;
+  color: #64748b;
   font-size: 14px;
 `;
 
-const DividerRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 16px 0 14px;
-  color: #9ca3af;
-  font-size: 13px;
-`;
-
-const DividerLine = styled.div`
-  flex: 1;
-  height: 1px;
-  background: #e5e7eb;
-`;
-
 const Field = styled.div`
-  margin-top: 14px;
+  margin: 0 auto 16px;
+  width: min(100%, var(--fieldW));
 `;
 
 const Label = styled.label`
   display: block;
   font-size: 13px;
-  color: #111827;
-  font-weight: 700;
-  margin-bottom: 6px;
+  color: #0f172a;
+  font-weight: 800;
+  margin-bottom: 8px;
 `;
 
 const InputWrap = styled.div`
   position: relative;
 `;
 
+const PrefixIcon = styled.div`
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+`;
+
+const SuffixIcon = styled.button`
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+`;
+
 const Input = styled.input`
   width: 100%;
-  padding: 12px 12px;
+  padding: 14px 44px 14px 44px;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0;
   background: #ffffff;
   outline: none;
   font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: #1e293b;
+  transition: all 0.2s ease;
 
   &::placeholder {
-    color: #9ca3af;
+    color: #94a3b8;
   }
 
   &:focus {
-    border-color: #6d7df0;
-    box-shadow: 0 0 0 4px rgba(109, 125, 240, 0.18);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
   }
 `;
 
+const ErrorBox = styled.div`
+  width: min(100%, var(--fieldW));
+  margin: 8px auto 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 700;
+`;
+
 const PrimaryBtn = styled.button`
-  width: 100%;
-  margin-top: 16px;
-  padding: 12px 14px;
+  width: min(100%, var(--fieldW));
+  margin: 10px auto 0;
+  padding: 16px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(90deg, #7b61ff, #5b86ff);
+  background: linear-gradient(to right, #1e3a8a, #2563eb);
   color: #ffffff;
-  font-weight: 800;
-  font-size: 15px;
+  font-weight: 900;
+  font-size: 16px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 30px rgba(91, 134, 255, 0.28);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.28);
   }
 
-  &:active {
-    transform: translateY(0px);
+  &:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 `;
 
 const Bottom = styled.p`
-  margin: 14px 0 0;
+  width: min(100%, var(--fieldW));
+  margin: 18px auto 0;
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
+  color: #64748b;
 
   a {
-    color: #4f46e5;
-    font-weight: 700;
+    color: #2563eb;
+    font-weight: 800;
     text-decoration: none;
   }
 
@@ -223,9 +327,9 @@ const Bottom = styled.p`
 `;
 
 const Footer = styled.div`
-  margin-top: 26px;
+  margin-top: 18px;
   text-align: center;
-  color: #9ca3af;
+  color: #94a3b8;
   font-size: 12px;
 `;
 
@@ -236,8 +340,6 @@ const Footer = styled.div`
 export default function SignUp() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Optional: if later you add /admin/signup, this will still work.
   const panel = location.pathname.startsWith("/admin") ? "admin" : "employee";
 
   const [username, setUsername] = useState("");
@@ -245,73 +347,85 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const copy = useMemo(() => {
     return {
-      brand: panel === "admin" ? "Stark…" : "Employee Portal",
-      leftTitle: "Create your account",
+      chip: panel === "admin" ? "Admin Portal" : "Employee Portal",
+      leftTitle: "Create your",
+      leftTitleBig: "Account",
       leftText:
-        "Sign up to access your dashboard, manage tasks, view attendance, and stay updated with meetings—all in one place.",
+        "Sign up to access your dashboard, manage tasks, view attendance, and stay updated with meetings — all in one place.",
       leftImg:
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=700&q=80",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
       title: "Create account",
       subtitle: "Fill in the details to create your account.",
     };
   }, [panel]);
 
-  const handleSignUp = () => {
-    if (!username || !email || !password || !confirm) {
-      alert("All fields required");
-      return;
-    }
-
-    if (username.trim().length < 3) {
-      alert("Username must be at least 3 characters");
-      return;
-    }
+  const validate = () => {
+    if (!username.trim() || !email.trim() || !password || !confirm)
+      return "All fields are required";
+    if (username.trim().length < 3) return "Username must be at least 3 characters";
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanUsername = username.trim();
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
+    if (!ok) return "Enter a valid email";
 
-    if (!cleanEmail.includes("@")) {
-      alert("Enter valid email");
+    if (password.length < 6) return "Password must be at least 6 characters";
+    if (password !== confirm) return "Passwords do not match";
+
+    return "";
+  };
+
+  const handleSignUp = () => {
+    const msg = validate();
+    if (msg) {
+      setError(msg);
       return;
     }
 
-    if (password.length < 6) {
-      alert("Password must be at least 6 characters");
-      return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanUsername = username.trim();
+
+      const existingUsers =
+        JSON.parse(localStorage.getItem("registered_users")) || [];
+
+      const userExists = existingUsers.some((u) => u.email === cleanEmail);
+      if (userExists) {
+        setError("User already exists");
+        setLoading(false);
+        return;
+      }
+
+      const newUser = {
+        username: cleanUsername,
+        email: cleanEmail,
+        password,
+        role: "employee",
+        name: cleanUsername,
+      };
+
+      localStorage.setItem(
+        "registered_users",
+        JSON.stringify([...existingUsers, newUser])
+      );
+
+      navigate("/employee/login", { replace: true });
+    } catch (e) {
+      console.error(e);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-
-    if (password !== confirm) {
-      alert("Passwords do not match");
-      return;
-    }
-
-    const existingUsers =
-      JSON.parse(localStorage.getItem("registered_users")) || [];
-
-    const userExists = existingUsers.some((u) => u.email === cleanEmail);
-
-    if (userExists) {
-      alert("User already exists");
-      return;
-    }
-
-    const newUser = {
-      username: cleanUsername,
-      email: cleanEmail,
-      password,
-      role: "employee",
-      name: cleanUsername, // optional convenience for your app
-    };
-
-    localStorage.setItem(
-      "registered_users",
-      JSON.stringify([...existingUsers, newUser])
-    );
-
-    alert("Registration successful!");
-    navigate("/employee/login");
   };
 
   return (
@@ -320,35 +434,62 @@ export default function SignUp() {
         {/* LEFT */}
         <Left>
           <Illustration src={copy.leftImg} alt="Signup Illustration" />
+          <DarkOverlay />
+          <GlowWave />
 
-          <LeftCard>
-            <LeftTitle>{copy.leftTitle}</LeftTitle>
+          <LeftInner>
+            <Brand>
+              <BrandIcon>G</BrandIcon>
+              Genzix — My Company
+            </Brand>
+
+            <LeftTitle>
+              {copy.leftTitle}
+              <span>{copy.leftTitleBig}</span>
+            </LeftTitle>
+
             <LeftText>{copy.leftText}</LeftText>
-          </LeftCard>
+
+            <FeatureList>
+              <FeatureItem>
+                <Lock size={18} />
+                Secure Account Setup
+              </FeatureItem>
+
+              <FeatureItem>
+                <Zap size={18} />
+                Instant Access
+              </FeatureItem>
+
+              <FeatureItem>
+                <Headphones size={18} />
+                24/7 Support
+              </FeatureItem>
+            </FeatureList>
+          </LeftInner>
         </Left>
 
         {/* RIGHT */}
         <Right>
           <Form>
-            <Brand>
-              <BrandName>{copy.brand}</BrandName>
-              <Title>{copy.title}</Title>
-              <Sub>{copy.subtitle}</Sub>
-            </Brand>
-
-            <DividerRow>
-              <DividerLine />
-              <span>Sign up</span>
-              <DividerLine />
-            </DividerRow>
+            <PortalChip>{copy.chip}</PortalChip>
+            <Title>{copy.title}</Title>
+            <Sub>{copy.subtitle}</Sub>
 
             <Field>
               <Label>Username*</Label>
               <InputWrap>
+                <PrefixIcon>
+                  <User size={18} />
+                </PrefixIcon>
                 <Input
                   placeholder="Enter your username"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setError("");
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
               </InputWrap>
             </Field>
@@ -356,11 +497,18 @@ export default function SignUp() {
             <Field>
               <Label>Email*</Label>
               <InputWrap>
+                <PrefixIcon>
+                  <Mail size={18} />
+                </PrefixIcon>
                 <Input
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
               </InputWrap>
             </Field>
@@ -368,36 +516,61 @@ export default function SignUp() {
             <Field>
               <Label>Password*</Label>
               <InputWrap>
+                <PrefixIcon>
+                  <KeyRound size={18} />
+                </PrefixIcon>
                 <Input
-                  type="password"
+                  type={showPass ? "text" : "password"}
                   placeholder="Create a password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError("");
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
+                <SuffixIcon type="button" onClick={() => setShowPass((v) => !v)}>
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </SuffixIcon>
               </InputWrap>
             </Field>
 
             <Field>
               <Label>Confirm Password*</Label>
               <InputWrap>
+                <PrefixIcon>
+                  <KeyRound size={18} />
+                </PrefixIcon>
                 <Input
-                  type="password"
+                  type={showConfirm ? "text" : "password"}
                   placeholder="Re-enter password"
                   value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
+                  onChange={(e) => {
+                    setConfirm(e.target.value);
+                    setError("");
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
+                <SuffixIcon
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                >
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </SuffixIcon>
               </InputWrap>
             </Field>
 
-            <PrimaryBtn type="button" onClick={handleSignUp}>
-              Create account
+            {error && <ErrorBox>{error}</ErrorBox>}
+
+            <PrimaryBtn type="button" onClick={handleSignUp} disabled={loading}>
+              {loading ? "Creating..." : "Create account"}
             </PrimaryBtn>
 
             <Bottom>
               Already have an account? <Link to="/employee/login">Login</Link>
             </Bottom>
 
-            <Footer>© {new Date().getFullYear()} Stark</Footer>
+            <Footer>© {new Date().getFullYear()} Genzix</Footer>
           </Form>
         </Right>
       </Shell>
