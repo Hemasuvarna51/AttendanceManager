@@ -144,8 +144,8 @@ const IconBtn = styled.button`
 
 const Dot = styled.span`
   position: absolute;
-  right: 9px;
-  top: 9px;
+  right: 6px;
+  top: 4px;
   width: 9px;
   height: 9px;
   background: #ff3b30;
