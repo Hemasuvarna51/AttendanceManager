@@ -21,7 +21,7 @@ const SIDEBAR_W = 200;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition: 0.2s ease;
@@ -37,7 +37,7 @@ const Aside = styled.aside`
   height: 100vh;
   padding: 16px 14px;
   color: #fff;
-  background: #20315B;
+  background: #20315b;
 
   position: fixed;
   top: 0;
@@ -46,13 +46,11 @@ const Aside = styled.aside`
   z-index: 7000;
   transition: width 0.25s ease;
 
-  /* Expand when cursor enters */
- 
-
   @media (max-width: 979px) {
     transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
   }
 `;
+
 const Brand = styled.div`
   display: flex;
   align-items: center;
@@ -77,7 +75,6 @@ const Logo = styled.div`
 const BrandText = styled.div`
   line-height: 1.1;
   transition: opacity 0.2s ease;
-
   opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
 
   ${Aside}:hover & {
@@ -94,6 +91,7 @@ const BrandText = styled.div`
     margin-top: 3px;
   }
 `;
+
 const CloseBtn = styled.button`
   margin-left: auto;
   background: transparent;
@@ -116,6 +114,7 @@ const SectionLabel = styled.div`
   opacity: 0.6;
   padding: 10px 10px 6px;
   transition: opacity 0.2s ease, height 0.2s ease;
+
   ${({ $collapsed }) =>
     $collapsed &&
     `
@@ -132,7 +131,7 @@ const Nav = styled.nav`
   flex-direction: column;
   gap: 6px;
   padding: 4px 6px 10px;
-  color: solid rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.92); /* ✅ fixed */
 `;
 
 const Item = styled(NavLink)`
@@ -143,7 +142,7 @@ const Item = styled(NavLink)`
 
   padding: 12px;
   border-radius: 14px;
-  color: rgba(255,255,255,0.86);
+  color: rgba(255, 255, 255, 0.86);
   text-decoration: none;
 
   svg {
@@ -156,17 +155,19 @@ const Item = styled(NavLink)`
   }
 
   &:hover {
-    background: rgba(255,255,255,0.07);
+    background: rgba(255, 255, 255, 0.07);
   }
 
   &.active {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
   }
 `;
+
 const Footer = styled.div`
   margin-top: auto;
   padding: 10px 6px 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+
   ${({ $collapsed }) =>
     $collapsed &&
     `
@@ -196,24 +197,28 @@ const FooterBtn = styled.button`
   }
 `;
 
+/* ✅ FIXED: transient prop */
 const ToggleBtn = styled.button`
   position: fixed;
   top: 18px;
-  left: ${({ collapsed }) => (collapsed ? "80px" : "200px")};
+  left: ${({ $collapsed }) => ($collapsed ? "80px" : "200px")};
   transition: left 0.25s ease;
 
-  background: #20315B;
+  background: #20315b;
   border: none;
   color: white;
   cursor: pointer;
   z-index: 8000;
 `;
 
-// added collapsed prop to allow desktop collapse behaviour
-export default function Sidebar({ open = false, collapsed = false, onClose = () => {}, onHover = () => {} }) {
+export default function Sidebar({
+  open = false,
+  collapsed = false,
+  onClose = () => {},
+  onHover = () => {},
+}) {
   const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
-
   const location = useLocation();
 
   /* ✅ Close sidebar on route change (mobile UX) */
@@ -228,14 +233,22 @@ export default function Sidebar({ open = false, collapsed = false, onClose = () 
   return (
     <>
       <Overlay $open={open} onClick={onClose} />
+
       <Aside
         $open={open}
         $collapsed={isCollapsed}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onMouseEnter={() => {
+          setHover(true);
+          onHover(true);
+        }}
+        onMouseLeave={() => {
+          setHover(false);
+          onHover(false);
+        }}
       >
         <Brand $collapsed={isCollapsed}>
           <Logo>GZ</Logo>
+
           <BrandText $collapsed={isCollapsed}>
             <div>Genzix</div>
             <div>My Company</div>
