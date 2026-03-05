@@ -191,7 +191,7 @@ export default function RunPayroll() {
 
     // Save payroll records to the store for each employee
     const payrollRecords = payrollData.map(emp => ({
-      employeeId: emp.id,
+      employeeId: emp.mail,
       employeeName: emp.name,
       payPeriodFrom: payFrom,
       payPeriodTo: payTo,

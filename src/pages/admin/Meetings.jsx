@@ -2,6 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useEmployeeStore } from "../../store/employee.store";
 import Page from "../../layout/Page";
+import calender from "../../assets/calendar.png";
+import clock_icon from "../../assets/clock_icon.png";
+import star_icon from "../../assets/star_icon.png";
+import place_icon from "../../assets/place_icon.png";
+import form_icon from "../../assets/form_icon.png"
+import completed_icon from "../../assets/completed_icon.png"
 /* ===================== STORAGE HELPERS ===================== */
 
 const MEETINGS_KEY = "meetings";
@@ -30,6 +36,8 @@ const uid = () => {
   }
 };
 
+
+
 /* ===================== STYLES ===================== */
 
 const TitleRow = styled.div`
@@ -40,17 +48,17 @@ const TitleRow = styled.div`
   flex-wrap: wrap;
 
   h2 {
-    margin: 0;
+    margin: 0px 5px;
     font-size: 26px;
     font-weight: 950;
-    letter-spacing: -0.02em;
-    color: #0f172a;
+    color: #1b3461;
   }
 
   p {
-    margin: 6px 0 0;
-    font-size: 13px;
-    color: #64748b;
+    margin: 7px 10px 0;
+    font-size: 14px;
+    font-style:italic;
+    color: grey;
     font-weight: 800;
   }
 `;
@@ -72,13 +80,54 @@ const Card = styled.div`
   border-radius: 18px;
   padding: 18px;
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.05);
+
+  .dashboard{
+    display:flex;
+    width:100%;
+    gap:30px;
+    background:black;
+    border-radius:20px;
+    justify-content:center;
+    align-content:center;
+    color:white;
+  }
+  .widgets{
+    display:grid;
+    width:100%;
+    padding:30px;
+    gap:25px;
+    justify-content:center;
+    grid-template-columns:repeat(3,150px);
+  }
+  .widget{
+    display:flex;
+    border-radius:20px;
+    width:110px;
+    height:90px;
+    padding:0px 10px;
+    background:grey;
+    align-items:end;
+    justify-content:space-between;
+    position:relative;
+    cursor:pointer;
+  }
+  img{
+    top:10px;
+    position:absolute;
+    width:28px;
+  }
+  text{
+    margin-bottom:15px;
+    color:rgb(234, 234, 234);
+    font-size:14px;
+    align-items:end;
+  }
 `;
 
 const CardTitle = styled.h3`
   margin: 0 0 12px;
-  font-size: 14px;
   font-weight: 950;
-  color: #0f172a;
+  color: #1b3461;
 `;
 
 const Form = styled.div`
@@ -91,21 +140,21 @@ const Field = styled.div`
   gap: 6px;
 
   label {
-    font-size: 12px;
-    color: #64748b;
+    font-size: 15px;
+    color: grey;
     font-weight: 900;
   }
 
   input,
   select,
   textarea {
-    border: 1px solid #e2e8f0;
+    border: 1.7px solid #1b3461;
     border-radius: 12px;
     padding: 10px 12px;
     font-size: 14px;
     outline: none;
     font-weight: 700;
-    color: #0f172a;
+    color:grey;
     background: #fff;
   }
 
@@ -113,6 +162,10 @@ const Field = styled.div`
     min-height: 84px;
     resize: vertical;
     font-weight: 650;
+  }
+
+  input::placeholder{
+    color:darkgrey;
   }
 
   input:focus,
@@ -136,7 +189,7 @@ const Row = styled.div`
 const BtnRow = styled.div`
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  justify-content:end;
   margin-top: 6px;
 `;
 
@@ -146,7 +199,7 @@ const Btn = styled.button`
   border-radius: 12px;
   border: 1px solid ${({ $danger }) => ($danger ? "#fecaca" : "#e2e8f0")};
   background: ${({ $primary, $danger }) =>
-    $primary ? "#2563eb" : $danger ? "#fff5f5" : "#fff"};
+    $primary ? "#1b3461" : $danger ? "#fff5f5" : "#fff"};
   color: ${({ $primary, $danger }) =>
     $primary ? "#fff" : $danger ? "#b91c1c" : "#0f172a"};
   font-weight: 950;
@@ -157,7 +210,6 @@ const Btn = styled.button`
   }
 
   &:disabled {
-    opacity: 0.55;
     cursor: not-allowed;
   }
 `;
@@ -383,10 +435,7 @@ export default function Meetings() {
               </Field>
 
               <BtnRow>
-                <Btn $primary onClick={createMeeting} disabled={!canCreate}>
-                  Create
-                </Btn>
-                <Btn
+              <Btn
                   onClick={() => {
                     setTitle("");
                     setDate("");
@@ -397,6 +446,10 @@ export default function Meetings() {
                 >
                   Reset
                 </Btn>
+                <Btn $primary onClick={createMeeting} disabled={!canCreate}>
+                  Create
+                </Btn>
+                
               </BtnRow>
             </Form>
           </Card>
@@ -404,6 +457,40 @@ export default function Meetings() {
           {/* RIGHT: List */}
           <Card>
             <CardTitle>View All Meetings</CardTitle>
+            <div className="dashboard">
+              <div className="widgets">
+                <div className="widget">
+                <img src={calender}/>
+                <text>Today</text>
+                <p>{0}</p>
+                </div>
+                <div className="widget">
+                <img src={clock_icon}/>
+                  <text>Scheduled</text>
+                  <p>{0}</p>
+                </div>
+                <div className="widget">
+                <img src={star_icon} />
+                  <text>Important</text>
+                  <p>{0}</p>
+                </div>
+                 <div className="widget">
+                <img src={place_icon}/>
+                  <text>Place</text>
+                  <p>{0}</p>
+                </div>
+                <div className="widget">
+                <img src={form_icon}/>
+                  <text>No alert</text>
+                  <p>{0}</p>
+                </div>
+                <div className="widget">
+                <img src={completed_icon} />
+                  <text>Completed</text>
+                  <p>{0}</p>
+                </div>
+              </div>
+            </div>
 
             {sorted.length === 0 ? (
               <Empty>No meetings created yet.</Empty>

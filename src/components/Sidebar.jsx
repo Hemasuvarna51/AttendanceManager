@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/auth.store";
 import styled from "styled-components";
 import {
@@ -21,7 +21,7 @@ const SIDEBAR_W = 200;
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition: 0.2s ease;
@@ -37,23 +37,20 @@ const Aside = styled.aside`
   height: 100vh;
   padding: 16px 14px;
   color: #fff;
-  background: #20315B;
+  background: #20315b;
 
   position: fixed;
   top: 0;
   left: 0;
 
-  z-index: 7000; /* ✅ sidebar on top of navbar */
-
-  transform: translateX(0);
-  transition: transform 0.22s ease;
-  will-change: transform;
-  transition: width 0.2s ease;
+  z-index: 7000;
+  transition: width 0.25s ease;
 
   @media (max-width: 979px) {
     transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
   }
 `;
+
 const Brand = styled.div`
   display: flex;
   align-items: center;
@@ -77,9 +74,12 @@ const Logo = styled.div`
 
 const BrandText = styled.div`
   line-height: 1.1;
-  transition: opacity 0.2s ease, width 0.2s ease;
+  transition: opacity 0.2s ease;
   opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
-  width: ${({ $collapsed }) => ($collapsed ? 0 : "auto")};
+
+  ${Aside}:hover & {
+    opacity: 1;
+  }
 
   div:first-child {
     font-weight: 700;
@@ -114,6 +114,7 @@ const SectionLabel = styled.div`
   opacity: 0.6;
   padding: 10px 10px 6px;
   transition: opacity 0.2s ease, height 0.2s ease;
+
   ${({ $collapsed }) =>
     $collapsed &&
     `
@@ -130,51 +131,43 @@ const Nav = styled.nav`
   flex-direction: column;
   gap: 6px;
   padding: 4px 6px 10px;
-  color: solid rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.92); /* ✅ fixed */
 `;
 
 const Item = styled(NavLink)`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 12px;
+  gap: ${({ $collapsed }) => ($collapsed ? "0" : "12px")};
+  justify-content: ${({ $collapsed }) => ($collapsed ? "center" : "flex-start")};
+
+  padding: 12px;
   border-radius: 14px;
   color: rgba(255, 255, 255, 0.86);
   text-decoration: none;
-  transition: padding 0.2s ease;
 
   svg {
     width: 18px;
     height: 18px;
-    opacity: 0.9;
+  }
+
+  span {
+    display: ${({ $collapsed }) => ($collapsed ? "none" : "inline")};
   }
 
   &:hover {
     background: rgba(255, 255, 255, 0.07);
   }
 
-  /* ✅ “pill active” like screenshot */
   &.active {
     background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
-
-  /* hide label when collapsed */
-  ${({ $collapsed }) =>
-    $collapsed &&
-    `
-    justify-content: center;
-    gap: 0;
-    padding: 12px 0;
-    svg { margin: 0; }
-  `}
 `;
 
 const Footer = styled.div`
   margin-top: auto;
   padding: 10px 6px 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+
   ${({ $collapsed }) =>
     $collapsed &&
     `
@@ -204,11 +197,28 @@ const FooterBtn = styled.button`
   }
 `;
 
-// added collapsed prop to allow desktop collapse behaviour
-export default function Sidebar({ open = false, collapsed = false, onClose = () => { } }) {
+/* ✅ FIXED: transient prop */
+const ToggleBtn = styled.button`
+  position: fixed;
+  top: 18px;
+  left: ${({ $collapsed }) => ($collapsed ? "80px" : "200px")};
+  transition: left 0.25s ease;
+
+  background: #20315b;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 8000;
+`;
+
+export default function Sidebar({
+  open = false,
+  collapsed = false,
+  onClose = () => {},
+  onHover = () => {},
+}) {
   const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
-
   const location = useLocation();
 
   /* ✅ Close sidebar on route change (mobile UX) */
@@ -217,13 +227,29 @@ export default function Sidebar({ open = false, collapsed = false, onClose = () 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  const [hover, setHover] = useState(false);
+  const isCollapsed = collapsed && !hover;
+
   return (
     <>
       <Overlay $open={open} onClick={onClose} />
-      <Aside $open={open} $collapsed={collapsed}>
-        <Brand $collapsed={collapsed}>
+
+      <Aside
+        $open={open}
+        $collapsed={isCollapsed}
+        onMouseEnter={() => {
+          setHover(true);
+          onHover(true);
+        }}
+        onMouseLeave={() => {
+          setHover(false);
+          onHover(false);
+        }}
+      >
+        <Brand $collapsed={isCollapsed}>
           <Logo>GZ</Logo>
-          <BrandText $collapsed={collapsed}>
+
+          <BrandText $collapsed={isCollapsed}>
             <div>Genzix</div>
             <div>My Company</div>
           </BrandText>
@@ -235,28 +261,28 @@ export default function Sidebar({ open = false, collapsed = false, onClose = () 
 
         {role === "employee" && (
           <>
-            <SectionLabel $collapsed={collapsed}>Employee</SectionLabel>
+            <SectionLabel $collapsed={isCollapsed}>Employee</SectionLabel>
             <Nav>
-              <Item $collapsed={collapsed} to="/employee/dashboard">
-                <LayoutDashboard /> {!collapsed && "DashBoard"}
+              <Item $collapsed={isCollapsed} to="/employee/dashboard">
+                <LayoutDashboard /> <span>Dashboard</span>
               </Item>
-              <Item $collapsed={collapsed} to="/employee/my-profile">
-                <ClipboardCheck /> {!collapsed && "My Profile"}
+              <Item $collapsed={isCollapsed} to="/employee/my-profile">
+                <ClipboardCheck /> <span>My Profile</span>
               </Item>
-              <Item $collapsed={collapsed} to="/employee/leave">
-                <Plane /> {!collapsed && "Leave Request"}
+              <Item $collapsed={isCollapsed} to="/employee/leave">
+                <Plane /> <span>Leave Request</span>
               </Item>
-              <Item $collapsed={collapsed} to="/employee/my-attendance">
-                <FileText /> {!collapsed && "My Attendance"}
+              <Item $collapsed={isCollapsed} to="/employee/my-attendance">
+                <FileText /> <span>My Attendance</span>
               </Item>
-              <Item $collapsed={collapsed} to="/employee/my-payroll">
-                <Wallet /> {!collapsed && "Payroll"}
+              <Item $collapsed={isCollapsed} to="/employee/my-payroll">
+                <Wallet /> <span>Payroll</span>
               </Item>
-              <Item $collapsed={collapsed} to="/employee/tasks">
-                <ListTodo /> {!collapsed && "My Tasks"}
+              <Item $collapsed={isCollapsed} to="/employee/tasks">
+                <ListTodo /> <span>My Tasks</span>
               </Item>
-              <Item $collapsed={collapsed} to="/employee/my-meetings">
-                <Calendar /> {!collapsed && "My Meetings"}
+              <Item $collapsed={isCollapsed} to="/employee/my-meetings">
+                <Calendar /> <span>My Meetings</span>
               </Item>
             </Nav>
           </>
@@ -264,41 +290,41 @@ export default function Sidebar({ open = false, collapsed = false, onClose = () 
 
         {role === "admin" && (
           <>
-            <SectionLabel $collapsed={collapsed}>Admin</SectionLabel>
+            <SectionLabel $collapsed={isCollapsed}>Admin</SectionLabel>
             <Nav>
-              <Item $collapsed={collapsed} to="/admin/dashboard">
-                <LayoutDashboard /> {!collapsed && "Dashboard"}
+              <Item $collapsed={isCollapsed} to="/admin/dashboard">
+                <LayoutDashboard /> <span>Dashboard</span>
               </Item>
-              <Item $collapsed={collapsed} to="/admin/employees">
-                <Users /> {!collapsed && "Employees"}
+              <Item $collapsed={isCollapsed} to="/admin/employees">
+                <Users /> <span>Employees</span>
               </Item>
-              <Item $collapsed={collapsed} to="/admin/leave-approval">
-                <CalendarCheck2 /> {!collapsed && "Leave Approval"}
+              <Item $collapsed={isCollapsed} to="/admin/leave-approval">
+                <CalendarCheck2 /> <span>Leave Approval</span>
               </Item>
-              <Item $collapsed={collapsed} to="/admin/tasks">
-                <ListTodo /> {!collapsed && "All Tasks"}
+              <Item $collapsed={isCollapsed} to="/admin/tasks">
+                <ListTodo /> <span>All Tasks</span>
               </Item>
-              <Item $collapsed={collapsed} to="/admin/payroll">
-                <FileText /> {!collapsed && "Payroll"}
+              <Item $collapsed={isCollapsed} to="/admin/payroll">
+                <FileText /> <span>Payroll</span>
               </Item>
-              <Item $collapsed={collapsed} to="/admin/meetings">
-                <Calendar /> {!collapsed && "Meetings"}
+              <Item $collapsed={isCollapsed} to="/admin/meetings">
+                <Calendar /> <span>Meetings</span>
               </Item>
-              <Item $collapsed={collapsed} to="/admin/reports">
-                <FileText /> {!collapsed && "Reports"}
+              <Item $collapsed={isCollapsed} to="/admin/reports">
+                <FileText /> <span>Reports</span>
               </Item>
             </Nav>
           </>
         )}
 
-        <Footer $collapsed={collapsed}>
+        <Footer $collapsed={isCollapsed}>
           <FooterBtn
             onClick={() => {
               onClose();
               logout?.();
             }}
           >
-            <LogOut /> {!collapsed && "Logout"}
+            <LogOut /> <span>Logout</span>
           </FooterBtn>
         </Footer>
       </Aside>

@@ -2,7 +2,10 @@ import { useMemo, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import styled from "styled-components";
 import { Mail, KeyRound, User, Eye, EyeOff, Lock, Zap, Headphones } from "lucide-react";
-
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "../../firebase";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 /* =========================
    LAYOUT (matches Login)
 ========================= */
@@ -31,10 +34,10 @@ const Page = styled.div`
 
 const Shell = styled.div`
   width: 100%;
-  max-width: 1000px;
-  min-height: 640px;
+  max-width: 740px;
+  min-height: 360px;
   background: white;
-  border-radius: 24px;
+  border-radius: 22px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
@@ -44,7 +47,7 @@ const Shell = styled.div`
 
   @media (max-width: 920px) {
     grid-template-columns: 1fr;
-    max-width: 480px;
+    max-width: 340px;
     min-height: auto;
   }
 `;
@@ -161,7 +164,7 @@ const GlowWave = styled.div`
 ========================= */
 
 const Right = styled.div`
-  padding: 60px;
+  padding: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,10 +181,10 @@ const Form = styled.div`
   margin: 0 auto;
 
   /* ✅ control field width (like login) */
-  --fieldW: 260px;
+  --fieldW: 100%;
 
   @media (max-width: 520px) {
-    --fieldW: 100%;
+    max-width: 100%;
   }
 `;
 
@@ -214,6 +217,7 @@ const Sub = styled.p`
 const Field = styled.div`
   margin: 0 auto 16px;
   width: min(100%, var(--fieldW));
+  box-sizing: border-box;
 `;
 
 const Label = styled.label`
@@ -226,6 +230,8 @@ const Label = styled.label`
 
 const InputWrap = styled.div`
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const PrefixIcon = styled.div`
@@ -245,13 +251,13 @@ const SuffixIcon = styled.button`
   background: transparent;
   cursor: pointer;
   color: #94a3b8;
-  display: grid;
-  place-items: center;
+  
 `;
 
 const Input = styled.input`
   width: 100%;
-  padding: 14px 44px 14px 44px;
+  box-sizing: border-box;
+  padding: 14px 44px 14px 40px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   background: #ffffff;
@@ -353,6 +359,8 @@ export default function SignUp() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const toastOnce = (msg) => toast.error(msg, { toastId: msg });
+
   const copy = useMemo(() => {
     return {
       chip: panel === "admin" ? "Admin Portal" : "Employee Portal",
@@ -382,12 +390,9 @@ export default function SignUp() {
     return "";
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     const msg = validate();
-    if (msg) {
-      setError(msg);
-      return;
-    }
+    if (msg) return toastOnce(msg);
 
     setLoading(true);
     setError("");
@@ -396,33 +401,25 @@ export default function SignUp() {
       const cleanEmail = email.trim().toLowerCase();
       const cleanUsername = username.trim();
 
-      const existingUsers =
-        JSON.parse(localStorage.getItem("registered_users")) || [];
+      // ✅ Create user in Firebase Auth
+      const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
 
-      const userExists = existingUsers.some((u) => u.email === cleanEmail);
-      if (userExists) {
-        setError("User already exists");
-        setLoading(false);
-        return;
-      }
+      // ✅ Set displayName (optional but useful)
+      await updateProfile(userCred.user, { displayName: cleanUsername });
 
-      const newUser = {
-        username: cleanUsername,
-        email: cleanEmail,
-        password,
-        role: "employee",
-        name: cleanUsername,
-      };
+      toast.success("Account created! Please login.", { autoClose: 2000 });
 
-      localStorage.setItem(
-        "registered_users",
-        JSON.stringify([...existingUsers, newUser])
-      );
+      navigate(panel === "admin" ? "/admin/login" : "/employee/login", { replace: true });
+    } catch (err) {
+      const code = err?.code || "";
 
-      navigate("/employee/login", { replace: true });
-    } catch (e) {
-      console.error(e);
-      setError("Something went wrong. Please try again.");
+      if (code.includes("auth/email-already-in-use")) return toastOnce("Email already in use");
+      if (code.includes("auth/weak-password")) return toastOnce("Password is too weak");
+      if (code.includes("auth/invalid-email")) return toastOnce("Invalid email");
+      if (code.includes("auth/network-request-failed")) return toastOnce("Network error. Check internet");
+
+      console.error(err);
+      toastOnce("Signup failed. Try again.");
     } finally {
       setLoading(false);
     }
@@ -440,7 +437,7 @@ export default function SignUp() {
           <LeftInner>
             <Brand>
               <BrandIcon>G</BrandIcon>
-              Genzix — My Company
+              Genzix
             </Brand>
 
             <LeftTitle>
@@ -519,6 +516,7 @@ export default function SignUp() {
                 <PrefixIcon>
                   <KeyRound size={18} />
                 </PrefixIcon>
+
                 <Input
                   type={showPass ? "text" : "password"}
                   placeholder="Create a password"
@@ -529,9 +527,8 @@ export default function SignUp() {
                   }}
                   onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
-                <SuffixIcon type="button" onClick={() => setShowPass((v) => !v)}>
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </SuffixIcon>
+
+              
               </InputWrap>
             </Field>
 
@@ -551,12 +548,7 @@ export default function SignUp() {
                   }}
                   onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
-                <SuffixIcon
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                >
-                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </SuffixIcon>
+              
               </InputWrap>
             </Field>
 

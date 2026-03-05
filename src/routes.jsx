@@ -6,6 +6,7 @@ import RoleRoute from "./components/RoleRoute";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Unauthorized from "./pages/auth/Unauthorized";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 
 import AdminShell from "./layout/AdminShell";
 import EmployeeShell from "./layout/EmployeeShell";
@@ -56,6 +57,9 @@ export const router = createBrowserRouter([
 
   { path: "/signup", element: <Signup /> },
   { path: "/unauthorized", element: <Unauthorized /> },
+
+  { path: "/employee/forgot-password", element: <ForgotPassword /> },
+  { path: "/admin/forgot-password", element: <ForgotPassword /> },
 
   {
     path: "/",
