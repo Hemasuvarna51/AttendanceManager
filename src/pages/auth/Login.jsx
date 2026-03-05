@@ -2,6 +2,11 @@ import { useMemo, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuthStore } from "../../store/auth.store";
 import styled from "styled-components";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../../firebase";
+
 import {
   Lock,
   Mail,
@@ -42,8 +47,8 @@ const Page = styled.div`
 
 const Shell = styled.div`
   width: 100%;
-  max-width: 1000px;
-  min-height: 640px;
+  max-width: 680px;
+  min-height: 360px;
   background: white;
   border-radius: 24px;
   display: grid;
@@ -55,7 +60,7 @@ const Shell = styled.div`
 
   @media (max-width: 920px) {
     grid-template-columns: 1fr;
-    max-width: 480px;
+    max-width: 440px;
     min-height: auto;
   }
 `;
@@ -162,27 +167,25 @@ const FeatureItem = styled.div`
 ========================= */
 
 const Right = styled.div`
-  padding: 60px;
+  padding: 34px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   background: white;
 
   @media (max-width: 500px) {
-    padding: 32px 24px;
+    padding: 28px 22px;
   }
 `;
 
 const FormBox = styled.div`
   width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
-
-  /* ✅ control content width */
-  --fieldW: 250px;
+  max-width: 380px;
+  margin: 0 auto;          /* ✅ center whole form */
+  --fieldW: 100%;
 
   @media (max-width: 500px) {
-    --fieldW: 100%;
+    max-width: 100%;
   }
 `;
 
@@ -202,7 +205,8 @@ const Headline = styled.h2`
   font-size: 28px;
   font-weight: 800;
   color: #1e293b;
-  margin: 0 0 8px 0;
+  margin: 0 0 8px 0; 
+  margin-right: 8px; 
 `;
 
 const SubText = styled.p`
@@ -220,32 +224,39 @@ const InputGroup = styled.div`
 
 const StyledInput = styled.input`
   width: 100%;
-  padding: 14px 48px 14px 44px; /* ✅ better spacing */
+  box-sizing: border-box;
+  padding: 14px 46px 14px 42px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
   outline: none;
   font-size: 14px;
-  color: #1e293b;
-  transition: all 0.2s ease;
+  color: #0f172a;
+  transition: all 0.25s ease;
 
   &::placeholder {
     color: #94a3b8;
   }
 
+  &:hover {
+    border-color: #cbd5f5;
+  }
+
   &:focus {
-    border-color: #3b82f6;
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
   }
 `;
 
 const PrefixIcon = styled.div`
   position: absolute;
-  left: 16px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
+  display: flex;
+  align-items: center;
 `;
 
 const Row = styled.div`
@@ -271,20 +282,10 @@ const Check = styled.label`
   }
 `;
 
-const ErrorBox = styled.div`
-  width: min(100%, var(--fieldW));
-  margin: 10px auto 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  font-size: 13px;
-  font-weight: 600;
-`;
+
 
 const GoogleBtn = styled.button`
-  width: min(100%, var(--fieldW));
+   width: 100%;             /* ✅ match field width */
   margin: 0 auto;
   padding: 12px;
   background: white;
@@ -332,7 +333,7 @@ const Divider = styled.div`
 `;
 
 const LoginBtn = styled.button`
-  width: min(100%, var(--fieldW));
+  width: 100%;             /* ✅ match field width */
   margin: 0 auto;
   padding: 16px;
   background: linear-gradient(to right, #1e3a8a, #2563eb);
@@ -391,14 +392,13 @@ const RegisterPrompt = styled.p`
 `;
 const SuffixIcon = styled.div`
   position: absolute;
-  right: 16px;   /* 🔥 perfect corner alignment */
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
   color: #94a3b8;
   display: flex;
   align-items: center;
-  justify-content: center;
 `;
 /* =========================
    COMPONENT
@@ -417,6 +417,9 @@ export default function Login() {
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const toastOnce = (msg) =>
+    toast.error(msg, { toastId: msg });
+
 
   const panel = location.pathname.startsWith("/admin") ? "admin" : "employee";
   const from = location.state?.from?.pathname;
@@ -429,7 +432,7 @@ export default function Login() {
           ? "Manage employees, payroll, and company settings — all in one secure place."
           : "Manage your attendance, meetings, tasks, and leave requests — all in one place.",
       leftImg:
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
     }),
     [panel]
   );
@@ -443,81 +446,104 @@ export default function Login() {
     return "";
   };
 
-  const handleLogin = () => {
+  const ADMIN_EMAIL = "admin@gmail.com";
+
+  const handleLogin = async () => {
     const msg = validate();
-    if (msg) {
-      setError(msg);
-      return;
+    if (msg) return toastOnce(msg);
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // ✅ Admin route should accept ONLY the admin email
+    if (panel === "admin" && cleanEmail !== ADMIN_EMAIL) {
+      return toastOnce("Not authorized as admin");
     }
 
-    setError("");
     setLoading(true);
-
     try {
-      const registeredUsers =
-        JSON.parse(localStorage.getItem("registered_users")) || [];
-
-      const adminUser = {
-        email: "admin@gmail.com",
-        password: "admin123",
-        role: "admin",
-        username: "admin",
-        name: "Admin",
-      };
-
-      const allUsers = [...registeredUsers, adminUser];
-
-      const inputEmail = email.trim().toLowerCase();
-      const found = allUsers.find(
-        (u) =>
-          (u.email || "").toLowerCase() === inputEmail &&
-          u.password === password
+      const userCred = await signInWithEmailAndPassword(
+        auth,
+        cleanEmail,
+        password
       );
-
-      if (!found) {
-        setError("Invalid email or password");
-        setLoading(false);
-        return;
-      }
-
-      if (found.role !== panel) {
-        setError(`This account is not allowed to sign in as ${panel}`);
-        navigate(found.role === "admin" ? "/admin/login" : "/employee/login", {
-          replace: true,
-        });
-        setLoading(false);
-        return;
-      }
-
-      localStorage.setItem("remember_me", remember ? "1" : "0");
 
       login({
         user: {
-          id: found.email.toLowerCase(),
-          email: found.email,
-          username: found.username || "",
-          name: found.name || "",
+          id: userCred.user.uid,
+          email: userCred.user.email,
+          username: userCred.user.displayName || "",
+          name: userCred.user.displayName || "",
         },
-        token: "demo-token",
-        role: found.role,
+        token: userCred.user.accessToken,
+        role: panel,
       });
 
-      if (from) navigate(from, { replace: true });
-      else
-        navigate(
-          found.role === "admin" ? "/admin/dashboard" : "/employee/dashboard",
-          { replace: true }
-        );
-    } catch (e) {
-      console.error(e);
-      setError("Something went wrong. Please try again.");
+      navigate(panel === "admin" ? "/admin/dashboard" : "/employee/dashboard", {
+        replace: true,
+      });
+    } catch (err) {
+      const code = err?.code || "";
+      if (code.includes("auth/invalid-credential"))
+        return toastOnce("Invalid email or password");
+      if (code.includes("auth/user-not-found"))
+        return toastOnce("No account found with this email");
+      console.error(err);
+      toastOnce("Login failed. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleLogin = async () => {
+    // 🔒 optional: block admin google login
+    if (panel === "admin") {
+      return toastOnce("Admin login via Google is disabled");
+    }
+
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      login({
+        user: {
+          id: user.uid,
+          email: user.email || "",
+          username: user.displayName || "",
+          name: user.displayName || "",
+        },
+        token: user.accessToken,
+        role: "employee",
+      });
+
+      // ✅ redirect (use `from` if you want)
+      navigate(from || "/employee/dashboard", { replace: true });
+    } catch (err) {
+      const code = err?.code || "";
+
+      if (code.includes("auth/popup-closed-by-user"))
+        return toastOnce("Popup closed. Try again.");
+      if (code.includes("auth/popup-blocked"))
+        return toastOnce("Popup blocked by browser. Allow popups and try again.");
+
+      console.error(err);
+      toastOnce("Google sign-in failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Page>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="light"
+      />
       <Shell>
         <Left>
           <Illustration src={copy.leftImg} alt="Workspace" />
@@ -525,7 +551,7 @@ export default function Login() {
           <LeftContent>
             <Brand>
               <BrandIcon>G</BrandIcon>
-              Genzix — My Company
+              Genzix
             </Brand>
 
             <WelcomeHeadline>
@@ -585,9 +611,7 @@ export default function Login() {
                 }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
-              <SuffixIcon onClick={() => setShowPass((v) => !v)}>
-                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-              </SuffixIcon>
+
             </InputGroup>
 
             <Row>
@@ -602,27 +626,34 @@ export default function Login() {
 
               {panel === "employee" && (
                 <Link
-                  to="#"
-                  style={{
-                    fontSize: 13,
-                    color: "#2563eb",
-                    fontWeight: 700,
-                    textDecoration: "none",
-                  }}
+                  to={panel === "admin" ? "/admin/forgot-password" : "/employee/forgot-password"}
+                  style={{ fontSize: 13, color: "#2563eb", fontWeight: 700, textDecoration: "none" }}
                 >
                   Forgot Password?
                 </Link>
               )}
             </Row>
 
-            {error && <ErrorBox>{error}</ErrorBox>}
 
-            <GoogleBtn type="button" onClick={() => setError("Google sign-in not wired yet")}>
-              <GoogleLogo />
-              Continue with Google
-            </GoogleBtn>
 
-            <Divider>OR</Divider>
+            {panel === "employee" && (
+              <>
+                <GoogleBtn
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                >
+                  <GoogleLogo />
+                  Continue with Google
+                </GoogleBtn>
+
+                <Divider>OR</Divider>
+              </>
+            )
+
+            }
+
+
 
             <LoginBtn type="button" onClick={handleLogin} disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
