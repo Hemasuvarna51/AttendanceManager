@@ -27,24 +27,24 @@ const Header = styled.header`
   height: 64px;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   padding: 0 24px;
 
   position: fixed;
   top: 0;
-  left: 0;
+  left: ${({ collapsed }) => (collapsed ? "80px" : "200px")};
   right: 0;
-  
 
-  padding-left: ${({ collapsed }) =>
-    `calc(44px + ${collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_W}px)`};
+  transition: left 0.25s ease;
 
-  z-index: 3000; /* ✅ lower than sidebar */
+  z-index: 3000;
 
   @media (max-width: 979px) {
-    padding-left: 24px;
+    left: 0;
   }
 `;
 const Left = styled.div`
@@ -150,7 +150,7 @@ const Dot = styled.span`
   height: 9px;
   background: #ff3b30;
   border-radius: 999px;
-  box-shado-------+*************w: 0 0 0 2px #fff;
+  box-shadow: 0 0 0 2px #fff;
 `;
 
 /* ===== Profile dropdown styles ===== */
@@ -428,7 +428,7 @@ const LanguageItem = styled.button`
 
 /* ===================== COMPONENT ===================== */
 
-export default function Navbar({ onMenu = () => { } }) {
+export default function Navbar({ onMenu = () => { }, collapsed = false }) {
   const logoutAction = useAuthStore((s) => s.logout);
   const role = useAuthStore((s) => s.role);
   const user = useAuthStore((s) => s.user);
@@ -569,7 +569,7 @@ export default function Navbar({ onMenu = () => { } }) {
   };
 
   return (
-    <Header>
+    <Header collapsed={collapsed}>
       <Left>
         <MenuBtn onClick={onMenu} aria-label="Open menu">
           <Menu size={18} />

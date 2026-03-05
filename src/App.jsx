@@ -13,8 +13,10 @@ const Shell = styled.div`
 `;
 
 const ContentArea = styled.div`
-  margin-left: ${SIDEBAR_W}px;     /* ✅ content starts after sidebar */
-  padding-top: ${NAV_H}px;         /* ✅ content starts below fixed navbar */
+  margin-left: ${({ collapsed }) => (collapsed ? "80px" : "200px")};
+  padding-top: ${NAV_H}px;
+
+  transition: margin-left 0.25s ease;
 
   @media (max-width: 979px) {
     margin-left: 0;
@@ -23,17 +25,31 @@ const ContentArea = styled.div`
 
 const Main = styled.main`
   padding: 18px 24px;
+
+  transition: width 0.25s ease;
 `;
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+const [hover, setHover] = useState(false);
+const sidebarExpand = !collapsed || hover ; 
+const [open, setOpen] = useState(false);
 
   return (
     <Shell>
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <Navbar onMenu={() => setSidebarOpen(true)} />
+      <Sidebar
+        open={open}
+        collapsed={collapsed}
+        onClose={() => setOpen(false)}
+        onHover={setHover}
+      />
+      <Navbar
+      onMenu={() => setOpen(true)}
+      collapsed={! sidebarExpand}
+    />
 
-      <ContentArea>
+      <ContentArea collapsed={! sidebarExpand} >
         <Main>
           <Outlet />
         </Main>
