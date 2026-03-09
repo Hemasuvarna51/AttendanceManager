@@ -6,6 +6,13 @@ import { useAuthStore } from "../../store/auth.store";
 import { useEmployeeStore } from "../../store/employee.store";
 import PayrollRecords from "../../components/PayrollRecords";
 import { Mail, Phone, Building2, IdCard, Pencil, Save, X } from "lucide-react";
+import barGraph from "../../assets/bar-graph.png"
+import present_icon from "../../assets/verified-user.png"
+import remove_icon from "../../assets/remove-user.png"
+import employee_icon from "../../assets/employee.png"
+import upload_icon from "../../assets/upload_icon.png"
+import profile_background from "../../assets/profile_background.png"
+import info_background from "../../assets/info_background.png"
 
 /* ===================== STYLES (UPDATED TO MATCH IMAGE) ===================== */
 
@@ -13,7 +20,6 @@ const Page = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 22px 22px 40px;
-  background: #f3f6fb;
   min-height: calc(100vh - 60px);
 `;
 
@@ -23,11 +29,22 @@ const Shell = styled.div`
 `;
 
 const ProfileCard = styled.div`
-  background: #ffffff;
-  border: 1px solid #e6edf6;
+  background: linear-gradient(to bottom, rgb(216, 216, 216) 0%, rgb(240, 240, 240) 100%);
+  border: 0px solid rgb(170, 170, 170);
   border-radius: 18px;
   padding: 22px 22px 0;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+  position:relative;
+  overflow:hidden;
+  img{
+    z-index:0;
+    position:absolute;
+    width:450px;
+    opacity:0.1;
+    margin-top:-70px;
+    left:330px;
+    background-size:cover;
+  }
 `;
 
 const TopRow = styled.div`
@@ -41,18 +58,19 @@ const IconAction = styled.button`
   height: 44px;
   padding: 0 18px;
   border-radius: 12px;
-  border: 1px solid ${({ $danger }) => ($danger ? "#fecaca" : "#d7e3f3")};
-  background: ${({ $danger }) => ($danger ? "#fff5f5" : "#f8fbff")};
-  color: ${({ $danger }) => ($danger ? "#b42318" : "#1d4ed8")};
+  border:none;
+  background: ${({ $danger }) => ($danger ? "#fff5f5" : "#1e3d91")};
+  color: ${({ $danger }) => ($danger ? "#b42318" : "#ffff")};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 1000;
+  font-weight: 400;
   font-size: 15px;
+  z-index:1;
 
   &:hover {
-    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 14px 30px rgba(30, 44, 78, 0.08);
     transform: translateY(-1px);
   }
   &:active {
@@ -65,7 +83,7 @@ const MainRow = styled.div`
   grid-template-columns: 190px 1fr 380px;
   gap: 26px;
   align-items: center;
-  padding-bottom: 18px;
+  padding: 18px 0px;
 
   @media (max-width: 980px) {
     grid-template-columns: 170px 1fr;
@@ -81,15 +99,15 @@ const AvatarWrap = styled.div`
 `;
 
 const AvatarFrame = styled.div`
-  width: 160px;
-  height: 160px;
+  width: 140px;
+  height: 120px;
   border-radius: 18px;
-  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60%);
-  border: 1px solid #dbeafe;
-  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.12);
+  background: linear-gradient(135deg, #5c5c5c 0%, #f0f0f0 100%);
+  box-shadow: 10px 10px 10px rgb(58, 58, 58,0.2);
   display: grid;
   place-items: center;
-  padding: 10px;
+  padding:4px 6px;
+  z-index:1;
 `;
 
 const Avatar = styled.img`
@@ -97,18 +115,20 @@ const Avatar = styled.img`
   height: 100%;
   border-radius: 14px;
   object-fit: cover;
+  z-index:1;
 `;
 
 const AvatarPlaceholder = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 14px;
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #8a8989 70%);
   display: grid;
   place-items: center;
-  font-size: 52px;
-  font-weight: 1000;
-  color: #1e40af;
+  font-size: 54px;
+  font-style: cursive;
+  color: black;
+  z-index:1;
 `;
 
 const AvatarUploadBtn = styled.label`
@@ -118,12 +138,12 @@ const AvatarUploadBtn = styled.label`
   gap: 8px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #f3f7ff;
-  color: #1d4ed8;
-  border: 1px solid #cfe0ff;
+  background: #133783;
+  color: #ffffff;
   cursor: pointer;
-  font-weight: 900;
-  font-size: 13px;
+  font-weight: 100;
+  font-size: 14px;
+  z-index:1;
 
   &:hover {
     box-shadow: 0 10px 22px rgba(37, 99, 235, 0.14);
@@ -140,20 +160,24 @@ const NameBlock = styled.div`
   flex-direction: column;
   gap: 10px;
   min-width: 0;
+  z-index:1;
 `;
 
 const Name = styled.div`
   font-size: 34px;
-  font-weight: 1000;
+  font-weight: 500;
   color: #0f172a;
+
   letter-spacing: -0.6px;
   line-height: 1.1;
+  z-index:1;
 `;
 
 const Meta = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  z-index:1;
 `;
 
 const Chip = styled.span`
@@ -167,6 +191,7 @@ const Chip = styled.span`
   color: #334155;
   font-weight: 900;
   font-size: 14px;
+  z-index: 1;
 `;
 const PillRow = styled.div`
   display: flex;
@@ -179,14 +204,14 @@ const MiniPill = styled.button`
   height: 38px;
   padding: 0 12px;
   border-radius: 10px;
-  border: 1px solid #e6edf6;
-  background: #f8fafc;
-  color: #0f172a;
+  background: #6b6b6b;
+  color: white;
   font-weight: 900;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  border:none;
   cursor: pointer;
 
   &:hover {
@@ -199,9 +224,8 @@ const RolePill = styled.div`
   height: 38px;
   padding: 0 14px;
   border-radius: 10px;
-  border: 1px solid #e6edf6;
-  background: #f8fafc;
-  color: #0f172a;
+  background: #6b6b6b;
+  color: white;
   font-weight: 900;
   font-size: 14px;
   display: inline-flex;
@@ -215,48 +239,70 @@ const RolePill = styled.div`
 
 const RightInfo = styled.div`
   display: grid;
-  gap: 14px;
-  align-content: start;
+  gap: 16px;
+  padding:20px;
+  position:relative;
+  margin:30px -30px;
+  width:100%;
+  height:90%;
+  border-radius:20px;
+  overflow:hidden;
+  z-index:0.9;
 
   @media (max-width: 980px) {
     grid-column: 1 / -1;
+  }
+
+  img{
+    position:absolute;
+    width:110%;
+    left:-30px;
+    top:50px;
+    opacity:0.6;
+
   }
 `;
 
 const InfoRow = styled.div`
   display: grid;
-  grid-template-columns: 18px 120px 1fr;
+  grid-template-columns: 18px 120px 1fr 0.1fr; 
   align-items: center;
-  gap: 12px;
-
+  position:relative;
+  color: #000000;
   .k {
-    color: #64748b;
-    font-size: 14px;
+    color: #040404;
+    font-size: 16px;
     font-weight: 800;
   }
 
   .v {
     font-weight: 900;
     font-size: 14px;
-    color: #0f172a;
+    color: #000000;
   }
 
   svg {
     opacity: 0.75;
   }
+
+  input::placeholder{
+    color: rgb(133, 133, 133);
+    font-weight:100;
+  }
 `;
 
 const Divider = styled.div`
-  height: 1px;
-  background: #eef2f7;
+  height: 1.5px;
+  background: #ededed8a;
   margin: 0 -22px;
 `;
 
 const Tabs = styled.div`
   display: flex;
-  gap: 26px;
+  gap:50px;
   flex-wrap: wrap;
-  padding: 14px 6px 0;
+  padding: 5px 6px 0;
+  z-index:1;
 `;
 
 const Tab = styled.button`
@@ -266,12 +312,13 @@ const Tab = styled.button`
   padding: 12px 0;
   font-weight: 900;
   font-size: 15px;
-  color: ${({ $active }) => ($active ? "#2563eb" : "#475569")};
+  z-index:1;
+  color: ${({ $active }) => ($active ? "#133783" : "#6f6f6f")};
   border-bottom: 3px solid
-    ${({ $active }) => ($active ? "#2563eb" : "transparent")};
+    ${({ $active }) => ($active ? "#133783" : "transparent")};
 
   &:hover {
-    color: #2563eb;
+    color: #133783;
   }
 `;
 
@@ -307,43 +354,123 @@ const StatLabel = styled.div`
 `;
 
 const Panel = styled.div`
-  background: #ffffff;
-  border: 1px solid #e6edf6;
+  color:white;
   border-radius: 14px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 3px 15px rgba(15, 23, 42, 0.9);
   overflow: hidden;
+  z-index: 1;
+  background: white;
 `;
 
 const PanelHeader = styled.div`
   padding: 16px 18px;
-  border-bottom: 1px solid #eef2f7;
-  font-weight: 1000;
-  font-size: 16px;
-  color: #0f172a;
-  background: #fbfdff;
+  font-weight: 800;
+  letter-spacing:1px;
+  font-size: 17px;
+  color: white;
+  font-style:italic;
+  background: #6b6b6b;
 `;
 
 const PanelBody = styled.div`
-  padding: 18px;
-  display: grid;
-  gap: 18px;
+  .attendance-summary{
+    display:flex;
+    flex-direction:column;
+    margin:3px 2px;
+  }
+
+  .days{
+    display:flex;
+    padding-top:33px;
+    padding-right:20px;
+    justify-content: end;
+    font-style: italic;
+    font-size:17px;
+    color:rgb(255, 255, 255);
+    font-weight:900;
+  }
+
+  .total-days{
+    height:80px;
+    background: linear-gradient(135deg, #5fa2ffd2 0%, #5c44ab 100%);
+    position:relative;
+    border-radius:12px;
+    margin-bottom:1px;
+  }
+
+  .total-days img{
+    position:absolute;
+    top:45px;
+    left:34px;
+    height:35px;
+    width:40px;
+    opacity:0.9;
+  }
+  .present-days{
+    height:80px;
+    background: linear-gradient(135deg, #6cbafed3 0%, #00cdac 100%);
+    position:relative;
+    border-radius:12px;
+    margin-bottom: 1px;
+  }
+  .present-days img{
+    position:absolute;
+    left: 25px;
+    top:37px;
+    height:50px;
+    width:50px;
+    
+  }
+  .absent-days{
+    height:80px;
+    background: linear-gradient(135deg, #fb93ca 0%, #fa465e 100%);
+    position: relative;
+    border-radius:12px;
+    margin-bottom: 1px;
+
+  }
+  .absent-days img{
+    position:absolute;
+    top:37px;
+    left:25px;
+    height:50px;
+    width:50px;
+  }
+  .total-percentage{
+    height:80px;
+    background: linear-gradient(135deg, #676bae 0%, #6f85ff 100%);
+    position:relative;
+    border-radius:12px;
+  }
+
+  .total-percentage img{
+    position:absolute;
+    top:37px;
+    left:30px;
+    height:42px;
+    width:48px;
+    opacity:0.755;
+    margin-bottom:1px;
+  }
+
 `;
 
 const Field = styled.div`
   display: grid;
   gap: 8px;
+  margin:10px 15px;
 
   .label {
-    font-size: 12px;
-    color: #64748b;
+    font-size: 15px;
+    color: #6e6e6e;
     font-weight: 1000;
     text-transform: uppercase;
     letter-spacing: 0.6px;
   }
 
   .value {
-    font-size: 15px;
-    color: #0f172a;
+    font-size: 17px;
+    color: #040e26;
     font-weight: 900;
   }
 `;
@@ -484,16 +611,15 @@ const RecordStatus = styled.span`
 `;
 
 const UploadButton = styled.label`
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content:center;
   height: 44px;
-  padding: 0 16px;
-  background: #2563eb;
+  margin: 15px 210px;
+  background-color: #133783;
   color: white;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 1000;
   font-size: 14px;
   border: 1px solid #1d4ed8;
 
@@ -504,6 +630,11 @@ const UploadButton = styled.label`
 
   input[type="file"] {
     display: none;
+  }
+  
+  img{
+    width:23px;
+    margin:0px 10px; 
   }
 `;
 
@@ -828,6 +959,7 @@ export default function MyProfile() {
       <Shell>
 
         <ProfileCard>
+        <img src={profile_background}/>
           {/* Top right edit button like screenshot */}
           <TopRow>
             {!editing ? (
@@ -858,7 +990,7 @@ export default function MyProfile() {
 
               {editing && (
                 <AvatarUploadBtn>
-                  📷 Change Photo
+                  📷Change Photo
                   <input type="file" accept="image/*" onChange={handlePhotoUpload} />
                 </AvatarUploadBtn>
               )}
@@ -882,6 +1014,7 @@ export default function MyProfile() {
 
             {/* Right side contact details like screenshot */}
             <RightInfo>
+            <img src={info_background}/>
               <InfoRow>
                 <Mail size={16} />
                 <span className="k">Work Email:</span>
@@ -908,7 +1041,7 @@ export default function MyProfile() {
                     placeholder="Enter email"
                   />
                 ) : (
-                  <span className="v">{showVal(form.email)}</span>
+                  <span className="v">- {showVal(form.email)}</span>
                 )}
               </InfoRow>
 
@@ -967,11 +1100,11 @@ export default function MyProfile() {
         </ProfileCard>
         {activeTab === "About" && (
           <ContentGrid>
-            <Panel>
+            <Panel className="">
               <PanelHeader>Personal Information</PanelHeader>
-              <PanelBody>
+              <PanelBody className="">
                 <Field>
-                  <div className="label">Username</div>
+                  <div className="label">1.Username</div>
                   {editing ? (
                     <Input
                       name="username"
@@ -984,7 +1117,7 @@ export default function MyProfile() {
                   )}
                 </Field>
                 <Field>
-                  <div className="label">Full Name</div>
+                  <div className="label">2.Full Name</div>
                   {editing ? (
                     <Input name="name" value={form.name} onChange={onChange} placeholder="Enter full name" />
                   ) : (
@@ -993,7 +1126,7 @@ export default function MyProfile() {
                 </Field>
 
                 <Field>
-                  <div className="label">Employee ID</div>
+                  <div className="label">3.Employee ID</div>
                   {editing ? (
                     <Input name="empId" value={form.empId} onChange={onChange} placeholder="Enter employee ID" />
                   ) : (
@@ -1002,7 +1135,7 @@ export default function MyProfile() {
                 </Field>
 
                 <Field>
-                  <div className="label">Date of Birth</div>
+                  <div className="label">4.Date of Birth</div>
                   {editing ? (
                     <Input name="dob" value={form.dob} onChange={onChange} placeholder="DD MMM (e.g., 05 Jan)" />
                   ) : (
@@ -1011,7 +1144,7 @@ export default function MyProfile() {
                 </Field>
 
                 <Field>
-                  <div className="label">Gender</div>
+                  <div className="label">5.Gender</div>
                   {editing ? (
                     <Select name="gender" value={form.gender} onChange={onChange}>
                       <option value="">Select</option>
@@ -1026,7 +1159,7 @@ export default function MyProfile() {
                 </Field>
 
                 <Field>
-                  <div className="label">Address</div>
+                  <div className="label">6.Address</div>
                   {editing ? (
                     <TextArea name="address" value={form.address} onChange={onChange} placeholder="Enter address" />
                   ) : (
@@ -1034,9 +1167,8 @@ export default function MyProfile() {
                   )}
                 </Field>
               </PanelBody>
-            </Panel>
-
-            <Panel>
+              </Panel>
+              <Panel>
               <PanelHeader>Work Information</PanelHeader>
               <PanelBody>
                 <Field>
@@ -1083,12 +1215,37 @@ export default function MyProfile() {
                   )}
                 </Field>
               </PanelBody>
+
             </Panel>
           </ContentGrid>
         )}
 
         {activeTab === "Attendance" && (
           <ContentGrid>
+          <Panel>
+              <PanelHeader>Attendance Summary</PanelHeader>
+              <PanelBody>
+              <div className="attendance-summary">
+              <div className="total-days">
+                <p className="days">
+                <img src={employee_icon}/>{attendanceSummary.length} - Total Days</p>
+              </div>
+              <div className="present-days">
+                <p className="days">
+                <img src={present_icon}/>
+                {0} - Present Days</p>
+              </div>
+              <div className="absent-days">
+                <p className="days">
+                <img src={remove_icon}/>{0} - Absent Days</p>
+              </div>
+              <div className="total-percentage">
+                <p className="days">
+                <img src={barGraph}/>{0} - Total present</p>
+              </div>
+              </div>
+              </PanelBody>
+            </Panel>
             <Panel>
               <PanelHeader>Daily Attendance</PanelHeader>
               <PanelBody>
@@ -1142,12 +1299,7 @@ export default function MyProfile() {
               </PanelBody>
             </Panel>
 
-            <Panel>
-              <PanelHeader>Summary</PanelHeader>
-              <PanelBody>
-                <div style={{ color: "#374151", fontWeight: 700 }}>{attendanceSummary.length} day(s) recorded</div>
-              </PanelBody>
-            </Panel>
+            
           </ContentGrid>
         )}
 
@@ -1209,7 +1361,8 @@ export default function MyProfile() {
               <PanelHeader>My Documents</PanelHeader>
               <PanelBody>
                 <UploadButton>
-                  📎 Upload Document
+                <img src={upload_icon}/>
+                  Upload Document
                   <input
                     type="file"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
@@ -1372,17 +1525,16 @@ const AttendanceTableWrapper = styled.div`
   }
 
   th {
-    text-align: left;
-    font-size: 13px;
-    color: #374151;
+    font-size: 14px;
+    color: #000b23;
     padding: 12px 8px;
-    border-bottom: 1px solid #eef2f6;
-    font-weight: 800;
+    border-bottom: 1px solid #c4c4c4;
+    font-weight: 900;
   }
 
   td {
     padding: 12px 8px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #cacaca;
     vertical-align: middle;
   }
 `;
