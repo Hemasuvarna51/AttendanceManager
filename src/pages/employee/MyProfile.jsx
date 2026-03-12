@@ -1326,15 +1326,15 @@ export default function MyProfile() {
               <PanelHeader><img src={absence}/>Leave Summary</PanelHeader>
               <Divider/>
               <PanelBody>
-                <StatCard style={{ background: "linear-gradient(135deg, #667eeace 0%, #764ba2c3 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #667eeabe 0%, #764ba2b3 100%)" }}>
                   <StatValue>{leaveData.approved}</StatValue>
                   <StatLabel>Approved Leaves</StatLabel>
                 </StatCard>
-                <StatCard style={{ background: "linear-gradient(135deg, #f193fbd2 0%, #f5576cd0 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #f193fbbc 0%, #f5576cc7 100%)" }}>
                   <StatValue>{leaveData.rejected}</StatValue>
                   <StatLabel>Rejected Leaves</StatLabel>
                 </StatCard>
-                <StatCard style={{ background: "linear-gradient(135deg, #4facfecd 0%, #00f1fed4 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #4facfec7 0%, #00f1fec0 100%)" }}>
                   <StatValue>{leaveData.pending}</StatValue>
                   <StatLabel>Pending Leaves</StatLabel>
                 </StatCard>
