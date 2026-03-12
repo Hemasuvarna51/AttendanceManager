@@ -12,13 +12,22 @@ import remove_icon from "../../assets/remove-user.png"
 import employee_icon from "../../assets/employee.png"
 import upload_icon from "../../assets/upload_icon.png"
 import profile_background from "../../assets/profile_background.png"
-import info_background from "../../assets/info_background.png"
-
+import profile_icon from "../../assets/profile.png"
+import user_icon from "../../assets/user-profile.png"
+import document_icon from "../../assets/verified.png"
+import leave_icon from "../../assets/absent (1).png"
+import attendance_icon from "../../assets/immigration.png"
+import attendance1_icon from "../../assets/available (1).png"
+import payroll_icon from "../../assets/salary-voucher.png"
+import shift_icon from "../../assets/businessman.png"
+import work_icon from "../../assets/work.png"
+import absence from "../../assets/unavailable.png"
 /* ===================== STYLES (UPDATED TO MATCH IMAGE) ===================== */
 
 const Page = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  background: #ffffff;
   padding: 22px 22px 40px;
   min-height: calc(100vh - 60px);
 `;
@@ -29,21 +38,20 @@ const Shell = styled.div`
 `;
 
 const ProfileCard = styled.div`
-  background: linear-gradient(to bottom, rgb(216, 216, 216) 0%, rgb(240, 240, 240) 100%);
-  border: 0px solid rgb(170, 170, 170);
-  border-radius: 18px;
   padding: 22px 22px 0;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
   position:relative;
   overflow:hidden;
+  box-shadow: 1px 1px 3px black;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 3px;
   img{
-    z-index:0;
-    position:absolute;
-    width:450px;
-    opacity:0.1;
-    margin-top:-70px;
-    left:330px;
-    background-size:cover;
+    top: 0;
+    left: 0;
+    opacity: 0.8;
+    height: 100%;
+    width:100%;
+    position: absolute;
   }
 `;
 
@@ -57,7 +65,7 @@ const TopRow = styled.div`
 const IconAction = styled.button`
   height: 44px;
   padding: 0 18px;
-  border-radius: 12px;
+  border-radius: 7px;
   border:none;
   background: ${({ $danger }) => ($danger ? "#fff5f5" : "#1e3d91")};
   color: ${({ $danger }) => ($danger ? "#b42318" : "#ffff")};
@@ -99,11 +107,11 @@ const AvatarWrap = styled.div`
 `;
 
 const AvatarFrame = styled.div`
-  width: 140px;
-  height: 120px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #5c5c5c 0%, #f0f0f0 100%);
-  box-shadow: 10px 10px 10px rgb(58, 58, 58,0.2);
+  width: 160px;
+  height: 130px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, rgba(246, 246, 246, 0.38));
+  box-shadow: 1px 2px 3px rgb(58, 58, 58);
   display: grid;
   place-items: center;
   padding:4px 6px;
@@ -113,7 +121,7 @@ const AvatarFrame = styled.div`
 const Avatar = styled.img`
   width: 100%;
   height: 100%;
-  border-radius: 14px;
+  border-radius:14px;
   object-fit: cover;
   z-index:1;
 `;
@@ -122,12 +130,10 @@ const AvatarPlaceholder = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 14px;
-  background: linear-gradient(135deg, #ffffff 0%, #8a8989 70%);
   display: grid;
   place-items: center;
   font-size: 54px;
-  font-style: cursive;
-  color: black;
+  color: #000000fe;
   z-index:1;
 `;
 
@@ -137,8 +143,7 @@ const AvatarUploadBtn = styled.label`
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 10px;
-  background: #133783;
+  background: #133683cc;
   color: #ffffff;
   cursor: pointer;
   font-weight: 100;
@@ -164,12 +169,12 @@ const NameBlock = styled.div`
 `;
 
 const Name = styled.div`
-  font-size: 34px;
+  font-size: 37px;
   font-weight: 500;
-  color: #0f172a;
-
+  color: #010e38;
   letter-spacing: -0.6px;
-  line-height: 1.1;
+  line-height: 1.2;
+  font-style: italic;
   z-index:1;
 `;
 
@@ -203,8 +208,8 @@ const PillRow = styled.div`
 const MiniPill = styled.button`
   height: 38px;
   padding: 0 12px;
-  border-radius: 10px;
-  background: #6b6b6b;
+  border-radius: 5px;
+  background: #133683d6;
   color: white;
   font-weight: 900;
   font-size: 14px;
@@ -223,18 +228,16 @@ const MiniPill = styled.button`
 const RolePill = styled.div`
   height: 38px;
   padding: 0 14px;
-  border-radius: 10px;
-  background: #6b6b6b;
+  border-radius: 5px;
+  background: #133683d6;
   color: white;
-  font-weight: 900;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.8px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
 
-  svg {
-    opacity: 0.75;
-  }
 `;
 
 const RightInfo = styled.div`
@@ -242,7 +245,7 @@ const RightInfo = styled.div`
   gap: 16px;
   padding:20px;
   position:relative;
-  margin:30px -30px;
+  margin:30px -80px;
   width:100%;
   height:90%;
   border-radius:20px;
@@ -253,14 +256,7 @@ const RightInfo = styled.div`
     grid-column: 1 / -1;
   }
 
-  img{
-    position:absolute;
-    width:110%;
-    left:-30px;
-    top:50px;
-    opacity:0.6;
-
-  }
+  
 `;
 
 const InfoRow = styled.div`
@@ -269,32 +265,38 @@ const InfoRow = styled.div`
   align-items: center;
   position:relative;
   color: #000000;
+  gap:10px;
   .k {
-    color: #040404;
+    color: #000000be;
     font-size: 16px;
     font-weight: 800;
   }
 
   .v {
     font-weight: 900;
-    font-size: 14px;
-    color: #000000;
+    font-size: 15px;
+    color: #000000e8;
   }
 
   svg {
-    opacity: 0.75;
+    opacity: 0.9;
+    color: #111;
   }
 
+  input{
+    width: 100%;
+  }
   input::placeholder{
     color: rgb(133, 133, 133);
     font-weight:100;
+
   }
 `;
 
 const Divider = styled.div`
   height: 1.5px;
-  background: #ededed8a;
-  margin: 0 -22px;
+  background: #d0d0d0;
+  z-index: 2;
 `;
 
 const Tabs = styled.div`
@@ -310,12 +312,13 @@ const Tab = styled.button`
   background: transparent;
   cursor: pointer;
   padding: 12px 0;
-  font-weight: 900;
+  font-weight: 600;
+  font-style: italic;
   font-size: 15px;
   z-index:1;
-  color: ${({ $active }) => ($active ? "#133783" : "#6f6f6f")};
+  color: ${({ $active }) => ($active ? "#160085" : "#010101")};
   border-bottom: 3px solid
-    ${({ $active }) => ($active ? "#133783" : "transparent")};
+    ${({ $active }) => ($active ? "#1e3e84" : "transparent")};
 
   &:hover {
     color: #133783;
@@ -355,28 +358,36 @@ const StatLabel = styled.div`
 
 const Panel = styled.div`
   color:white;
-  border-radius: 14px;
-  box-shadow: 0 3px 15px rgba(15, 23, 42, 0.9);
   overflow: hidden;
   z-index: 1;
-  background: white;
+  box-shadow: 1px 1px 4px black;
+  background: #fff;
+  border-radius:8px;
 `;
 
 const PanelHeader = styled.div`
   padding: 16px 18px;
-  font-weight: 800;
+  display: flex;
+  font-weight: 1000;
   letter-spacing:1px;
-  font-size: 17px;
-  color: white;
+  font-size: 18px;
+  gap: 13px;
+  align-items:center;
+  color: #111;
   font-style:italic;
-  background: #6b6b6b;
+  background: #eaeaeaaa;
+  img{
+    width: 36px;
+  }
+
 `;
 
 const PanelBody = styled.div`
+
+   margin-top: 3px;
   .attendance-summary{
     display:flex;
     flex-direction:column;
-    margin:3px 2px;
   }
 
   .days{
@@ -392,7 +403,7 @@ const PanelBody = styled.div`
 
   .total-days{
     height:80px;
-    background: linear-gradient(135deg, #5fa2ffd2 0%, #5c44ab 100%);
+    background: linear-gradient(135deg, #5fa2ffa8 0%, #5c44abac 100%);
     position:relative;
     border-radius:12px;
     margin-bottom:1px;
@@ -408,7 +419,7 @@ const PanelBody = styled.div`
   }
   .present-days{
     height:80px;
-    background: linear-gradient(135deg, #6cbafed3 0%, #00cdac 100%);
+    background: linear-gradient(135deg, #6cbafea7 0%, #00cdabb1 100%);
     position:relative;
     border-radius:12px;
     margin-bottom: 1px;
@@ -423,7 +434,7 @@ const PanelBody = styled.div`
   }
   .absent-days{
     height:80px;
-    background: linear-gradient(135deg, #fb93ca 0%, #fa465e 100%);
+    background: linear-gradient(135deg, #fb93cabe 0%, #fa465eac 100%);
     position: relative;
     border-radius:12px;
     margin-bottom: 1px;
@@ -438,7 +449,7 @@ const PanelBody = styled.div`
   }
   .total-percentage{
     height:80px;
-    background: linear-gradient(135deg, #676bae 0%, #6f85ff 100%);
+    background: linear-gradient(135deg, #676baea9 0%, #6f85ffb5 100%);
     position:relative;
     border-radius:12px;
   }
@@ -458,38 +469,41 @@ const PanelBody = styled.div`
 const Field = styled.div`
   display: grid;
   gap: 8px;
-  margin:10px 15px;
+  margin:10px 25px;
 
   .label {
-    font-size: 15px;
-    color: #6e6e6e;
-    font-weight: 1000;
+    font-size: 16px;
+    color: #232323;
+    font-weight: 600;
     text-transform: uppercase;
+    font-style: "Insert" sans serif;
     letter-spacing: 0.6px;
   }
 
   .value {
-    font-size: 17px;
-    color: #040e26;
-    font-weight: 900;
+    font-size: 20px;
+    margin-left: 10px;
+    color: #001850;
+    font-weight: 100;
+    letter-spacing: 1px;
+    line-height: 20px;
   }
 `;
 
 const Input = styled.input`
-  width: 100%;
   height: 44px;
   padding: 0 14px;
   border-radius: 10px;
   border: 1px solid #d7e3f3;
   background: #ffffff;
-  font-weight: 800;
+  font-weight: 400;
   font-size: 14px;
   color: #0f172a;
   outline: none;
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: #072564;
+    box-shadow: 0 0 0 4px rgba(56, 109, 232, 0.12);
   }
 `;
 
@@ -500,14 +514,14 @@ const Select = styled.select`
   border-radius: 10px;
   border: 1px solid #d7e3f3;
   background: #ffffff;
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: 400;
+  font-size: 15px;
   color: #0f172a;
   outline: none;
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: #415ed2;
+    box-shadow: 0 0 0 4px rgba(39, 81, 163, 0.12);
   }
 `;
 
@@ -526,8 +540,8 @@ const TextArea = styled.textarea`
   font-family: inherit;
 
   &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: #000000;
+    box-shadow: 0 0 0 4px rgba(11, 18, 33, 0.12);
   }
 `;
 
@@ -1002,7 +1016,7 @@ export default function MyProfile() {
               <PillRow>
                 {/* left small icon pill (like screenshot) */}
                 <MiniPill type="button" title="Employee badge">
-                  <IdCard size={16} /> {showVal(form.empId)}
+                  <IdCard size={20} /> {showVal(form.empId)}
                 </MiniPill>
 
                 {/* role pill (employee) */}
@@ -1014,9 +1028,8 @@ export default function MyProfile() {
 
             {/* Right side contact details like screenshot */}
             <RightInfo>
-            <img src={info_background}/>
               <InfoRow>
-                <Mail size={16} />
+                <Mail size={20} />
                 <span className="k">Work Email:</span>
                 {editing ? (
                   <Input
@@ -1031,7 +1044,7 @@ export default function MyProfile() {
               </InfoRow>
 
               <InfoRow>
-                <Mail size={16} />
+                <Mail size={20} />
                 <span className="k">Email:</span>
                 {editing ? (
                   <Input
@@ -1046,7 +1059,7 @@ export default function MyProfile() {
               </InfoRow>
 
               <InfoRow>
-                <Phone size={16} />
+                <Phone size={20} />
                 <span className="k">Work Phone:</span>
                 {editing ? (
                   <Input
@@ -1061,7 +1074,7 @@ export default function MyProfile() {
               </InfoRow>
 
               <InfoRow>
-                <Phone size={16} />
+                <Phone size={20} />
                 <span className="k">Phone:</span>
                 {editing ? (
                   <Input
@@ -1077,7 +1090,7 @@ export default function MyProfile() {
             </RightInfo>
           </MainRow>
 
-          <Divider />
+          <Divider/>
 
           {/* Tabs row inside the card like screenshot */}
           <Tabs>
@@ -1101,8 +1114,9 @@ export default function MyProfile() {
         {activeTab === "About" && (
           <ContentGrid>
             <Panel className="">
-              <PanelHeader>Personal Information</PanelHeader>
-              <PanelBody className="">
+              <PanelHeader><img className="personal_img" src={user_icon}/>Personal Information</PanelHeader>
+              <Divider/>
+              <PanelBody>
                 <Field>
                   <div className="label">1.Username</div>
                   {editing ? (
@@ -1169,7 +1183,8 @@ export default function MyProfile() {
               </PanelBody>
               </Panel>
               <Panel>
-              <PanelHeader>Work Information</PanelHeader>
+              <PanelHeader><img src={profile_icon}/>Work Information</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <Field>
                   <div className="label">Department</div>
@@ -1223,7 +1238,8 @@ export default function MyProfile() {
         {activeTab === "Attendance" && (
           <ContentGrid>
           <Panel>
-              <PanelHeader>Attendance Summary</PanelHeader>
+              <PanelHeader className="attendance"><img src={attendance1_icon}/>Attendance Summary</PanelHeader>
+              <Divider/>
               <PanelBody>
               <div className="attendance-summary">
               <div className="total-days">
@@ -1247,7 +1263,8 @@ export default function MyProfile() {
               </PanelBody>
             </Panel>
             <Panel>
-              <PanelHeader>Daily Attendance</PanelHeader>
+              <PanelHeader><img src={attendance_icon}/>Daily Attendance</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <AttendanceTableWrapper>
                   <table>
@@ -1306,17 +1323,18 @@ export default function MyProfile() {
         {activeTab === "Leave" && (
           <ContentGrid>
             <Panel>
-              <PanelHeader>Leave Summary</PanelHeader>
+              <PanelHeader><img src={absence}/>Leave Summary</PanelHeader>
+              <Divider/>
               <PanelBody>
-                <StatCard style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #667eeace 0%, #764ba2c3 100%)" }}>
                   <StatValue>{leaveData.approved}</StatValue>
                   <StatLabel>Approved Leaves</StatLabel>
                 </StatCard>
-                <StatCard style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #f193fbd2 0%, #f5576cd0 100%)" }}>
                   <StatValue>{leaveData.rejected}</StatValue>
                   <StatLabel>Rejected Leaves</StatLabel>
                 </StatCard>
-                <StatCard style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
+                <StatCard style={{ background: "linear-gradient(135deg, #4facfecd 0%, #00f1fed4 100%)" }}>
                   <StatValue>{leaveData.pending}</StatValue>
                   <StatLabel>Pending Leaves</StatLabel>
                 </StatCard>
@@ -1324,7 +1342,8 @@ export default function MyProfile() {
             </Panel>
 
             <Panel>
-              <PanelHeader>Leave History</PanelHeader>
+              <PanelHeader><img src={leave_icon}/>Leave History</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <RecordList>
                   {leaveData.records.length === 0 ? (
@@ -1358,7 +1377,8 @@ export default function MyProfile() {
         {activeTab === "Documents" && (
           <ContentGrid>
             <Panel>
-              <PanelHeader>My Documents</PanelHeader>
+              <PanelHeader><img src={document_icon}/>My Documents</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <UploadButton>
                 <img src={upload_icon}/>
@@ -1429,7 +1449,8 @@ export default function MyProfile() {
         {activeTab === "Payroll" && (
           <ContentGrid>
             <Panel>
-              <PanelHeader>Payroll Records</PanelHeader>
+              <PanelHeader><img src={payroll_icon}/>Payroll Records</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <PayrollRecords userId={user?.id} userEmail={user?.email} userName={user?.name} />
               </PanelBody>
@@ -1440,7 +1461,8 @@ export default function MyProfile() {
         {activeTab === "Work Type & Shift" && (
           <ContentGrid>
             <Panel>
-              <PanelHeader>Work Type</PanelHeader>
+              <PanelHeader><img className="work_img" src={work_icon}/>Work Type</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <Field>
                   <div className="label">Employment Type</div>
@@ -1476,7 +1498,8 @@ export default function MyProfile() {
             </Panel>
 
             <Panel>
-              <PanelHeader>Shift Details</PanelHeader>
+              <PanelHeader><img src={shift_icon}/>Shift Details</PanelHeader>
+              <Divider/>
               <PanelBody>
                 <Field>
                   <div className="label">Shift Name</div>

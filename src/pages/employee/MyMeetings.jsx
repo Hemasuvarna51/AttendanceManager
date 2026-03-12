@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
+import schedule_img from "../../assets/schedule.png"
 
 /* ===================== STORAGE HELPERS ===================== */
 
@@ -22,6 +23,11 @@ const isSameDay = (a, b) =>
 
 /* ===================== STYLES ===================== */
 
+const Image = styled.div`
+  img{
+    width: 80px;
+  }
+`
 const Page = styled.div`
   max-width: 1180px;
   margin: 0 auto;
@@ -39,12 +45,13 @@ const Panel = styled.div`
 `;
 
 const Header = styled.div`
-  padding: 18px 18px 12px;
+  padding: 18px 10px 12px;
   border-bottom: 1px solid #eef2f7;
   display: flex;
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
+
 `;
 
 const HeaderLeft = styled.div`
@@ -52,12 +59,13 @@ const HeaderLeft = styled.div`
     margin: 0;
     font-size: 22px;
     letter-spacing: -0.3px;
-    color: #0f172a;
+    color: #001f68;
   }
   p {
-    margin: 4px 0 0;
-    font-size: 13px;
+    margin: 5px 5px 0;
+    font-size: 14.5px;
     color: #64748b;
+    font-style: italic;
   }
 `;
 
@@ -69,12 +77,12 @@ const HeaderRight = styled.div`
 `;
 
 const PillBtn = styled.button`
-  height: 34px;
-  padding: 0 12px;
+  height: 39px;
+  padding: 0 16px;
   border-radius: 10px;
-  border: 1px solid #e6ebf3;
+  border: 1px solid #d3d3d3;
   background: #ffffff;
-  color: #0f172a;
+  color: #021c58;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -86,13 +94,12 @@ const PillBtn = styled.button`
 `;
 
 const PrimaryBtn = styled.button`
-  height: 34px;
+  height: 39px;
   padding: 0 14px;
   border-radius: 10px;
   border: 1px solid #1d4ed8;
-  background: #2563eb;
-  color: #fff;
-  font-weight: 800;
+  background: #133783;
+  color: white;
   font-size: 13px;
   cursor: pointer;
 
@@ -103,7 +110,7 @@ const PrimaryBtn = styled.button`
 `;
 
 const Toolbar = styled.div`
-  padding: 12px 18px;
+  padding: 6px 25px;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -112,16 +119,17 @@ const Toolbar = styled.div`
 
 const Tabs = styled.div`
   display: inline-flex;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
 `;
 
 const Tab = styled.button`
   border: none;
   background: transparent;
-  font-weight: 800;
-  font-size: 13px;
-  color: ${({ $active }) => ($active ? "#0f172a" : "#64748b")};
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 13.5px;
+  color: ${({ $active }) => ($active ? "#0f172a" : "#8f8f8f")};
   padding: 6px 4px;
   cursor: pointer;
   position: relative;
@@ -137,7 +145,7 @@ const Tab = styled.button`
       bottom:-6px;
       height:2px;
       border-radius:2px;
-      background:#2563eb;
+      background: #023fc2;
     }
   `
       : ""}
@@ -159,21 +167,21 @@ const Search = styled.input`
   width: min(320px, 75vw);
   padding: 0 12px;
   border-radius: 10px;
-  border: 1px solid #e6ebf3;
+  border: 1.6px solid #174795e2;
   background: #fff;
   font-weight: 600;
   font-size: 13px;
   color: #0f172a;
 
   &::placeholder {
-    color: #94a3b8;
+    color: #6c819e;
     font-weight: 600;
   }
 
   &:focus {
     outline: none;
     border-color: #b7c6df;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.112);
   }
 `;
 
@@ -278,36 +286,28 @@ const EmptySub = styled.div`
   color: #64748b;
   font-weight: 650;
   font-size: 13px;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  word-spacing: 1px;
   line-height: 1.4;
 `;
 
 const FooterHint = styled.div`
   padding: 10px 18px 14px;
-  color: #94a3b8;
-  font-size: 12px;
+  color: #040404;
+  font-size: 16px;
+  margin-top: 60px;
+  word-spacing: 3px;
+  font-style: italic;
   font-weight: 700;
 `;
 
 /* simple calendar illustration (no external assets) */
 function EmptyIllustration() {
   return (
-    <svg width="180" height="120" viewBox="0 0 180 120" fill="none">
-      <rect x="34" y="24" width="92" height="70" rx="14" fill="#F1F5FF" />
-      <rect x="34" y="24" width="92" height="70" rx="14" stroke="#D9E2FF" />
-      <rect x="46" y="18" width="10" height="16" rx="5" fill="#2563EB" />
-      <rect x="104" y="18" width="10" height="16" rx="5" fill="#2563EB" />
-      <rect x="44" y="40" width="72" height="8" rx="4" fill="#D9E2FF" />
-      <rect x="44" y="54" width="40" height="8" rx="4" fill="#D9E2FF" />
-      <circle cx="126" cy="78" r="22" fill="#FFFFFF" stroke="#D9E2FF" />
-      <path
-        d="M126 66v12l8 6"
-        stroke="#2563EB"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <ellipse cx="86" cy="104" rx="58" ry="8" fill="#EEF2F7" />
-    </svg>
+    <Image>
+      <img src={schedule_img}/>
+    </Image>
   );
 }
 
@@ -382,17 +382,19 @@ export default function MyMeetings() {
             <PrimaryBtn onClick={refresh}>+ Schedule a Meeting</PrimaryBtn>
           </HeaderRight>
         </Header>
-
         <Toolbar>
           <Tabs>
             <Tab $active={tab === "upcoming"} onClick={() => setTab("upcoming")}>
               Upcoming
             </Tab>
+             <Tab $active={tab === "today"} onClick={() => setTab("today")}>
+              Today
+            </Tab>
+            <Tab $active={tab === "completed"} onClick={ () => setTab("completed")}>
+            Completed
+            </Tab>
             <Tab $active={tab === "archived"} onClick={() => setTab("archived")}>
               Archived
-            </Tab>
-            <Tab $active={tab === "today"} onClick={() => setTab("today")}>
-              Today
             </Tab>
           </Tabs>
 
@@ -453,7 +455,7 @@ export default function MyMeetings() {
           </Body>
         )}
 
-        <FooterHint>Showing {myMeetings.length} meeting(s)</FooterHint>
+        <FooterHint>Showing ({myMeetings.length}) meeting's</FooterHint>
      
     </Page>
   );
