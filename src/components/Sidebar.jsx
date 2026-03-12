@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "../store/auth.store";
 import styled from "styled-components";
 import {
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 const SIDEBAR_W = 200;
+const SIDEBAR_COLLAPSED = 80;
 
 const Overlay = styled.div`
   position: fixed;
@@ -25,28 +26,33 @@ const Overlay = styled.div`
   opacity: ${({ $open }) => ($open ? 1 : 0)};
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition: 0.2s ease;
+  z-index: 6500;
 
-  z-index: 6500; /* ✅ above navbar, below sidebar */
   @media (min-width: 980px) {
     display: none;
   }
 `;
 
 const Aside = styled.aside`
-  width: ${({ $collapsed }) => ($collapsed ? "80px" : `${SIDEBAR_W}px`)};
+  width: ${({ $collapsed }) =>
+    $collapsed ? `${SIDEBAR_COLLAPSED}px` : `${SIDEBAR_W}px`};
   height: 100vh;
-  padding: 16px 14px;
+  padding: ${({ $collapsed }) => ($collapsed ? "16px 10px" : "16px 14px")};
   color: #fff;
   background: #20315b;
-
   position: fixed;
   top: 0;
   left: 0;
-
   z-index: 7000;
-  transition: width 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 979px) {
+    width: ${SIDEBAR_W}px;
+    padding: 16px 14px;
     transform: translateX(${({ $open }) => ($open ? "0" : `-${SIDEBAR_W}px`)});
   }
 `;
@@ -58,7 +64,8 @@ const Brand = styled.div`
   padding: 10px 10px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 12px;
-  ${({ $collapsed }) => $collapsed && `justify-content: center;`}
+  justify-content: ${({ $collapsed }) =>
+    $collapsed ? "center" : "flex-start"};
 `;
 
 const Logo = styled.div`
@@ -70,25 +77,27 @@ const Logo = styled.div`
   display: grid;
   place-items: center;
   font-weight: 800;
+  flex-shrink: 0;
 `;
 
 const BrandText = styled.div`
   line-height: 1.1;
-  transition: opacity 0.2s ease;
   opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
-
-  ${Aside}:hover & {
-    opacity: 1;
-  }
+  width: ${({ $collapsed }) => ($collapsed ? "0" : "auto")};
+  overflow: hidden;
+  transition: opacity 0.2s ease, width 0.2s ease;
 
   div:first-child {
     font-weight: 700;
     font-size: 14px;
+    white-space: nowrap;
   }
+
   div:last-child {
     font-size: 12px;
     opacity: 0.7;
     margin-top: 3px;
+    white-space: nowrap;
   }
 `;
 
@@ -111,19 +120,11 @@ const SectionLabel = styled.div`
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.6;
-  padding: 10px 10px 6px;
-  transition: opacity 0.2s ease, height 0.2s ease;
-
-  ${({ $collapsed }) =>
-    $collapsed &&
-    `
-    opacity: 0;
-    height: 0;
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
-  `}
+  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 0.6)};
+  height: ${({ $collapsed }) => ($collapsed ? "0" : "auto")};
+  padding: ${({ $collapsed }) => ($collapsed ? "0" : "10px 10px 6px")};
+  overflow: hidden;
+  transition: opacity 0.2s ease, height 0.2s ease, padding 0.2s ease;
 `;
 
 const Nav = styled.nav`
@@ -131,27 +132,30 @@ const Nav = styled.nav`
   flex-direction: column;
   gap: 6px;
   padding: 4px 6px 10px;
-  color: rgba(255, 255, 255, 0.92); /* ✅ fixed */
+  color: rgba(255, 255, 255, 0.92);
 `;
 
 const Item = styled(NavLink)`
   display: flex;
   align-items: center;
   gap: ${({ $collapsed }) => ($collapsed ? "0" : "12px")};
-  justify-content: ${({ $collapsed }) => ($collapsed ? "center" : "flex-start")};
-
+  justify-content: ${({ $collapsed }) =>
+    $collapsed ? "center" : "flex-start"};
   padding: 12px;
   border-radius: 14px;
   color: rgba(255, 255, 255, 0.86);
   text-decoration: none;
+  transition: background 0.2s ease, gap 0.2s ease;
 
   svg {
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
   }
 
   span {
     display: ${({ $collapsed }) => ($collapsed ? "none" : "inline")};
+    white-space: nowrap;
   }
 
   &:hover {
@@ -165,27 +169,24 @@ const Item = styled(NavLink)`
 
 const Footer = styled.div`
   margin-top: auto;
-  padding: 10px 6px 4px;
+  padding: ${({ $collapsed }) => ($collapsed ? "10px 0 4px" : "10px 6px 4px")};
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-
-  ${({ $collapsed }) =>
-    $collapsed &&
-    `
-    padding: 10px 0 4px;
-  `}
 `;
 
 const FooterBtn = styled.button`
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 12px;
+  justify-content: ${({ $collapsed }) =>
+    $collapsed ? "center" : "flex-start"};
+  gap: ${({ $collapsed }) => ($collapsed ? "0" : "12px")};
+  padding: 12px;
   border-radius: 14px;
   border: 0;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.07);
   color: rgba(255, 255, 255, 0.92);
+  transition: background 0.2s ease, gap 0.2s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.12);
@@ -194,58 +195,37 @@ const FooterBtn = styled.button`
   svg {
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
   }
-`;
 
-/* ✅ FIXED: transient prop */
-const ToggleBtn = styled.button`
-  position: fixed;
-  top: 18px;
-  left: ${({ $collapsed }) => ($collapsed ? "80px" : "200px")};
-  transition: left 0.25s ease;
-
-  background: #20315b;
-  border: none;
-  color: white;
-  cursor: pointer;
-  z-index: 8000;
+  span {
+    display: ${({ $collapsed }) => ($collapsed ? "none" : "inline")};
+    white-space: nowrap;
+  }
 `;
 
 export default function Sidebar({
   open = false,
   collapsed = false,
   onClose = () => {},
-  onHover = () => {},
 }) {
   const role = useAuthStore((s) => s.role);
   const logout = useAuthStore((s) => s.logout);
   const location = useLocation();
 
-  /* ✅ Close sidebar on route change (mobile UX) */
+  const isDesktop = window.innerWidth > 979;
+  const isCollapsed = isDesktop ? collapsed : false;
+
   useEffect(() => {
     if (open) onClose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  const [hover, setHover] = useState(false);
-  const isCollapsed = collapsed && !hover;
-
   return (
     <>
       <Overlay $open={open} onClick={onClose} />
 
-      <Aside
-        $open={open}
-        $collapsed={isCollapsed}
-        onMouseEnter={() => {
-          setHover(true);
-          onHover(true);
-        }}
-        onMouseLeave={() => {
-          setHover(false);
-          onHover(false);
-        }}
-      >
+      <Aside $open={open} $collapsed={isCollapsed}>
         <Brand $collapsed={isCollapsed}>
           <Logo>GZ</Logo>
 
@@ -264,25 +244,38 @@ export default function Sidebar({
             <SectionLabel $collapsed={isCollapsed}>Employee</SectionLabel>
             <Nav>
               <Item $collapsed={isCollapsed} to="/employee/dashboard">
-                <LayoutDashboard /> <span>Dashboard</span>
+                <LayoutDashboard />
+                <span>Dashboard</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/employee/my-profile">
-                <ClipboardCheck /> <span>My Profile</span>
+                <ClipboardCheck />
+                <span>My Profile</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/employee/leave">
-                <Plane /> <span>Leave Request</span>
+                <Plane />
+                <span>Leave Request</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/employee/my-attendance">
-                <FileText /> <span>My Attendance</span>
+                <FileText />
+                <span>My Attendance</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/employee/my-payroll">
-                <Wallet /> <span>Payroll</span>
+                <Wallet />
+                <span>Payroll</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/employee/tasks">
-                <ListTodo /> <span>My Tasks</span>
+                <ListTodo />
+                <span>My Tasks</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/employee/my-meetings">
-                <Calendar /> <span>My Meetings</span>
+                <Calendar />
+                <span>My Meetings</span>
               </Item>
             </Nav>
           </>
@@ -293,25 +286,38 @@ export default function Sidebar({
             <SectionLabel $collapsed={isCollapsed}>Admin</SectionLabel>
             <Nav>
               <Item $collapsed={isCollapsed} to="/admin/dashboard">
-                <LayoutDashboard /> <span>Dashboard</span>
+                <LayoutDashboard />
+                <span>Dashboard</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/admin/employees">
-                <Users /> <span>Employees</span>
+                <Users />
+                <span>Employees</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/admin/leave-approval">
-                <CalendarCheck2 /> <span>Leave Approval</span>
+                <CalendarCheck2 />
+                <span>Leave Approval</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/admin/tasks">
-                <ListTodo /> <span>All Tasks</span>
+                <ListTodo />
+                <span>All Tasks</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/admin/payroll">
-                <FileText /> <span>Payroll</span>
+                <FileText />
+                <span>Payroll</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/admin/meetings">
-                <Calendar /> <span>Meetings</span>
+                <Calendar />
+                <span>Meetings</span>
               </Item>
+
               <Item $collapsed={isCollapsed} to="/admin/reports">
-                <FileText /> <span>Reports</span>
+                <FileText />
+                <span>Reports</span>
               </Item>
             </Nav>
           </>
@@ -319,12 +325,14 @@ export default function Sidebar({
 
         <Footer $collapsed={isCollapsed}>
           <FooterBtn
+            $collapsed={isCollapsed}
             onClick={() => {
               onClose();
               logout?.();
             }}
           >
-            <LogOut /> <span>Logout</span>
+            <LogOut />
+            <span>Logout</span>
           </FooterBtn>
         </Footer>
       </Aside>

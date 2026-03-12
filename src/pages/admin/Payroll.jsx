@@ -51,7 +51,7 @@ const Field = styled.div`
 
 
 const RunButton = styled.button`
-  background: #2f80ed;
+  background: linear-gradient(135deg, #2563eb, #050a15);
   color: white;
   border: none;
   padding: 10px 18px;
@@ -111,7 +111,8 @@ const StyledTable = styled.table`
   }
 
   th {
-    background: #f9fafc;
+    background: #3169b3;
+    color: white;
     font-weight: 600;
   }
 `;
@@ -141,7 +142,7 @@ const CancelButton = styled.button`
 `;
 
 const ApproveButton = styled.button`
-  background: #2f80ed;
+  background: linear-gradient(135deg, #2563eb, #050a15);
   color: white;
   border: none;
   padding: 10px 18px;
@@ -226,7 +227,7 @@ export default function Payroll() {
           <h3>{employees.length}</h3>
         </Card>
 
-        <Card color="#36b9cc">
+        <Card color="#cc4836">
           <p>Total Payroll Cost</p>
           <h3>{totalGross.toFixed(2)}</h3>
         </Card>

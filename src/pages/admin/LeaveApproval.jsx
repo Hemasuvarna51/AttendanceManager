@@ -80,7 +80,7 @@ const PrimaryBtn = styled.button`
   padding: 0 14px;
   border-radius: 12px;
   border: 0;
-  background: #0f172a;
+  background: linear-gradient(135deg, #2563eb, #050a15);
   color: #fff;
   font-weight: 800;
   font-size: 13px;
@@ -102,6 +102,7 @@ const Card = styled.div`
   border: 1px solid #e9ebf2;
   border-radius: 18px;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.05);
+  
 `;
 
 const CardBody = styled.div`
@@ -237,6 +238,8 @@ const KpiGrid = styled.div`
 
 const Kpi = styled(Card)`
   padding: 14px;
+  border-radius: 8px;
+  border-left: 8px solid ${(props) => props.color || "#ddd"} ;
 `;
 
 const KpiTop = styled.div`
@@ -308,16 +311,16 @@ const TH = styled.th`
   text-align: left;
   padding: 12px 12px;
   font-size: 12px;
-  color: #64748b;
+  color: white;
   font-weight: 900;
-  background: #fbfbfd;
+  background:  #3169b3;
   border-bottom: 1px solid #eef2f7;
   white-space: nowrap;
 `;
 
 const TR = styled.tr`
   &:hover td {
-    background: #fafafa;
+    background: #dde8f4;
   }
 `;
 
@@ -771,7 +774,7 @@ export default function AdminLeaveRequests() {
           </TabsRow>
 
           <KpiGrid>
-            <Kpi>
+            <Kpi color="#2563eb">
               <KpiTop>
                 <KpiIcon>
                   <Clock3 size={16} />
@@ -782,7 +785,7 @@ export default function AdminLeaveRequests() {
               <KpiLabel>Total time off</KpiLabel>
             </Kpi>
 
-            <Kpi>
+            <Kpi color="#16a34a">
               <KpiTop>
                 <KpiIcon>
                   <CheckCircle2 size={16} />
@@ -793,7 +796,7 @@ export default function AdminLeaveRequests() {
               <KpiLabel>Approval time off</KpiLabel>
             </Kpi>
 
-            <Kpi>
+            <Kpi  color="#ef4444">
               <KpiTop>
                 <KpiIcon>
                   <XCircle size={16} />
@@ -804,7 +807,7 @@ export default function AdminLeaveRequests() {
               <KpiLabel>Rejected time off</KpiLabel>
             </Kpi>
 
-            <Kpi>
+            <Kpi color="#f59e0b">
               <KpiTop>
                 <KpiIcon>
                   <Clock3 size={16} />

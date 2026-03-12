@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../store/auth.store";
-import { Bell, Globe, Menu, ChevronDown, User, LogOut, Check, Trash2 } from "lucide-react";
+import {
+  Bell,
+  Globe,
+  Menu,
+  ChevronDown,
+  User,
+  LogOut,
+  Check,
+  Trash2,
+} from "lucide-react";
 import { getAttendanceState } from "../utils/attendanceLocalDb";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -16,10 +25,6 @@ const formatHMS = (ms) => {
 
 /* ===================== STYLES ===================== */
 
-
-
-
-
 const SIDEBAR_W = 200;
 const SIDEBAR_COLLAPSED = 80;
 
@@ -27,26 +32,23 @@ const Header = styled.header`
   height: 64px;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 0 24px;
-
   position: fixed;
   top: 0;
-  left: ${({ collapsed }) => (collapsed ? "80px" : "200px")};
+  left: ${({ $collapsed }) =>
+    $collapsed ? `${SIDEBAR_COLLAPSED}px` : `${SIDEBAR_W}px`};
   right: 0;
-
   transition: left 0.25s ease;
-
   z-index: 3000;
 
   @media (max-width: 979px) {
     left: 0;
   }
 `;
+
 const Left = styled.div`
   display: flex;
   align-items: center;
@@ -69,18 +71,21 @@ const MenuBtn = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  margin-left: 20px;
 
   &:hover {
     background: #f6f6f6;
   }
-
 `;
 
 const Brand = styled.div`
   font-weight: 700;
   color: #111;
   font-size: 18px;
-  margin-left: 20px;
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 `;
 
 const Timer = styled.div`
@@ -132,7 +137,6 @@ const IconBtn = styled.button`
   background: #fff;
   cursor: pointer;
   position: relative;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -152,8 +156,6 @@ const Dot = styled.span`
   border-radius: 999px;
   box-shadow: 0 0 0 2px #fff;
 `;
-
-/* ===== Profile dropdown styles ===== */
 
 const ProfileWrap = styled.div`
   position: relative;
@@ -190,6 +192,7 @@ const NameRole = styled.div`
     font-size: 14px;
     font-weight: 700;
   }
+
   .role {
     font-size: 12px;
     color: #666;
@@ -236,11 +239,9 @@ const DropItem = styled.button`
   background: ${({ $danger }) => ($danger ? "#fff1f2" : "#ffffff")};
   color: ${({ $danger }) => ($danger ? "#dc2626" : "#111827")};
   cursor: pointer;
-
   display: flex;
   align-items: center;
   gap: 12px;
-
   font-weight: 700;
   font-size: 14px;
   line-height: 1;
@@ -263,8 +264,6 @@ const Divider = styled.div`
   margin: 8px 10px;
   border-radius: 999px;
 `;
-
-/* ===== Notification Dropdown Styles ===== */
 
 const NotificationDropdown = styled.div`
   position: absolute;
@@ -372,8 +371,6 @@ const EmptyNotif = styled.div`
   font-size: 13px;
 `;
 
-/* ===== Language Dropdown Styles ===== */
-
 const LanguageDropdown = styled.div`
   position: absolute;
   top: calc(100% + 8px);
@@ -426,13 +423,14 @@ const LanguageItem = styled.button`
   }
 `;
 
-/* ===================== COMPONENT ===================== */
-
-export default function Navbar({ onMenu = () => { }, collapsed = false }) {
+export default function Navbar({
+  onMenu = () => {},
+  collapsed = false,
+}) {
   const logoutAction = useAuthStore((s) => s.logout);
   const role = useAuthStore((s) => s.role);
   const user = useAuthStore((s) => s.user);
-  const userId = user?.id; // ✅ IMPORTANT
+  const userId = user?.id;
 
   const isEmployee = role === "employee";
   const isAdmin = role === "admin";
@@ -456,19 +454,63 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
   const [openNotifications, setOpenNotifications] = useState(false);
   const notificationsRef = useRef(null);
   const [notifications, setNotifications] = useState(() => {
-    const stored = localStorage.getItem("notifications");
-    return stored
-      ? JSON.parse(stored)
-      : [
-        { id: 1, title: "Task Assigned", message: "You have been assigned a new task", time: "2 hours ago" },
-        { id: 2, title: "Meeting Scheduled", message: "Team meeting scheduled for tomorrow at 10 AM", time: "1 day ago" },
-        { id: 3, title: "Attendance Approved", message: "Your attendance has been approved", time: "3 days ago" },
+    try {
+      const stored = localStorage.getItem("notifications");
+      return stored
+        ? JSON.parse(stored)
+        : [
+            {
+              id: 1,
+              title: "Task Assigned",
+              message: "You have been assigned a new task",
+              time: "2 hours ago",
+            },
+            {
+              id: 2,
+              title: "Meeting Scheduled",
+              message: "Team meeting scheduled for tomorrow at 10 AM",
+              time: "1 day ago",
+            },
+            {
+              id: 3,
+              title: "Attendance Approved",
+              message: "Your attendance has been approved",
+              time: "3 days ago",
+            },
+          ];
+    } catch {
+      return [
+        {
+          id: 1,
+          title: "Task Assigned",
+          message: "You have been assigned a new task",
+          time: "2 hours ago",
+        },
+        {
+          id: 2,
+          title: "Meeting Scheduled",
+          message: "Team meeting scheduled for tomorrow at 10 AM",
+          time: "1 day ago",
+        },
+        {
+          id: 3,
+          title: "Attendance Approved",
+          message: "Your attendance has been approved",
+          time: "3 days ago",
+        },
       ];
+    }
   });
 
   const [openLanguage, setOpenLanguage] = useState(false);
   const languageRef = useRef(null);
-  const [language, setLanguage] = useState(() => localStorage.getItem("language") || "en");
+  const [language, setLanguage] = useState(() => {
+    try {
+      return localStorage.getItem("language") || "en";
+    } catch {
+      return "en";
+    }
+  });
 
   const languages = [
     { code: "en", name: "English" },
@@ -477,7 +519,6 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
     { code: "fr", name: "French" },
   ];
 
-  // ✅ Refresh attendance when userId changes + when attendance updates
   useEffect(() => {
     if (!userId) {
       setAtt(getAttendanceState(undefined));
@@ -497,20 +538,20 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
     };
   }, [userId]);
 
-  // ✅ Timer depends on user-specific attendance state
   useEffect(() => {
     if (!att.checkedIn || !att.checkInTime) {
       setTimer("00:00:00");
       return;
     }
+
     const start = new Date(att.checkInTime).getTime();
     const tick = () => setTimer(formatHMS(Date.now() - start));
     tick();
+
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [att.checkedIn, att.checkInTime]);
 
-  // ✅ Disable if user not loaded OR already on correct page
   const disabled =
     !userId ||
     (att.checkedIn && location.pathname === CHECKOUT) ||
@@ -520,16 +561,20 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
 
   useEffect(() => {
     const onDocClick = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target))
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
         closeProfile();
+      }
       if (
         notificationsRef.current &&
         !notificationsRef.current.contains(e.target)
-      )
+      ) {
         setOpenNotifications(false);
-      if (languageRef.current && !languageRef.current.contains(e.target))
+      }
+      if (languageRef.current && !languageRef.current.contains(e.target)) {
         setOpenLanguage(false);
+      }
     };
+
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [closeProfile]);
@@ -542,6 +587,7 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
         setOpenLanguage(false);
       }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [closeProfile]);
@@ -565,13 +611,15 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
     setTimer("00:00:00");
     setAtt(getAttendanceState(undefined));
     logoutAction();
-    navigate(role === "admin" ? "/admin/login" : "/employee/login", { replace: true });
+    navigate(role === "admin" ? "/admin/login" : "/employee/login", {
+      replace: true,
+    });
   };
 
   return (
-    <Header collapsed={collapsed}>
+    <Header $collapsed={collapsed}>
       <Left>
-        <MenuBtn onClick={onMenu} aria-label="Open menu">
+        <MenuBtn onClick={onMenu} aria-label="Toggle sidebar">
           <Menu size={18} />
         </MenuBtn>
         <Brand>{isAdmin ? "Admin Panel" : "Employee Portal"}</Brand>
@@ -585,7 +633,7 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
             $out={att.checkedIn}
             disabled={disabled}
             onClick={() => {
-              if (!userId) return; // ✅ safety
+              if (!userId) return;
               navigate(att.checkedIn ? CHECKOUT : CHECKIN);
             }}
             title={!userId ? "Login required" : ""}
@@ -611,7 +659,9 @@ export default function Navbar({ onMenu = () => { }, collapsed = false }) {
                 <NotificationHeader>
                   Notifications
                   {notifications.length > 0 && (
-                    <ClearBtn onClick={clearAllNotifications}>Clear All</ClearBtn>
+                    <ClearBtn onClick={clearAllNotifications}>
+                      Clear All
+                    </ClearBtn>
                   )}
                 </NotificationHeader>
 

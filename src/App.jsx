@@ -6,6 +6,8 @@ import Sidebar from "./components/Sidebar";
 import ScrollToTop from "./components/ScrollToTop";
 
 const NAV_H = 64;
+const SIDEBAR_W = 200;
+const SIDEBAR_COLLAPSED = 80;
 
 const Shell = styled.div`
   min-height: 100vh;
@@ -13,16 +15,18 @@ const Shell = styled.div`
 `;
 
 const ContentArea = styled.div`
-  margin-left: ${({ $collapsed }) => ($collapsed ? "80px" : "200px")};
+  margin-left: ${({ $collapsed, $sidebarHover }) =>
+    $collapsed && !$sidebarHover
+      ? `${SIDEBAR_COLLAPSED}px`
+      : `${SIDEBAR_W}px`};
   padding-top: ${NAV_H}px;
-  transition: margin-left 0.25s ease;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 979px) {
     margin-left: 0;
   }
 `;
 
-// ✅ THIS is the key: this must be the thing that scrolls
 const Main = styled.main`
   height: calc(100vh - ${NAV_H}px);
   overflow-y: auto;
@@ -30,12 +34,20 @@ const Main = styled.main`
 `;
 
 export default function App() {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false); // expanded by default
   const [hover, setHover] = useState(false);
-  const sidebarExpand = !collapsed || hover;
   const [open, setOpen] = useState(false);
 
   const mainRef = useRef(null);
+
+  const handleMenuClick = () => {
+    if (window.innerWidth <= 979) {
+      setOpen(true);
+      return;
+    }
+
+    setCollapsed((prev) => !prev);
+  };
 
   return (
     <Shell>
@@ -43,12 +55,16 @@ export default function App() {
         open={open}
         collapsed={collapsed}
         onClose={() => setOpen(false)}
-        onHover={setHover}
+        
       />
 
-      <Navbar onMenu={() => setOpen(true)} collapsed={!sidebarExpand} />
+      <Navbar
+        onMenu={handleMenuClick}
+        collapsed={collapsed}
+        sidebarHover={hover}
+      />
 
-      <ContentArea $collapsed={!sidebarExpand}>
+      <ContentArea $collapsed={collapsed} $sidebarHover={hover}>
         <Main ref={mainRef}>
           <ScrollToTop containerRef={mainRef} />
           <Outlet />
