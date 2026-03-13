@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { useLeaveStore } from "../../store/leave.store";
 import { useAuthStore } from "../../store/auth.store";
+import  luggage_icon from "../../assets/luggage.png";
+import cross_icon from "../../assets/close.png";
 
 /* ===================== STYLES ===================== */
 
@@ -24,6 +26,7 @@ const TopBar = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
+  margin: 10px;
   flex-wrap: wrap;
 `;
 
@@ -32,30 +35,39 @@ const Heading = styled.div`
     margin: 0;
     font-size: 26px;
     letter-spacing: -0.4px;
-    color: #0f172a;
+    color: #01216b;
+    font-style: italic;
+    margin-top: 5px;
+    margin-left: 5px;
   }
   p {
     margin: 6px 0 0;
     font-size: 14px;
     color: #64748b;
-    line-height: 1.4;
+    font-style: italic;
+    margin-top: 10px;
+    margin-left: 10px;
   }
 `;
 
 const PrimaryBtn = styled.button`
   height: 40px;
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid #bfdbfe;
-  background: #2563eb;
+  border-radius: 8px;
+  background: #133783;
   color: #fff;
-  font-weight: 800;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  word-spacing: 1px;
+  margin-right: 10px;
+  margin-top: 5px;
   font-size: 14px;
   cursor: pointer;
+  border: none;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.18);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.08);
   transition: transform 0.08s ease, box-shadow 0.15s ease;
 
   &:hover {
@@ -73,10 +85,10 @@ const PrimaryBtn = styled.button`
 `;
 
 const Panel = styled.div`
-  margin-top: 14px;
+  margin-top: 10px;
   background: #fff;
   border: 1px solid #e6e8ee;
-  border-radius: 18px;
+  border-radius: 15px;
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.06);
   overflow: hidden;
 `;
@@ -122,7 +134,7 @@ const StatCard = styled.div`
 
   .k {
     font-size: 12px;
-    color: #64748b;
+    color: #33363a;
     font-weight: 800;
     margin-bottom: 2px;
     letter-spacing: 0.2px;
@@ -149,7 +161,7 @@ const Toolbar = styled.div`
 
 const Tabs = styled.div`
   display: inline-flex;
-  gap: 8px;
+  gap: 28px;
   padding: 6px;
   border-radius: 999px;
   background: #f1f5f9;
@@ -162,15 +174,15 @@ const Tab = styled.button`
   padding: 0 14px;
   border-radius: 999px;
   cursor: pointer;
-  font-weight: 900;
+  font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
   color: ${({ $active }) => ($active ? "#fff" : "#0f172a")};
-  background: ${({ $active }) => ($active ? "#2563eb" : "transparent")};
+  background: ${({ $active }) => ($active ? "#133783" : "transparent")};
   transition: background 0.15s ease, color 0.15s ease;
 
   &:hover {
-    background: ${({ $active }) => ($active ? "#2563eb" : "#e9eef9")};
+    background: ${({ $active }) => ($active ? "#133783" : "#e9eef9")};
   }
   &:focus-visible {
     outline: none;
@@ -201,15 +213,16 @@ const Table = styled.table`
     padding: 12px 12px;
     border-bottom: 1px solid #eef2f7;
     text-align: left;
-    font-size: 14px;
-    color: #0f172a;
+    font-size: 14.6px;
+    color: #000000;
   }
 
   th {
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.35px;
-    color: #64748b;
+    word-spacing: 0.8px;
+    color: #33363a;
     background: #f8fafc;
   }
 
@@ -264,10 +277,11 @@ const EmptyState = styled.div`
 const EmptyInner = styled.div`
   text-align: center;
   max-width: 520px;
+  place-items: center;
 
   h3 {
     margin: 10px 0 6px;
-    font-size: 20px;
+    font-size: 17px;
     letter-spacing: -0.2px;
     color: #0f172a;
   }
@@ -276,6 +290,7 @@ const EmptyInner = styled.div`
     margin: 0;
     font-size: 14px;
     color: #64748b;
+    font-style: italic;
   }
 `;
 
@@ -283,12 +298,17 @@ const EmptyIcon = styled.div`
   width: 96px;
   height: 96px;
   border-radius: 24px;
-  background: radial-gradient(circle at 30% 30%, #dbeafe, #f8fafc);
+  background: radial-gradient(circle at 30% 30%, #afd2ff, #f8fafc);
   border: 1px solid #e6e8ee;
   display: grid;
   place-items: center;
   box-shadow: 0 16px 34px rgba(2, 6, 23, 0.08);
   font-size: 34px;
+
+  img{
+    margin-left: 8px;
+    width: 60px;
+  }
 `;
 
 /* ===== Modal (New Leave Request) ===== */
@@ -307,46 +327,51 @@ const Backdrop = styled.div`
 const Modal = styled.div`
   width: min(720px, 96vw);
   background: #fff;
-  border-radius: 18px;
-  border: 1px solid #e6e8ee;
+  border-radius: 5px;
   box-shadow: 0 40px 90px rgba(2, 6, 23, 0.35);
   overflow: hidden;
 `;
 
 const ModalHead = styled.div`
-  padding: 14px 16px;
-  border-bottom: 1px solid #eef2f7;
+  padding: 13px 20px;
+  border-bottom: 1px solid #dddddd;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-style: italic;
   gap: 12px;
+  background: #133683e4;
 
   h3 {
     margin: 0;
-    font-size: 16px;
-    font-weight: 900;
-    color: #0f172a;
-    letter-spacing: -0.2px;
+    font-size: 19px;
+    font-weight: 100;
+    color: #ffffff;
+    letter-spacing: 0.5px;
   }
 `;
 
 const CloseBtn = styled.button`
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid #e6e8ee;
-  background: #fff;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: none;
   cursor: pointer;
-  font-weight: 900;
-  color: #0f172a;
+  font-size: 20px;
+  font-weight: 1000;
+  color: #eeeeee;
+  background: #2e4c8d;
 
-  &:hover {
-    background: #f8fafc;
-  }
 `;
 
 const ModalBody = styled.div`
   padding: 16px;
+  border: 1px solid #dfdfdf;
+  margin: 15px;
+  border-radius: 15px;
 `;
 
 const Form = styled.form`
@@ -365,10 +390,10 @@ const Field = styled.div`
   gap: 6px;
 
   label {
-    font-size: 12px;
-    font-weight: 900;
-    color: #64748b;
-    letter-spacing: 0.25px;
+    font-size: 13px;
+    font-weight: 100;
+    color: #000000;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
   }
 
@@ -376,23 +401,37 @@ const Field = styled.div`
   select,
   textarea {
     padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid #e6e8ee;
+    border-radius: 5px;
+    border: 1px solid #bbbbbb;
     background: #fff;
     font-size: 14px;
-    color: #0f172a;
+    color: #9e9e9e;
     outline: none;
     transition: box-shadow 0.15s ease, border-color 0.15s ease;
 
     &:focus {
-      border-color: #93c5fd;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+      border-color: #133683c9;
+      border-radius: 5px;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
     }
   }
+
+  .reason-text{
+    color: #2a2a2a;
+  }
+
+  .leave-type{
+    color: black;
+  }
+
 
   textarea {
     resize: none;
     min-height: 96px;
+  }
+  option{
+    background: #5b5b5b;
+    color: white;
   }
 `;
 
@@ -410,11 +449,11 @@ const ModalActions = styled.div`
 const GhostBtn = styled.button`
   height: 40px;
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid #e6e8ee;
+  border-radius: 5px;
+  border: 1px solid #bababa;
   background: #fff;
-  color: #0f172a;
-  font-weight: 900;
+  color: #3e3e3e;
+  font-weight: 600;
   cursor: pointer;
 
   &:hover {
@@ -425,11 +464,11 @@ const GhostBtn = styled.button`
 const SaveBtn = styled.button`
   height: 40px;
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid #bfdbfe;
-  background: #2563eb;
+  border-radius: 5px;
+  border: none;
+  background: #133783;
   color: #fff;
-  font-weight: 900;
+  font-weight: 100;
   cursor: pointer;
 
   &:hover {
@@ -543,7 +582,7 @@ export default function RequestLeave() {
           </Heading>
 
           <PrimaryBtn type="button" onClick={() => setShowForm(true)}>
-            ➕ New Leave Request
+            ✛ New Leave
           </PrimaryBtn>
         </TopBar>
 
@@ -631,7 +670,7 @@ export default function RequestLeave() {
             ) : (
               <EmptyState>
                 <EmptyInner>
-                  <EmptyIcon aria-hidden="true">🧳</EmptyIcon>
+                  <EmptyIcon aria-hidden="true"><img src={luggage_icon}/></EmptyIcon>
                   <h3>No Leave Requests Found</h3>
                   <p>You have not submitted any leave requests yet.</p>
                 </EmptyInner>
@@ -647,7 +686,7 @@ export default function RequestLeave() {
               <ModalHead>
                 <h3>New Leave Request</h3>
                 <CloseBtn onClick={handleCancel} aria-label="Close">
-                  ✕
+                ✕
                 </CloseBtn>
               </ModalHead>
 
@@ -699,7 +738,7 @@ export default function RequestLeave() {
 
                   <Field>
                     <label>Leave Type</label>
-                    <select name="leaveType" value={formData.leaveType} onChange={handleChange}>
+                    <select className="leave-type" name="leaveType" value={formData.leaveType} onChange={handleChange}>
                       <option>Casual Leave</option>
                       <option>Sick Leave</option>
                       <option>Earned Leave</option>
@@ -710,7 +749,8 @@ export default function RequestLeave() {
 
                   <Field className={Full.styledComponentId}>
                     <label>Reason</label>
-                    <textarea
+                    <textarea 
+                    className="reason-text"
                       name="reason"
                       rows="4"
                       value={formData.reason}
