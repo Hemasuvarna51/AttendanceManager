@@ -73,6 +73,7 @@ const StatCard = styled.div`
   border-radius: 14px;
   padding: 14px;
   box-shadow: 0 10px 22px rgba(2, 6, 23, 0.05);
+  border-right: 7px solid ${(props) => props.color || "#ddd"};
 
   .k {
     font-size: 12px;
@@ -85,6 +86,10 @@ const StatCard = styled.div`
     font-size: 20px;
     font-weight: 900;
     color: ${({ color }) => color || "#0f172a"};
+  }
+    &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
   }
 `;
 
@@ -229,7 +234,7 @@ export default function EmployeeTasks() {
         </TopBar>
 
         <StatsRow>
-          <StatCard>
+          <StatCard color="#cbbb06ff">
             <div className="k">Total Tasks</div>
             <div className="v">{stats.total}</div>
           </StatCard>

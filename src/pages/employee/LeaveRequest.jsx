@@ -119,6 +119,7 @@ const StatCard = styled.div`
   align-items: center;
   gap: 12px;
   box-shadow: 0 10px 22px rgba(2, 6, 23, 0.05);
+    border-left: 4px solid ${(props) => props.color || "#ddd"};
 
   .icon {
     width: 38px;
@@ -589,7 +590,7 @@ export default function RequestLeave() {
         <Panel>
           <PanelBody>
             <StatRow>
-              <StatCard>
+              <StatCard color="#0b3af5ff">
                 <div className="icon">⏳</div>
                 <div>
                   <div className="k">Pending</div>
@@ -597,7 +598,7 @@ export default function RequestLeave() {
                 </div>
               </StatCard>
 
-              <StatCard>
+              <StatCard color="#16a34a">
                 <div className="icon" style={{ color: "#16a34a" }}>
                   ✅
                 </div>
@@ -607,7 +608,7 @@ export default function RequestLeave() {
                 </div>
               </StatCard>
 
-              <StatCard>
+              <StatCard color="#ef4444">
                 <div className="icon" style={{ color: "#ef4444" }}>
                   ✖
                 </div>

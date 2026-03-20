@@ -105,6 +105,7 @@ const StatCard = styled.div`
   padding: 14px 16px;
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.06);
   min-height: 84px;
+ border-left:7px solid ${(props) => props.color || "#ddd"};
 
   .k {
     color: #64748b;
@@ -121,6 +122,10 @@ const StatCard = styled.div`
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+    &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
   }
 `;
 
@@ -530,7 +535,7 @@ export default function MyAttendance() {
         </TopBar>
 
         <CardGrid>
-          <StatCard>
+          <StatCard color="#0b55f5ff">
             <div className="k">Today Status</div>
             <div className="v">
               <StatusPill $state={today.todayStatus}>
@@ -540,17 +545,17 @@ export default function MyAttendance() {
             </div>
           </StatCard>
 
-          <StatCard>
+          <StatCard color="#16a34a">
             <div className="k">Work Hours Today</div>
             <div className="v">{formatDuration(liveWorkedMs)}</div>
           </StatCard>
 
-          <StatCard>
+          <StatCard color="#dc2626">
             <div className="k">Total Records</div>
             <div className="v">{stats.total}</div>
           </StatCard>
 
-          <StatCard>
+          <StatCard color="#f59e0b">
             <div className="k">Check-Ins</div>
             <div className="v">{stats.ins}</div>
           </StatCard>
