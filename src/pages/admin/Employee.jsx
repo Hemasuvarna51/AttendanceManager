@@ -1,13 +1,9 @@
 import { useState } from "react";
 import styled from "styled-components";
-import { Pencil, Trash2 } from "lucide-react";
+import { Mail, Phone, Pencil, Trash2, Upload } from "lucide-react";
+
 /* ================= Styled Components ================= */
 
-
-const ActionBox = styled.div`
-  display: flex;
-  gap: 8px;
-`;
 const PageContainer = styled.div`
   padding: 30px;
   background: #f4f6f9;
@@ -15,376 +11,511 @@ const PageContainer = styled.div`
 `;
 
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 `;
 
-const Title = styled.h2`
-  margin: 0;
-`;
+const Title = styled.h2``;
 
 const AddButton = styled.button`
-  background: #2f80ed;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
+  padding:10px 16px;
+  border:none;
+  background:#2563eb;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+`;
 
-  &:hover {
-    background: #1f6ed4;
+const EmployeeGrid = styled.div`
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:18px;
+`;
+
+const EmployeeCard = styled.div`
+  background:white;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.08);
+  transition:0.3s;
+  border:1px solid #f1f5f9;
+  position:relative;
+
+  &:hover{
+    transform:translateY(-6px);
+    box-shadow:0 12px 40px rgba(0,0,0,0.15);
   }
 `;
 
-const SummaryCards = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 25px;
+const ProfileSection = styled.div`
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 `;
 
-const Card = styled.div`
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-
-  h3 {
-    margin: 0;
-    font-size: 22px;
-  }
-
-  p {
-    margin: 5px 0 0;
-    color: #777;
-  }
+const ProfileImage = styled.img`
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  border:4px solid #fce7f3;
+  margin-bottom:10px;
 `;
 
-const Controls = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
+const UploadImage = styled.label`
+  margin-top:10px;
+  font-size:12px;
+  color:#2563eb;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:5px;
 `;
 
-const SearchInput = styled.input`
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  width: 250px;
+const HiddenInput = styled.input`
+  display:none;
 `;
 
-const FilterSelect = styled.select`
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+const EmployeeName = styled.h4`
+  margin:5px 0;
 `;
 
-const TableContainer = styled.div`
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+const EmployeeRole = styled.p`
+  font-size:14px;
+  color:#6b7280;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
+const InfoBox = styled.div`
+  background:#f8fafc;
+  padding:15px;
+  border-radius:10px;
+  margin-top:10px;
+`;
 
-  th, td {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
-    text-align: left;
-  }
+const InfoGrid = styled.div`
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:10px;
+`;
 
-  th {
-    background: #f9fafc;
-  }
+const Label = styled.p`
+  font-size:11px;
+  color:#9ca3af;
+`;
+
+const Value = styled.p`
+  font-size:14px;
+  font-weight:600;
+`;
+
+const ContactRow = styled.div`
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:14px;
+  margin-bottom:6px;
+`;
+
+const CardFooter = styled.div`
+  display:flex;
+  justify-content:space-between;
+  margin-top:12px;
 `;
 
 const StatusBadge = styled.span`
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  background: ${(props) =>
-    props.status === "Active" ? "#d4edda" : "#f8d7da"};
-  color: ${(props) =>
-    props.status === "Active" ? "#155724" : "#721c24"};
+  padding:5px 10px;
+  border-radius:20px;
+  background:${props => props.status==="Active" ? "#d4edda" : "#f8d7da"};
 `;
 
-const ActionButton = styled.button`
-  border: none;
-  padding: 6px 10px;
-  margin-right: 8px;
-  border-radius: 6px;
-  cursor: pointer;
+const ActionBox = styled.div`
+  display:flex;
+  gap:8px;
 `;
+
+const EditButton = styled.button`
+  background:#ffeeba;
+  border:none;
+  padding:6px;
+  border-radius:6px;
+`;
+
+const DeleteButton = styled.button`
+  background:#f8d7da;
+  border:none;
+  padding:6px;
+  border-radius:6px;
+`;
+
+const Controls = styled.div`
+  display:flex;
+  gap:10px;
+  margin:20px 0;
+`;
+
+const SearchInput = styled.input`
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+`;
+
+const FilterSelect = styled.select`
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+`;
+
+const SummaryCards = styled.div`
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:20px;
+  margin:20px 0;
+`;
+
+const Card = styled.div`
+  color: black;
+  padding: 18px;
+  border-left:5px solid ${(props) => props.color || "#ddd"};
+  border-radius: 14px;
+  transition: 0.3s;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+
+  h3 {
+    font-size: 26px;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.9;
+  }
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  }
+`;
+/* Modal */
 
 const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 `;
 
 const Modal = styled.div`
-  background: white;
-  width: 500px;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-`;
-
-const ModalTitle = styled.h3`
-  margin-top: 0;
+  background:white;
+  padding:30px;
+  width:420px;
+  border-radius:10px;
 `;
 
 const ModalButtons = styled.div`
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  display:flex;
+  gap:10px;
+  margin-top:20px;
 `;
 
 const CreateButton = styled.button`
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
-  cursor: pointer;
+  background:#28a745;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:6px;
 `;
 
 const CancelButton = styled.button`
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 6px;
-  cursor: pointer;
+  background:#dc3545;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:6px;
 `;
-
-const EditButton = styled(ActionButton)`
-  background: #ffeeba;
-`;
-
-const DeleteButton = styled(ActionButton)`
-  background: #f8d7da;
-`;
-
-
 
 /* ================= Component ================= */
 
-export default function EmployeeList() {
-  const [employees, setEmployees] = useState([
+export default function EmployeeList(){
 
-  ]);
+const [employees,setEmployees]=useState([
+{
+name:"Ramya",
+id:"E222",
+email:"sunkariramya6@gmail.com",
+joiningDate:"2026-03-02",
+status:"Active",
+image:""
+}
+]);
 
-  const [editMode, setEditMode] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [newEmployee, setNewEmployee] = useState({
-    name: "",
-    id: "",
-    email: "",
-    joiningDate: "",
-    status: "Active"
-  });
+const [showModal,setShowModal]=useState(false);
 
-  const handleAddEmployee = () => {
-    if (!newEmployee.name || !newEmployee.id) return;
-    
-    if (editMode) {
-      setEmployees(employees.map(emp => emp.id === newEmployee.id ? newEmployee : emp));
-      
-    }else {
-      setEmployees([...employees, newEmployee]);
-    }
-    
+const [newEmployee,setNewEmployee]=useState({
+name:"",
+id:"",
+email:"",
+joiningDate:"",
+status:"Active",
+image:""
+});
 
-    setNewEmployee({
-      name: "",
-      id: "",
-      email: "",
-      joiningDate: "",
-      status: "Active"
-    });
-    
-    setEditMode(false);
-    setShowModal(false);
-  };
+const handleImageUpload=(e)=>{
+const file=e.target.files[0];
 
-  const handleEdit = (emp) => {
-  setNewEmployee(emp);        // fill modal with employee data
-  setEditMode(true);          // enable edit mode
-  setShowModal(true);         // open modal
+if(file){
+const reader=new FileReader();
+
+reader.onloadend=()=>{
+setNewEmployee({...newEmployee,image:reader.result});
 };
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
 
-  const filteredEmployees = employees.filter(emp =>
-    emp.name.toLowerCase().includes(search.toLowerCase()) &&
-    (filterStatus === "All" || emp.status === filterStatus)
-  );
+reader.readAsDataURL(file);
+}
+};
 
-  const totalEmployees = employees.length;
-  const activeEmployees = employees.filter(emp => emp.status === "Active").length;
-  const inactiveEmployees = employees.filter(emp => emp.status === "Inactive").length;
+const handleAddEmployee=()=>{
+if(!newEmployee.name || !newEmployee.id) return;
 
-  const handleDelete = (id) => {
-    setEmployees(employees.filter(emp => emp.id !== id));
-  };
+setEmployees([...employees,newEmployee]);
 
-  return (
-    <PageContainer>
-      <Header>
-        <Title>Employees</Title>
-        <AddButton onClick={() => setShowModal(true)}>+ Add New Employee</AddButton>
-      </Header>
-      {showModal && (
-        <Overlay>
-          <Modal>
-            <ModalTitle>Add Employee</ModalTitle>
+setNewEmployee({
+name:"",
+id:"",
+email:"",
+joiningDate:"",
+status:"Active",
+image:""
+});
 
-            <Controls>
-              <SearchInput
-                placeholder="Employee ID"
-                value={newEmployee.id}
-                onChange={(e) =>
-                  setNewEmployee({ ...newEmployee, id: e.target.value })
-                }
-              />
+setShowModal(false);
+};
 
-              <SearchInput
-                placeholder="Name"
-                value={newEmployee.name}
-                onChange={(e) =>
-                  setNewEmployee({ ...newEmployee, name: e.target.value })
-                }
-              />
-            </Controls>
+const handleDelete=(id)=>{
+setEmployees(employees.filter(emp=>emp.id!==id));
+};
 
-            <Controls>
-              <SearchInput
-                placeholder="Email"
-                value={newEmployee.email}
-                onChange={(e) =>
-                  setNewEmployee({ ...newEmployee, email: e.target.value })
-                }
-              />
+const [search,setSearch]=useState("");
+const [filterStatus,setFilterStatus]=useState("All");
 
-              <SearchInput
-                type="date"
-                value={newEmployee.joiningDate}
-                onChange={(e) =>
-                  setNewEmployee({ ...newEmployee, joiningDate: e.target.value })
-                }
-              />
-            </Controls>
+const filteredEmployees=employees.filter(emp =>
+emp.name.toLowerCase().includes(search.toLowerCase()) &&
+(filterStatus==="All" || emp.status===filterStatus)
+);
 
-            <FilterSelect
-              value={newEmployee.status}
-              onChange={(e) =>
-                setNewEmployee({ ...newEmployee, status: e.target.value })
-              }
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </FilterSelect>
+const totalEmployees=employees.length;
+const activeEmployees=employees.filter(e=>e.status==="Active").length;
+const inactiveEmployees=employees.filter(e=>e.status==="Inactive").length;
 
-            <ModalButtons>
-              <CreateButton onClick={() => {
-                handleAddEmployee();
-                setShowModal(false);
-              }}>
-                Create
-              </CreateButton>
+return(
 
-              <CancelButton onClick={() => setShowModal(false)}>
-                Cancel
-              </CancelButton>
-            </ModalButtons>
-          </Modal>
-        </Overlay>
-      )}
-      <SummaryCards>
-        <Card>
-          <h3>{totalEmployees}</h3>
-          <p>Total Employees</p>
-        </Card>
-        <Card>
-          <h3>{activeEmployees}</h3>
-          <p>Active Employees</p>
-        </Card>
-        <Card>
-          <h3>{inactiveEmployees}</h3>
-          <p>Inactive Employees</p>
-        </Card>
-      </SummaryCards>
+<PageContainer>
 
-      <Controls>
-        <SearchInput
-          placeholder="Search employee..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+<Header>
+<Title>Employees</Title>
+<AddButton onClick={()=>setShowModal(true)}>+ Add Employee</AddButton>
+</Header>
 
-        <FilterSelect
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="All">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </FilterSelect>
-      </Controls>
+{showModal && (
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Joining Date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+<Overlay>
 
-          <tbody>
-            {filteredEmployees.map(emp => (
-              <tr key={emp.id}>
-                <td>{emp.name}</td>
-                <td>{emp.id}</td>
-                <td>{emp.email}</td>
-                <td>{emp.joiningDate}</td>
-                <td>
-                  <StatusBadge status={emp.status}>
-                    {emp.status}
-                  </StatusBadge>
-                </td>
-                <td>
-                  <ActionBox>
-                    <EditButton onClick={() => handleEdit(emp)}>
-                      <Pencil size={14} />
-                    </EditButton>
-                    <DeleteButton onClick={() => handleDelete(emp.id)}>
-                      <Trash2 size={14} />
-                    </DeleteButton>
-                  </ActionBox>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </TableContainer>
-    </PageContainer>
-  );
+<Modal>
+
+<h3>Add Employee</h3>
+
+<ProfileSection>
+
+<ProfileImage
+src={newEmployee.image || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+/>
+
+<UploadImage>
+<Upload size={14}/> Upload Photo
+<HiddenInput type="file" onChange={handleImageUpload}/>
+</UploadImage>
+
+</ProfileSection>
+
+<Controls>
+<SearchInput placeholder="ID"
+value={newEmployee.id}
+onChange={e=>setNewEmployee({...newEmployee,id:e.target.value})}
+/>
+
+<SearchInput placeholder="Name"
+value={newEmployee.name}
+onChange={e=>setNewEmployee({...newEmployee,name:e.target.value})}
+/>
+
+<SearchInput placeholder="Role"
+value={newEmployee.role}
+onChange={e=>setNewEmployee({...newEmployee,role:e.target.value})}
+/>
+</Controls>
+
+<Controls>
+
+<SearchInput placeholder="Email"
+value={newEmployee.email}
+onChange={e=>setNewEmployee({...newEmployee,email:e.target.value})}
+/>
+
+<SearchInput type="date"
+value={newEmployee.joiningDate}
+onChange={e=>setNewEmployee({...newEmployee,joiningDate:e.target.value})}
+/>
+
+</Controls>
+
+<FilterSelect
+value={newEmployee.status}
+onChange={e=>setNewEmployee({...newEmployee,status:e.target.value})}
+>
+<option>Active</option>
+<option>Inactive</option>
+</FilterSelect>
+
+<ModalButtons>
+
+<CreateButton onClick={handleAddEmployee}>
+Create
+</CreateButton>
+
+<CancelButton onClick={()=>setShowModal(false)}>
+Cancel
+</CancelButton>
+
+</ModalButtons>
+
+</Modal>
+
+</Overlay>
+
+)}
+
+<SummaryCards>
+
+<Card  color="#0777f0ff">
+<h3>👥 {totalEmployees}</h3>
+<p>Total Employees</p>
+</Card>
+
+<Card color="#049924c5">
+<h3>🟢 {activeEmployees}</h3>
+<p>Active</p>
+</Card>
+
+<Card color="#cc4836">
+<h3>🔴 {inactiveEmployees}</h3>
+<p>Inactive</p>
+</Card>
+
+</SummaryCards>
+
+<Controls>
+
+<SearchInput
+placeholder="Search employee..."
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+/>
+
+<FilterSelect
+value={filterStatus}
+onChange={(e)=>setFilterStatus(e.target.value)}
+>
+<option>All</option>
+<option>Active</option>
+<option>Inactive</option>
+</FilterSelect>
+
+</Controls>
+
+<EmployeeGrid>
+
+{filteredEmployees.map(emp=>(
+
+<EmployeeCard key={emp.id}>
+
+<ProfileSection>
+
+<ProfileImage
+src={emp.image || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+/>
+
+<EmployeeName>{emp.name}</EmployeeName>
+
+<EmployeeRole>Role</EmployeeRole>
+<value>{emp.role || "Not assigned"}</value>
+
+</ProfileSection>
+
+<InfoBox>
+
+<InfoGrid>
+
+<div>
+<Label>ID</Label>
+<Value>{emp.id}</Value>
+</div>
+
+<div>
+<Label>Joined</Label>
+<Value>{emp.joiningDate}</Value>
+</div>
+
+</InfoGrid>
+
+<ContactRow>
+<Mail size={14}/> {emp.email}
+</ContactRow>
+
+<ContactRow>
+<Phone size={14}/> +91 9876543210
+</ContactRow>
+
+</InfoBox>
+
+<CardFooter>
+
+<StatusBadge status={emp.status}>
+{emp.status}
+</StatusBadge>
+
+<ActionBox>
+<EditButton onClick={()=>handleEdit(emp.id)}>
+  <Pencil size={14}/>
+</EditButton>
+<DeleteButton onClick={()=>handleDelete(emp.id)}>
+<Trash2 size={14}/>
+</DeleteButton>
+
+</ActionBox>
+
+</CardFooter>
+
+</EmployeeCard>
+
+))}
+
+</EmployeeGrid>
+
+</PageContainer>
+
+);
+
 }
