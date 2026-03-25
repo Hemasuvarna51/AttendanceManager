@@ -19,7 +19,7 @@ const HeaderRow = styled.div`
 
   button {
     padding: 10px 16px;
-    background-color: #256aeb;
+    background:linear-gradient(135deg, #2563eb, #050a15);
     border: none;
     color: white;
     border-radius: 6px;
@@ -117,7 +117,8 @@ const Table = styled.table`
 
   th {
     border-bottom: 2px solid #ddd;
-    background-color: #f2f2f2;
+    background: #3169b3;
+    color: white;
   }
 
   td button {
@@ -126,12 +127,10 @@ const Table = styled.table`
     border: none;
     cursor: pointer;
     color: black;
-   
   }
 
   td .editBtn {
-  color: black;
-   
+    color: black;
     margin-right: 8px;
   }
 
@@ -139,6 +138,11 @@ const Table = styled.table`
     padding: 6px 8px;
     border-radius: 6px;
     border: 1px solid #ddd;
+  }
+
+  tbody tr:hover td {
+    background: #ced6ee;
+    
   }
 `;
 

@@ -6,6 +6,8 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { signOut } from "firebase/auth";
+import { authorizeEmployeeAccess, bindEmployeeToUser } from "../../utils/employeeAuth";
 /* =========================
    LAYOUT (matches Login)
 ========================= */
@@ -401,22 +403,48 @@ export default function SignUp() {
       const cleanEmail = email.trim().toLowerCase();
       const cleanUsername = username.trim();
 
-      // ✅ Create user in Firebase Auth
+      const access = await authorizeEmployeeAccess(cleanEmail);
+
+      if (!access.ok) {
+        return toastOnce(access.reason);
+      }
+
+      const employee = access.employee;
+
+      if (employee.uid) {
+        return toastOnce("Account already created. Please login.");
+      }
+
       const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
 
-      // ✅ Set displayName (optional but useful)
-      await updateProfile(userCred.user, { displayName: cleanUsername });
+      await updateProfile(userCred.user, {
+        displayName: cleanUsername || employee.name || "",
+      });
 
-      toast.success("Account created! Please login.", { autoClose: 2000 });
+      await bindEmployeeToUser(employee.docId, userCred.user, "password");
 
-      navigate(panel === "admin" ? "/admin/login" : "/employee/login", { replace: true });
+      await signOut(auth);
+
+      toast.success("Account created successfully. Please login.", {
+        autoClose: 2000,
+      });
+
+      navigate("/employee/login", { replace: true });
     } catch (err) {
       const code = err?.code || "";
 
-      if (code.includes("auth/email-already-in-use")) return toastOnce("Email already in use");
-      if (code.includes("auth/weak-password")) return toastOnce("Password is too weak");
-      if (code.includes("auth/invalid-email")) return toastOnce("Invalid email");
-      if (code.includes("auth/network-request-failed")) return toastOnce("Network error. Check internet");
+      if (code.includes("auth/email-already-in-use")) {
+        return toastOnce("Account already exists. Please login.");
+      }
+      if (code.includes("auth/weak-password")) {
+        return toastOnce("Password is too weak");
+      }
+      if (code.includes("auth/invalid-email")) {
+        return toastOnce("Invalid email");
+      }
+      if (code.includes("auth/network-request-failed")) {
+        return toastOnce("Network error. Check internet");
+      }
 
       console.error(err);
       toastOnce("Signup failed. Try again.");
@@ -528,7 +556,7 @@ export default function SignUp() {
                   onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
 
-              
+
               </InputWrap>
             </Field>
 
@@ -548,7 +576,7 @@ export default function SignUp() {
                   }}
                   onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
-              
+
               </InputWrap>
             </Field>
 

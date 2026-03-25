@@ -1,10 +1,9 @@
-// src/routes.jsx
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
 import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
+import SignUp from "./pages/auth/SignUp";
 import Unauthorized from "./pages/auth/Unauthorized";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 
@@ -13,7 +12,6 @@ import EmployeeShell from "./layout/EmployeeShell";
 
 import { useAuthStore } from "./store/auth.store";
 
-// ✅ import your pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import Tasks from "./pages/admin/Tasks";
 import Employee from "./pages/admin/Employee";
@@ -38,10 +36,7 @@ function HomeRedirect() {
   const token = useAuthStore((s) => s.token);
   const role = useAuthStore((s) => s.role);
 
-  // if not logged in
   if (!token) return <Navigate to="/employee/login" replace />;
-
-  // if role missing (rare)
   if (!role) return <Navigate to="/employee/login" replace />;
 
   return role === "admin"
@@ -55,7 +50,8 @@ export const router = createBrowserRouter([
   { path: "/admin/login", element: <Login /> },
   { path: "/employee/login", element: <Login /> },
 
-  { path: "/signup", element: <Signup /> },
+  { path: "/signup", element: <SignUp /> },
+
   { path: "/unauthorized", element: <Unauthorized /> },
 
   { path: "/employee/forgot-password", element: <ForgotPassword /> },

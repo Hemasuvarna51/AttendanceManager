@@ -4,9 +4,17 @@ import { useAuthStore } from "../../store/auth.store";
 import styled from "styled-components";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  deleteUser,
+  signOut,
+} from "firebase/auth";
 import { auth, googleProvider } from "../../firebase";
-
+import {
+  authorizeEmployeeAccess,
+  bindEmployeeToUser,
+} from "../../utils/employeeAuth";
 import {
   Lock,
   Mail,
@@ -32,7 +40,6 @@ const Page = styled.div`
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   overflow: hidden;
 
-  /* Blurred background layer */
   &::before {
     content: "";
     position: absolute;
@@ -181,7 +188,7 @@ const Right = styled.div`
 const FormBox = styled.div`
   width: 100%;
   max-width: 380px;
-  margin: 0 auto;          /* ✅ center whole form */
+  margin: 0 auto;
   --fieldW: 100%;
 
   @media (max-width: 500px) {
@@ -205,8 +212,7 @@ const Headline = styled.h2`
   font-size: 28px;
   font-weight: 800;
   color: #1e293b;
-  margin: 0 0 8px 0; 
-  margin-right: 8px; 
+  margin: 0 0 8px 0;
 `;
 
 const SubText = styled.p`
@@ -282,10 +288,8 @@ const Check = styled.label`
   }
 `;
 
-
-
 const GoogleBtn = styled.button`
-   width: 100%;             /* ✅ match field width */
+  width: 100%;
   margin: 0 auto;
   padding: 12px;
   background: white;
@@ -302,6 +306,11 @@ const GoogleBtn = styled.button`
 
   &:hover {
     background: #f8fafc;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 `;
 
@@ -333,7 +342,7 @@ const Divider = styled.div`
 `;
 
 const LoginBtn = styled.button`
-  width: 100%;             /* ✅ match field width */
+  width: 100%;
   margin: 0 auto;
   padding: 16px;
   background: linear-gradient(to right, #1e3a8a, #2563eb);
@@ -379,6 +388,7 @@ const RegisterPrompt = styled.p`
   text-align: center;
   font-size: 14px;
   color: #64748b;
+  margin-bottom: 10px;
 
   a {
     color: #2563eb;
@@ -390,6 +400,7 @@ const RegisterPrompt = styled.p`
     }
   }
 `;
+
 const SuffixIcon = styled.div`
   position: absolute;
   right: 14px;
@@ -400,6 +411,7 @@ const SuffixIcon = styled.div`
   display: flex;
   align-items: center;
 `;
+
 /* =========================
    COMPONENT
 ========================= */
@@ -415,11 +427,9 @@ export default function Login() {
   const [showPass, setShowPass] = useState(false);
 
   const [remember, setRemember] = useState(true);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const toastOnce = (msg) =>
-    toast.error(msg, { toastId: msg });
 
+  const toastOnce = (msg) => toast.error(msg, { toastId: msg });
 
   const panel = location.pathname.startsWith("/admin") ? "admin" : "employee";
   const from = location.state?.from?.pathname;
@@ -454,56 +464,53 @@ export default function Login() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // ✅ Admin route should accept ONLY the admin email
     if (panel === "admin" && cleanEmail !== ADMIN_EMAIL) {
       return toastOnce("Not authorized as admin");
     }
 
     setLoading(true);
+
     try {
       const userCred = await signInWithEmailAndPassword(
         auth,
         cleanEmail,
         password
       );
+      const user = userCred.user;
 
-      login({
-        user: {
-          id: userCred.user.uid,
-          email: userCred.user.email,
-          username: userCred.user.displayName || "",
-          name: userCred.user.displayName || "",
-        },
-        token: userCred.user.accessToken,
-        role: panel,
-      });
+      if (panel === "employee") {
+        const access = await authorizeEmployeeAccess(cleanEmail);
 
-      navigate(panel === "admin" ? "/admin/dashboard" : "/employee/dashboard", {
-        replace: true,
-      });
-    } catch (err) {
-      const code = err?.code || "";
-      if (code.includes("auth/invalid-credential"))
-        return toastOnce("Invalid email or password");
-      if (code.includes("auth/user-not-found"))
-        return toastOnce("No account found with this email");
-      console.error(err);
-      toastOnce("Login failed. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (!access.ok) {
+          await signOut(auth);
+          return toastOnce(access.reason);
+        }
 
-  const handleGoogleLogin = async () => {
-    // 🔒 optional: block admin google login
-    if (panel === "admin") {
-      return toastOnce("Admin login via Google is disabled");
-    }
+        const employee = access.employee;
 
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
+        await bindEmployeeToUser(employee.docId, user, "password");
+
+        login({
+          user: {
+            id: user.uid,
+            uid: user.uid,
+            email: user.email || "",
+            username: user.displayName || employee.name || "",
+            name: employee.name || user.displayName || "",
+            employeeId: employee.id || "",
+            role: "employee",
+            employeeDocId: employee.docId,
+            status: employee.status || "",
+            phone: employee.phone || "",
+            image: employee.image || "",
+          },
+          token: user.accessToken,
+          role: "employee",
+        });
+
+        navigate("/employee/dashboard", { replace: true });
+        return;
+      }
 
       login({
         user: {
@@ -513,18 +520,97 @@ export default function Login() {
           name: user.displayName || "",
         },
         token: user.accessToken,
+        role: "admin",
+      });
+
+      navigate("/admin/dashboard", { replace: true });
+    } catch (err) {
+      const code = err?.code || "";
+
+      if (code.includes("auth/invalid-credential")) {
+        return toastOnce("Invalid email or password");
+      }
+      if (code.includes("auth/user-not-found")) {
+        return toastOnce("No account found with this email");
+      }
+
+      console.error(err);
+      toastOnce("Login failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    if (panel === "admin") {
+      return toastOnce("Admin login via Google is disabled");
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const cleanEmail = (user.email || "").trim().toLowerCase();
+
+      if (!cleanEmail) {
+        await signOut(auth);
+        return toastOnce("Google account email not available");
+      }
+
+      const access = await authorizeEmployeeAccess(cleanEmail);
+
+      if (!access.ok) {
+        const isNewAccount =
+          user.metadata?.creationTime &&
+          user.metadata?.lastSignInTime &&
+          user.metadata.creationTime === user.metadata.lastSignInTime;
+
+        if (isNewAccount) {
+          try {
+            await deleteUser(user);
+          } catch (e) {
+            await signOut(auth);
+          }
+        } else {
+          await signOut(auth);
+        }
+
+        return toastOnce(access.reason);
+      }
+
+      const employee = access.employee;
+
+      await bindEmployeeToUser(employee.docId, user, "google");
+
+      login({
+        user: {
+          id: user.uid,
+          uid: user.uid,
+          email: user.email || "",
+          username: user.displayName || employee.name || "",
+          name: employee.name || user.displayName || "",
+          employeeId: employee.id || "",
+          role: "employee",
+          employeeDocId: employee.docId,
+          status: employee.status || "",
+          phone: employee.phone || "",
+          image: employee.image || user.photoURL || "",
+        },
+        token: user.accessToken,
         role: "employee",
       });
 
-      // ✅ redirect (use `from` if you want)
       navigate(from || "/employee/dashboard", { replace: true });
     } catch (err) {
       const code = err?.code || "";
 
-      if (code.includes("auth/popup-closed-by-user"))
+      if (code.includes("auth/popup-closed-by-user")) {
         return toastOnce("Popup closed. Try again.");
-      if (code.includes("auth/popup-blocked"))
+      }
+      if (code.includes("auth/popup-blocked")) {
         return toastOnce("Popup blocked by browser. Allow popups and try again.");
+      }
 
       console.error(err);
       toastOnce("Google sign-in failed. Try again.");
@@ -532,9 +618,9 @@ export default function Login() {
       setLoading(false);
     }
   };
+
   return (
     <Page>
-
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -544,6 +630,7 @@ export default function Login() {
         pauseOnHover
         theme="light"
       />
+
       <Shell>
         <Left>
           <Illustration src={copy.leftImg} alt="Workspace" />
@@ -589,10 +676,7 @@ export default function Login() {
                 type="email"
                 placeholder="Email address"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError("");
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </InputGroup>
@@ -605,13 +689,12 @@ export default function Login() {
                 type={showPass ? "text" : "password"}
                 placeholder="Password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError("");
-                }}
+                onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
-
+              <SuffixIcon onClick={() => setShowPass((prev) => !prev)}>
+                {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+              </SuffixIcon>
             </InputGroup>
 
             <Row>
@@ -626,15 +709,18 @@ export default function Login() {
 
               {panel === "employee" && (
                 <Link
-                  to={panel === "admin" ? "/admin/forgot-password" : "/employee/forgot-password"}
-                  style={{ fontSize: 13, color: "#2563eb", fontWeight: 700, textDecoration: "none" }}
+                  to="/employee/forgot-password"
+                  style={{
+                    fontSize: 13,
+                    color: "#2563eb",
+                    fontWeight: 700,
+                    textDecoration: "none",
+                  }}
                 >
                   Forgot Password?
                 </Link>
               )}
             </Row>
-
-
 
             {panel === "employee" && (
               <>
@@ -649,11 +735,13 @@ export default function Login() {
 
                 <Divider>OR</Divider>
               </>
-            )
+            )}
 
-            }
-
-
+            {panel === "employee" && (
+              <RegisterPrompt>
+                Don't have an account? <Link to="/signup">Register here</Link>
+              </RegisterPrompt>
+            )}
 
             <LoginBtn type="button" onClick={handleLogin} disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
@@ -661,12 +749,6 @@ export default function Login() {
                 <ArrowRight size={18} />
               </ArrowCircle>
             </LoginBtn>
-
-            {panel === "employee" && (
-              <RegisterPrompt>
-                Don&apos;t have an account? <Link to="/signup">Register here →</Link>
-              </RegisterPrompt>
-            )}
           </FormBox>
         </Right>
       </Shell>
