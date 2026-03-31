@@ -372,8 +372,8 @@ export default function SignUp() {
         "Sign up to access your dashboard, manage tasks, view attendance, and stay updated with meetings — all in one place.",
       leftImg:
         "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
-      title: "Create account",
-      subtitle: "Fill in the details to create your account.",
+      title: "Activate account",
+      subtitle: "Use your company email to activate access.",
     };
   }, [panel]);
 
@@ -583,7 +583,7 @@ export default function SignUp() {
             {error && <ErrorBox>{error}</ErrorBox>}
 
             <PrimaryBtn type="button" onClick={handleSignUp} disabled={loading}>
-              {loading ? "Creating..." : "Create account"}
+              {loading ? "Activating..." : "Activate account"}
             </PrimaryBtn>
 
             <Bottom>

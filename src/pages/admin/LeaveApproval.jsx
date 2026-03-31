@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useEffect, useMemo, useState } from "react";
 import Page from "../../layout/Page";
 import { useLeaveStore } from "../../store/leave.store";
+import { fetchLeaves, updateLeaveStatusAPI } from "../../api/leave.api";
 import {
   Bell,
   Download,
@@ -514,7 +515,15 @@ const prettyDate = (d) => {
 /* ===================== COMPONENT ===================== */
 
 export default function AdminLeaveRequests() {
-  const { leaves, updateLeaveStatus } = useLeaveStore();
+  const [leaves, setLeaves] = useState([]);
+
+  useEffect(() => {
+    const loadLeaves = async () => {
+      const data = await fetchLeaves();
+      setLeaves(data);
+    };
+    loadLeaves();
+  }, []);
 
   // live refresh if you are syncing via localStorage custom events
   const [refreshKey, setRefreshKey] = useState(0);
@@ -640,8 +649,13 @@ export default function AdminLeaveRequests() {
   const somePageSelected = selectedCountOnPage > 0 && !allPageSelected;
 
   // ✅ Bulk actions
-  const bulkUpdate = (status) => {
-    selected.forEach((id) => updateLeaveStatus(id, status));
+  const bulkUpdate = async (status) => {
+    for (let id of selected) {
+      await updateLeaveStatusAPI(id, status);
+    }
+
+    const updated = await fetchLeaves();
+    setLeaves(updated);
     clearSelected();
   };
 
@@ -796,7 +810,7 @@ export default function AdminLeaveRequests() {
               <KpiLabel>Approval time off</KpiLabel>
             </Kpi>
 
-            <Kpi  color="#ef4444">
+            <Kpi color="#ef4444">
               <KpiTop>
                 <KpiIcon>
                   <XCircle size={16} />

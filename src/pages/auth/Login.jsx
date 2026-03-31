@@ -739,7 +739,7 @@ export default function Login() {
 
             {panel === "employee" && (
               <RegisterPrompt>
-                Don't have an account? <Link to="/signup">Register here</Link>
+                Don't have an account? <Link to="/signup">Activate your account</Link>
               </RegisterPrompt>
             )}
 

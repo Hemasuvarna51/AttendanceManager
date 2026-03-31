@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import styled from "styled-components";
 import { useLeaveStore } from "../../store/leave.store";
 import { useAuthStore } from "../../store/auth.store";
-import  luggage_icon from "../../assets/luggage.png";
+import luggage_icon from "../../assets/luggage.png";
 import cross_icon from "../../assets/close.png";
 
 /* ===================== STYLES ===================== */
@@ -242,7 +242,7 @@ const Status = styled.span`
   font-weight: 900;
   border: 1px solid
     ${({ $status }) =>
-      $status === "Approved" ? "#bbf7d0" : $status === "Rejected" ? "#fecaca" : "#fde68a"};
+    $status === "Approved" ? "#bbf7d0" : $status === "Rejected" ? "#fecaca" : "#fde68a"};
   background: ${({ $status }) =>
     $status === "Approved" ? "#f0fdf4" : $status === "Rejected" ? "#fff1f2" : "#fffbeb"};
   color: ${({ $status }) =>
@@ -253,14 +253,14 @@ const Status = styled.span`
     height: 8px;
     border-radius: 999px;
     background: ${({ $status }) =>
-      $status === "Approved" ? "#22c55e" : $status === "Rejected" ? "#ef4444" : "#f59e0b"};
+    $status === "Approved" ? "#22c55e" : $status === "Rejected" ? "#ef4444" : "#f59e0b"};
     box-shadow: 0 0 0 4px
       ${({ $status }) =>
-        $status === "Approved"
-          ? "rgba(34,197,94,0.16)"
-          : $status === "Rejected"
-          ? "rgba(239,68,68,0.16)"
-          : "rgba(245,158,11,0.18)"};
+    $status === "Approved"
+      ? "rgba(34,197,94,0.16)"
+      : $status === "Rejected"
+        ? "rgba(239,68,68,0.16)"
+        : "rgba(245,158,11,0.18)"};
   }
 `;
 
@@ -498,6 +498,16 @@ export default function RequestLeave() {
     leaveType: "Casual Leave",
   };
 
+  const formatDate = (d) =>
+  new Date(d).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const days =
+  (new Date(leave.to) - new Date(leave.from)) /
+    (1000 * 60 * 60 * 24) + 1;
+    
   const [formData, setFormData] = useState(initialFormData);
 
   const myLeaves = useMemo(() => {
@@ -534,20 +544,22 @@ export default function RequestLeave() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!userId) {
-      alert("Please login again.");
+    if (new Date(formData.fromDate) > new Date(formData.toDate)) {
+      alert("From Date cannot be after To Date");
       return;
+
     }
 
     const leaveData = {
       userId,
+      eempId: formData.empId || user?.empId,
       employee: formData.empName || user?.name,
-      empId: formData.empId || user?.empId,
       email: user?.email,
       from: formData.fromDate,
       to: formData.toDate,
       type: formData.leaveType,
       reason: formData.reason,
+      status: "Pending",
     };
 
     console.log('LeaveRequest - Submitting leave:', leaveData);
@@ -653,7 +665,7 @@ export default function RequestLeave() {
                     {myLeaves.map((leave) => (
                       <tr key={leave.id}>
                         <td>
-                          {leave.from} → {leave.to}
+                          {formatDate(leave.from)} → {formatDate(leave.to)}
                         </td>
                         <td>{leave.type}</td>
                         <td>{leave.reason}</td>
@@ -671,7 +683,7 @@ export default function RequestLeave() {
             ) : (
               <EmptyState>
                 <EmptyInner>
-                  <EmptyIcon aria-hidden="true"><img src={luggage_icon}/></EmptyIcon>
+                  <EmptyIcon aria-hidden="true"><img src={luggage_icon} /></EmptyIcon>
                   <h3>No Leave Requests Found</h3>
                   <p>You have not submitted any leave requests yet.</p>
                 </EmptyInner>
@@ -687,7 +699,7 @@ export default function RequestLeave() {
               <ModalHead>
                 <h3>New Leave Request</h3>
                 <CloseBtn onClick={handleCancel} aria-label="Close">
-                ✕
+                  ✕
                 </CloseBtn>
               </ModalHead>
 
@@ -750,8 +762,8 @@ export default function RequestLeave() {
 
                   <Field className={Full.styledComponentId}>
                     <label>Reason</label>
-                    <textarea 
-                    className="reason-text"
+                    <textarea
+                      className="reason-text"
                       name="reason"
                       rows="4"
                       value={formData.reason}
