@@ -159,6 +159,84 @@ const EmptyText = styled.p`
   font-size: 14px;
   color: #64748b;
 `;
+const TaskGrid = styled.div`
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+`;
+
+const TaskCard = styled.div`
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  transition: 0.3s;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: #0f172a;
+  }
+
+  p {
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 10px;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+`;
+
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin: 6px 0;
+`;
+
+const Badge = styled.span`
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+
+  background: ${({ status }) =>
+    status === "Completed"
+      ? "#16a34a"
+      : status === "In Progress"
+        ? "#2563eb"
+        : "#f59e0b"};
+`;
+
+const Priority = styled.span`
+  font-weight: 700;
+  color: ${({ priority }) =>
+    priority === "High"
+      ? "#ef4444"
+      : priority === "Low"
+        ? "#22c55e"
+        : "#eab308"};
+`;
+const CompleteBtn = styled.button`
+  margin-top: 10px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: #16a34a;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background: #15803d;
+  }
+`;
 
 /* ===================== HELPERS ===================== */
 
@@ -220,7 +298,14 @@ export default function EmployeeTasks() {
 
   const filteredTasks =
     tab === "All" ? tasks : tasks.filter((t) => t.status === tab);
-
+  const handleComplete = (task) => {
+    const allTasks = safeParse("tasks", []);
+    const updated = allTasks.map((t) =>
+      t.id === task.id ? { ...t, status: "Completed" } : t
+    );
+    localStorage.setItem("tasks", JSON.stringify(updated));
+    window.dispatchEvent(new Event("tasks_updated"));
+  };
   return (
     <Page>
       <Shell>
@@ -293,13 +378,45 @@ export default function EmployeeTasks() {
               </EmptyText>
             </EmptyState>
           ) : (
-            <EmptyState>
-              {/* You can replace this with full table if needed */}
-              <EmptyTitle>{filteredTasks.length} Tasks Found</EmptyTitle>
-            </EmptyState>
+            <TaskGrid>
+              {filteredTasks.map((task, index) => (
+                <TaskCard key={index}>
+                  <h3>{task.title || "Untitled Task"}</h3>
+
+                  <p><strong>Description:</strong> {task.description || "No description"}</p>
+
+                  <Row>
+                    <span>Status:</span>
+                    <Badge status={task.status}>{task.status}</Badge>
+                  </Row>
+
+                  <Row>
+                    <span>Priority:</span>
+                    <Priority priority={task.priority}>
+                      {task.priority || "Medium"}
+                    </Priority>
+                  </Row>
+
+                  <Row>
+                    <span>Due Date:</span>
+                    <span>
+                      {task.dueDate
+                        ? new Date(task.dueDate).toLocaleDateString()
+                        : "N/A"}
+                    </span>
+                  </Row>
+                  {task.status !== "Completed" && (
+                    <CompleteBtn onClick={() => handleComplete(task)}>
+                      Mark Complete
+                    </CompleteBtn>
+                  )}
+                </TaskCard>
+              ))}
+            </TaskGrid>
           )}
+
         </Panel>
       </Shell>
-    </Page>
+    </Page >
   );
 }

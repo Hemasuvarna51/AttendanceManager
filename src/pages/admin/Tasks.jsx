@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../store/auth.store";
 import { Pencil, Trash2 } from "lucide-react";
@@ -151,13 +151,29 @@ const initialTasks = [];
 export default function Tasks() {
   // Get current admin user info
   const adminUser = useAuthStore((s) => s.user);
-  
-  
+
+
 
   const [tasks, setTasks] = useState(() => {
     const stored = localStorage.getItem("tasks");
     return stored ? JSON.parse(stored) : initialTasks;
   });
+  useEffect(() => {
+    const loadTasks = () => {
+      const stored = localStorage.getItem("tasks");
+      setTasks(stored ? JSON.parse(stored) : []);
+    };
+
+    loadTasks();
+
+    window.addEventListener("tasks_updated", loadTasks);
+    window.addEventListener("storage", loadTasks);
+
+    return () => {
+      window.removeEventListener("tasks_updated", loadTasks);
+      window.removeEventListener("storage", loadTasks);
+    };
+  }, []);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
@@ -278,7 +294,7 @@ export default function Tasks() {
                   value={form.assignedTo}
                   onChange={handleChange}
                 />
-                
+
               </Field>
 
               <Field>
@@ -371,7 +387,7 @@ export default function Tasks() {
               {/* ✅ Edit + Delete */}
               <td>
                 <button className="editBtn" onClick={() => openEdit(task)}>
-                   <Pencil size={14} />
+                  <Pencil size={14} />
                 </button>
                 <button onClick={() => deleteTask(task.id)}><Trash2 size={14} /></button>
               </td>
