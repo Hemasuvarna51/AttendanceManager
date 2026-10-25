@@ -393,7 +393,7 @@ export default function EmployeeList() {
         email: newEmployee.email.trim().toLowerCase(),
         phone: newEmployee.phone.trim(),
         joiningDate: newEmployee.joiningDate,
-        status: newEmployee.status,
+        status: newEmployee.status || "Active",
         image: imageUrl,
         uid: isEditing ? (employees.find((e) => e.docId === editDocId)?.uid || "") : "",
         authProvider: isEditing
@@ -437,7 +437,7 @@ export default function EmployeeList() {
       name: employee.name || "",
       id: employee.id || "",
       role: employee.role || "",
-      email: employee.email || "",
+      email: employee.email || employee.mail || employee.workEmail || "",
       phone: employee.phone || "",
       joiningDate: employee.joiningDate || "",
       status: employee.status || "Active",

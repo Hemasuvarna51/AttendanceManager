@@ -862,7 +862,11 @@ export default function MyProfile() {
     if (!form.username.trim()) return "Username is required.";
     if (!form.name.trim()) return "Full Name is required.";
     if (!form.email.trim()) return "Email is required.";
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) return "Email looks invalid.";
+
+    const email = String(form.email).trim();
+    const isEmailValid = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(email);
+    if (!isEmailValid) return "Email looks invalid.";
+
     if (!form.phone.trim()) return "Phone is required.";
     if (form.phone.trim().length < 8) return "Phone number looks too short.";
 

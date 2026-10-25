@@ -285,7 +285,7 @@ export default function ForgotPassword() {
     const location = useLocation();
     const panel = location.pathname.startsWith("/admin") ? "admin" : "employee";
 
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(location.state?.email || "");
     const [loading, setLoading] = useState(false);
 
     const toastOnce = (msg) => toast.error(msg, { toastId: msg });
@@ -319,7 +319,14 @@ export default function ForgotPassword() {
             toast.success("Reset link sent! Check your email inbox.", { autoClose: 2500 });
         } catch (err) {
             console.log("RESET_ERROR_FULL:", err);
-            toastOnce(`${err?.code || "error"} — ${err?.message || "unknown"}`);
+            const code = err?.code || "";
+            if (code.includes("auth/user-not-found")) {
+                toastOnce("No account found with this email. Please activate your account first.");
+            } else if (code.includes("auth/invalid-email")) {
+                toastOnce("Invalid email address format.");
+            } else {
+                toastOnce(err?.message || "Failed to send reset link. Try again.");
+            }
         } finally {
             setLoading(false);
         }

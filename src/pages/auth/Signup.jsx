@@ -351,7 +351,7 @@ export default function SignUp() {
   const panel = location.pathname.startsWith("/admin") ? "admin" : "employee";
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(location.state?.email || "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
@@ -362,6 +362,13 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   const toastOnce = (msg) => toast.error(msg, { toastId: msg });
+
+  const isValidEmail = (value) => {
+    const clean = String(value || "").trim();
+    if (!clean) return false;
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean);
+  };
 
   const copy = useMemo(() => {
     return {
@@ -383,8 +390,7 @@ export default function SignUp() {
     if (username.trim().length < 3) return "Username must be at least 3 characters";
 
     const cleanEmail = email.trim().toLowerCase();
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail);
-    if (!ok) return "Enter a valid email";
+    if (!isValidEmail(cleanEmail)) return "Enter a valid email";
 
     if (password.length < 6) return "Password must be at least 6 characters";
     if (password !== confirm) return "Passwords do not match";
@@ -399,23 +405,42 @@ export default function SignUp() {
     setLoading(true);
     setError("");
 
+    let userCred = null;
+
     try {
       const cleanEmail = email.trim().toLowerCase();
       const cleanUsername = username.trim();
 
+      // Step 1: Create Firebase Auth account first so Firestore reads are authenticated
+      try {
+        userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      } catch (authErr) {
+        const code = authErr?.code || "";
+        if (code.includes("auth/email-already-in-use")) {
+          return toastOnce("Account already exists. Please login.");
+        }
+        if (code.includes("auth/weak-password")) {
+          return toastOnce("Password is too weak");
+        }
+        if (code.includes("auth/invalid-email")) {
+          return toastOnce("Invalid email");
+        }
+        if (code.includes("auth/network-request-failed")) {
+          return toastOnce("Network error. Check internet");
+        }
+        throw authErr;
+      }
+
+      // Step 2: Now that we're authenticated, authorize via Firestore
       const access = await authorizeEmployeeAccess(cleanEmail);
 
       if (!access.ok) {
+        // Roll back: delete the Firebase account we just created
+        try { await userCred.user.delete(); } catch (_) { await signOut(auth); }
         return toastOnce(access.reason);
       }
 
       const employee = access.employee;
-
-      if (employee.uid) {
-        return toastOnce("Account already created. Please login.");
-      }
-
-      const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
 
       await updateProfile(userCred.user, {
         displayName: cleanUsername || employee.name || "",
@@ -431,21 +456,10 @@ export default function SignUp() {
 
       navigate("/employee/login", { replace: true });
     } catch (err) {
-      const code = err?.code || "";
-
-      if (code.includes("auth/email-already-in-use")) {
-        return toastOnce("Account already exists. Please login.");
+      // Roll back Firebase account if something unexpected failed
+      if (userCred?.user) {
+        try { await userCred.user.delete(); } catch (_) { await signOut(auth); }
       }
-      if (code.includes("auth/weak-password")) {
-        return toastOnce("Password is too weak");
-      }
-      if (code.includes("auth/invalid-email")) {
-        return toastOnce("Invalid email");
-      }
-      if (code.includes("auth/network-request-failed")) {
-        return toastOnce("Network error. Check internet");
-      }
-
       console.error(err);
       toastOnce("Signup failed. Try again.");
     } finally {
@@ -455,6 +469,15 @@ export default function SignUp() {
 
   return (
     <Page>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="light"
+      />
       <Shell>
         {/* LEFT */}
         <Left>
@@ -556,7 +579,9 @@ export default function SignUp() {
                   onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
 
-
+                <SuffixIcon type="button" onClick={() => setShowPass((p) => !p)}>
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </SuffixIcon>
               </InputWrap>
             </Field>
 
@@ -577,6 +602,9 @@ export default function SignUp() {
                   onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
                 />
 
+                <SuffixIcon type="button" onClick={() => setShowConfirm((p) => !p)}>
+                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </SuffixIcon>
               </InputWrap>
             </Field>
 

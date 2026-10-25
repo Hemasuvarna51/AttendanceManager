@@ -422,7 +422,7 @@ export default function Login() {
 
   const login = useAuthStore((s) => s.login);
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(location.state?.email || "");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
 
@@ -448,25 +448,22 @@ export default function Login() {
   );
 
   const validate = () => {
-    if (!email.trim()) return "Email is required";
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    const clean = email.trim();
+    if (!clean) return "Email is required";
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean);
     if (!ok) return "Enter a valid email";
     if (!password) return "Password is required";
     if (password.length < 6) return "Password must be at least 6 characters";
     return "";
   };
 
-  const ADMIN_EMAIL = "admin@gmail.com";
+  const ADMIN_EMAILS = ["admin@gmail.com", "hemasuvarna51@gmail.com"];
 
   const handleLogin = async () => {
     const msg = validate();
     if (msg) return toastOnce(msg);
 
     const cleanEmail = email.trim().toLowerCase();
-
-    if (panel === "admin" && cleanEmail !== ADMIN_EMAIL) {
-      return toastOnce("Not authorized as admin");
-    }
 
     setLoading(true);
 
@@ -478,74 +475,134 @@ export default function Login() {
       );
       const user = userCred.user;
 
-      if (panel === "employee") {
-        const access = await authorizeEmployeeAccess(cleanEmail);
+      // 1. Check if user is a designated admin email
+      const isMasterAdmin = ADMIN_EMAILS.includes(cleanEmail);
 
-        if (!access.ok) {
-          await signOut(auth);
-          return toastOnce(access.reason);
+      // 2. Check employee directory in database (passing authenticated user)
+      const access = await authorizeEmployeeAccess(cleanEmail, user);
+
+      if (isMasterAdmin) {
+        if (access.ok && access.employee) {
+          await bindEmployeeToUser(access.employee.docId, user, "password");
         }
-
-        const employee = access.employee;
-
-        await bindEmployeeToUser(employee.docId, user, "password");
 
         login({
           user: {
             id: user.uid,
             uid: user.uid,
-            email: user.email || "",
+            email: user.email || cleanEmail,
+            username: user.displayName || access.employee?.name || "Admin",
+            name: user.displayName || access.employee?.name || "Admin",
+            employeeId: access.employee?.id || "",
+            role: "admin",
+            employeeDocId: access.employee?.docId || "",
+            status: access.employee?.status || "Active",
+            phone: access.employee?.phone || "",
+            image: access.employee?.image || "",
+          },
+          token: user.accessToken,
+          role: "admin",
+        });
+
+        navigate("/admin/dashboard", { replace: true });
+        return;
+      }
+
+      if (!access.ok) {
+        await signOut(auth);
+        return toastOnce(access.reason);
+      }
+
+      const employee = access.employee;
+      const isRoleAdmin =
+        (employee.role || "").toString().trim().toLowerCase() === "admin";
+
+      await bindEmployeeToUser(employee.docId, user, "password");
+
+      if (isRoleAdmin) {
+        login({
+          user: {
+            id: user.uid,
+            uid: user.uid,
+            email: user.email || cleanEmail,
             username: user.displayName || employee.name || "",
             name: employee.name || user.displayName || "",
             employeeId: employee.id || "",
-            role: "employee",
+            role: "admin",
             employeeDocId: employee.docId,
-            status: employee.status || "",
+            status: employee.status || "Active",
             phone: employee.phone || "",
             image: employee.image || "",
           },
           token: user.accessToken,
-          role: "employee",
+          role: "admin",
         });
 
-        navigate("/employee/dashboard", { replace: true });
+        navigate("/admin/dashboard", { replace: true });
         return;
+      }
+
+      // If user attempted to log in on Admin portal but has standard employee role
+      if (panel === "admin") {
+        await signOut(auth);
+        return toastOnce("Not authorized as admin. Please use the Employee Portal.");
       }
 
       login({
         user: {
           id: user.uid,
-          email: user.email || "",
-          username: user.displayName || "",
-          name: user.displayName || "",
+          uid: user.uid,
+          email: user.email || cleanEmail,
+          username: user.displayName || employee.name || "",
+          name: employee.name || user.displayName || "",
+          employeeId: employee.id || "",
+          role: "employee",
+          employeeDocId: employee.docId,
+          status: employee.status || "Active",
+          phone: employee.phone || "",
+          image: employee.image || "",
         },
         token: user.accessToken,
-        role: "admin",
+        role: "employee",
       });
 
-      navigate("/admin/dashboard", { replace: true });
+      navigate(from || "/employee/dashboard", { replace: true });
     } catch (err) {
       const code = err?.code || "";
+      console.error("Login authentication error:", err);
 
-      if (code.includes("auth/invalid-credential")) {
-        return toastOnce("Invalid email or password");
+      if (code.includes("auth/invalid-email")) {
+        return toastOnce("Invalid email address format.");
       }
       if (code.includes("auth/user-not-found")) {
-        return toastOnce("No account found with this email");
+        return toastOnce(
+          "No account found with this email. If your email was added by admin, please click 'Activate your account' below."
+        );
+      }
+      if (code.includes("auth/wrong-password")) {
+        return toastOnce("Incorrect password. Please try again.");
+      }
+      if (code.includes("auth/invalid-credential")) {
+        return toastOnce(
+          "Invalid email or password. If you haven't set up your password yet, please click 'Activate your account' below."
+        );
+      }
+      if (code.includes("auth/too-many-requests")) {
+        return toastOnce(
+          "Too many failed login attempts. Please reset your password or try again later."
+        );
+      }
+      if (code.includes("auth/network-request-failed")) {
+        return toastOnce("Network error. Please check your internet connection.");
       }
 
-      console.error(err);
-      toastOnce("Login failed. Try again.");
+      toastOnce(err?.message || "Login failed. Check your credentials or activate your account.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    if (panel === "admin") {
-      return toastOnce("Admin login via Google is disabled");
-    }
-
     setLoading(true);
 
     try {
@@ -558,7 +615,35 @@ export default function Login() {
         return toastOnce("Google account email not available");
       }
 
-      const access = await authorizeEmployeeAccess(cleanEmail);
+      const isMasterAdmin = ADMIN_EMAILS.includes(cleanEmail);
+      const access = await authorizeEmployeeAccess(cleanEmail, user);
+
+      if (isMasterAdmin) {
+        if (access.ok && access.employee) {
+          await bindEmployeeToUser(access.employee.docId, user, "google");
+        }
+
+        login({
+          user: {
+            id: user.uid,
+            uid: user.uid,
+            email: user.email || cleanEmail,
+            username: user.displayName || access.employee?.name || "Admin",
+            name: user.displayName || access.employee?.name || "Admin",
+            employeeId: access.employee?.id || "",
+            role: "admin",
+            employeeDocId: access.employee?.docId || "",
+            status: access.employee?.status || "Active",
+            phone: access.employee?.phone || "",
+            image: access.employee?.image || user.photoURL || "",
+          },
+          token: user.accessToken,
+          role: "admin",
+        });
+
+        navigate(from || "/admin/dashboard", { replace: true });
+        return;
+      }
 
       if (!access.ok) {
         const isNewAccount =
@@ -580,6 +665,9 @@ export default function Login() {
       }
 
       const employee = access.employee;
+      const isRoleAdmin =
+        (employee.role || "").toString().trim().toLowerCase() === "admin";
+      const finalRole = isRoleAdmin ? "admin" : "employee";
 
       await bindEmployeeToUser(employee.docId, user, "google");
 
@@ -587,21 +675,21 @@ export default function Login() {
         user: {
           id: user.uid,
           uid: user.uid,
-          email: user.email || "",
+          email: user.email || cleanEmail,
           username: user.displayName || employee.name || "",
           name: employee.name || user.displayName || "",
           employeeId: employee.id || "",
-          role: "employee",
+          role: finalRole,
           employeeDocId: employee.docId,
-          status: employee.status || "",
+          status: employee.status || "Active",
           phone: employee.phone || "",
           image: employee.image || user.photoURL || "",
         },
         token: user.accessToken,
-        role: "employee",
+        role: finalRole,
       });
 
-      navigate(from || "/employee/dashboard", { replace: true });
+      navigate(from || (finalRole === "admin" ? "/admin/dashboard" : "/employee/dashboard"), { replace: true });
     } catch (err) {
       const code = err?.code || "";
 
@@ -710,6 +798,7 @@ export default function Login() {
               {panel === "employee" && (
                 <Link
                   to="/employee/forgot-password"
+                  state={{ email: email.trim() }}
                   style={{
                     fontSize: 13,
                     color: "#2563eb",
@@ -739,7 +828,10 @@ export default function Login() {
 
             {panel === "employee" && (
               <RegisterPrompt>
-                Don't have an account? <Link to="/signup">Activate your account</Link>
+                Don't have an account?{" "}
+                <Link to="/signup" state={{ email: email.trim() }}>
+                  Activate your account
+                </Link>
               </RegisterPrompt>
             )}
 
